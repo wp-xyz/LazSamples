@@ -1,0 +1,105 @@
+object Form1: TForm1
+  Left = 446
+  Height = 401
+  Top = 185
+  Width = 899
+  Caption = 'Form1'
+  ClientHeight = 401
+  ClientWidth = 899
+  OnCreate = FormCreate
+  LCLVersion = '2.1.0.0'
+  object DBGrid2: TDBGrid
+    AnchorSideLeft.Control = Splitter2
+    AnchorSideTop.Control = DBNavigator2
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 195
+    Height = 358
+    Top = 37
+    Width = 698
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 6
+    BorderSpacing.Bottom = 6
+    Color = clWindow
+    Columns = <>
+    DataSource = DataSource
+    TabOrder = 0
+  end
+  object DBNavigator2: TDBNavigator
+    AnchorSideLeft.Control = Splitter2
+    AnchorSideTop.Control = Owner
+    Left = 195
+    Height = 25
+    Top = 6
+    Width = 241
+    BevelOuter = bvNone
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 6
+    BorderSpacing.Bottom = 6
+    ChildSizing.EnlargeHorizontal = crsScaleChilds
+    ChildSizing.EnlargeVertical = crsScaleChilds
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 100
+    ClientHeight = 25
+    ClientWidth = 241
+    DataSource = DataSource
+    Options = []
+    TabOrder = 1
+  end
+  object ListBox1: TListBox
+    Left = 6
+    Height = 389
+    Top = 6
+    Width = 189
+    Align = alLeft
+    BorderSpacing.Left = 6
+    BorderSpacing.Top = 6
+    BorderSpacing.Bottom = 6
+    ItemHeight = 0
+    OnClick = ListBox1Click
+    TabOrder = 2
+  end
+  object Splitter2: TSplitter
+    Left = 195
+    Height = 401
+    Top = 0
+    Width = 5
+  end
+  object ODBCConnection1: TODBCConnection
+    Connected = False
+    LoginPrompt = False
+    KeepConnection = False
+    Transaction = SQLTransaction1
+    LogEvents = []
+    Driver = 'Microsoft Access Driver (*.mdb)'
+    left = 672
+    top = 112
+  end
+  object SQLTransaction1: TSQLTransaction
+    Active = False
+    Action = caNone
+    Database = ODBCConnection1
+    left = 672
+    top = 192
+  end
+  object Query: TSQLQuery
+    FieldDefs = <>
+    SQL.Strings = (
+      ''
+    )
+    Params = <>
+    left = 312
+    top = 160
+  end
+  object DataSource: TDataSource
+    DataSet = Query
+    left = 312
+    top = 248
+  end
+end

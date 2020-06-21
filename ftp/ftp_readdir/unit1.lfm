@@ -1,0 +1,258 @@
+object Form1: TForm1
+  Left = 340
+  Height = 542
+  Top = 127
+  Width = 711
+  Caption = 'Form1'
+  ClientHeight = 542
+  ClientWidth = 711
+  LCLVersion = '2.1.0.0'
+  object edServer: TEdit
+    AnchorSideLeft.Control = lblUserName
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = Owner
+    AnchorSideRight.Control = lblPort
+    Left = 80
+    Height = 23
+    Top = 8
+    Width = 509
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 16
+    BorderSpacing.Top = 8
+    TabOrder = 0
+    Text = 'ftp.freepascal.org'
+  end
+  object lblServer: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = edServer
+    AnchorSideTop.Side = asrCenter
+    Left = 8
+    Height = 15
+    Top = 12
+    Width = 49
+    BorderSpacing.Left = 8
+    Caption = 'ftp server'
+    ParentColor = False
+  end
+  object edUser: TEdit
+    AnchorSideLeft.Control = edServer
+    AnchorSideTop.Control = edServer
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = lblPassword
+    Left = 80
+    Height = 23
+    Top = 37
+    Width = 347
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 6
+    BorderSpacing.Right = 24
+    TabOrder = 1
+    Text = 'anonymous'
+  end
+  object lblUserName: TLabel
+    AnchorSideLeft.Control = lblServer
+    AnchorSideTop.Control = edUser
+    AnchorSideTop.Side = asrCenter
+    Left = 8
+    Height = 15
+    Top = 41
+    Width = 56
+    Caption = 'User name'
+    ParentColor = False
+  end
+  object lblPassword: TLabel
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = edPassword
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = edPassword
+    Left = 451
+    Height = 15
+    Top = 41
+    Width = 50
+    Anchors = [akTop, akRight]
+    BorderSpacing.Right = 8
+    Caption = 'Password'
+    ParentColor = False
+  end
+  object edPassword: TEdit
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = edUser
+    AnchorSideRight.Control = edServer
+    AnchorSideRight.Side = asrBottom
+    Left = 509
+    Height = 23
+    Top = 37
+    Width = 80
+    Anchors = [akTop, akRight]
+    BorderSpacing.Left = 8
+    TabOrder = 2
+  end
+  object lblPort: TLabel
+    AnchorSideLeft.Control = edServer
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = edPort
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = edPort
+    Left = 605
+    Height = 15
+    Top = 12
+    Width = 22
+    Anchors = [akTop, akRight]
+    BorderSpacing.Left = 16
+    BorderSpacing.Right = 8
+    Caption = 'Port'
+    ParentColor = False
+  end
+  object edPort: TEdit
+    AnchorSideLeft.Control = lblPort
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = edServer
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 635
+    Height = 23
+    Top = 8
+    Width = 68
+    Anchors = [akTop, akRight]
+    BorderSpacing.Right = 8
+    TabOrder = 3
+    Text = '21'
+  end
+  object Memo: TMemo
+    AnchorSideLeft.Control = lblServer
+    AnchorSideTop.Control = edDirectory
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = edPort
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Splitter1
+    Left = 8
+    Height = 168
+    Top = 97
+    Width = 695
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Top = 8
+    Font.CharSet = ANSI_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'Courier New'
+    Font.Pitch = fpFixed
+    Font.Quality = fqDraft
+    ParentFont = False
+    ScrollBars = ssAutoVertical
+    TabOrder = 4
+  end
+  object ListBox: TListBox
+    AnchorSideLeft.Control = Memo
+    AnchorSideTop.Control = Splitter1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Memo
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 8
+    Height = 263
+    Top = 271
+    Width = 695
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Bottom = 8
+    ItemHeight = 0
+    TabOrder = 5
+  end
+  object lblDirectory: TLabel
+    AnchorSideLeft.Control = lblServer
+    AnchorSideTop.Control = edDirectory
+    AnchorSideTop.Side = asrCenter
+    Left = 8
+    Height = 15
+    Top = 70
+    Width = 48
+    Caption = 'Directory'
+    ParentColor = False
+  end
+  object edDirectory: TEdit
+    AnchorSideLeft.Control = edServer
+    AnchorSideTop.Control = edUser
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = edUser
+    AnchorSideRight.Side = asrBottom
+    Left = 80
+    Height = 23
+    Top = 66
+    Width = 347
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 6
+    TabOrder = 6
+    Text = 'pub/fpc/beta/3.0.4-rc1/docs/'
+  end
+  object edFileMask: TEdit
+    AnchorSideLeft.Control = edPassword
+    AnchorSideTop.Control = edPassword
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = edPassword
+    AnchorSideRight.Side = asrBottom
+    Left = 509
+    Height = 23
+    Top = 66
+    Width = 80
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 6
+    TabOrder = 7
+    Text = '*'
+  end
+  object Label1: TLabel
+    AnchorSideRight.Control = lblPassword
+    AnchorSideRight.Side = asrBottom
+    Left = 464
+    Height = 15
+    Top = 71
+    Width = 37
+    Anchors = [akTop, akRight]
+    Caption = 'File ext'
+    ParentColor = False
+  end
+  object btnLogin: TButton
+    AnchorSideLeft.Control = edPort
+    AnchorSideTop.Control = edPassword
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = edPort
+    AnchorSideRight.Side = asrBottom
+    Left = 635
+    Height = 25
+    Top = 36
+    Width = 68
+    Anchors = [akTop, akLeft, akRight]
+    Caption = 'Login'
+    OnClick = btnLoginClick
+    TabOrder = 8
+  end
+  object btnRead: TButton
+    AnchorSideLeft.Control = btnLogin
+    AnchorSideTop.Control = edFileMask
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = btnLogin
+    AnchorSideRight.Side = asrBottom
+    Left = 635
+    Height = 25
+    Top = 65
+    Width = 68
+    Anchors = [akTop, akLeft, akRight]
+    Caption = 'Read'
+    OnClick = btnReadClick
+    TabOrder = 9
+  end
+  object Splitter1: TSplitter
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Memo
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Cursor = crVSplit
+    Left = 0
+    Height = 6
+    Top = 265
+    Width = 711
+    Align = alNone
+    Anchors = [akLeft, akRight]
+    ResizeAnchor = akTop
+  end
+end

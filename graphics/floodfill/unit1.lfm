@@ -1,0 +1,17 @@
+object Form1: TForm1
+  Left = 347
+  Height = 240
+  Top = 128
+  Width = 320
+  Caption = 'Form1'
+  ClientHeight = 240
+  ClientWidth = 320
+  LCLVersion = '2.1.0.0'
+  object PaintBox1: TPaintBox
+    Left = 35
+    Height = 180
+    Top = 16
+    Width = 218
+    OnPaint = PaintBox1Paint
+  end
+end
