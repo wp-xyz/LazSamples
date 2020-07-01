@@ -2,17 +2,17 @@ object Form1: TForm1
   Left = 280
   Height = 480
   Top = 130
-  Width = 987
+  Width = 748
   Caption = 'MainForm'
   ClientHeight = 480
-  ClientWidth = 987
-  LCLVersion = '2.1.0.0'
+  ClientWidth = 748
+  LCLVersion = '2.0.8.0'
   object BtnExecute: TButton
-    AnchorSideTop.Control = EdURL
+    AnchorSideTop.Control = EdFilename
     AnchorSideTop.Side = asrCenter
     AnchorSideRight.Control = Owner
     AnchorSideRight.Side = asrBottom
-    Left = 916
+    Left = 677
     Height = 25
     Top = 3
     Width = 67
@@ -20,44 +20,52 @@ object Form1: TForm1
     AutoSize = True
     BorderSpacing.Right = 4
     Caption = 'Execute'
+    Enabled = False
     OnClick = BtnExecuteClick
     TabOrder = 0
   end
-  object EdURL: TEdit
+  object EdFilename: TEdit
     AnchorSideLeft.Control = Owner
     AnchorSideTop.Control = Owner
-    AnchorSideRight.Control = BtnExecute
+    AnchorSideRight.Control = BtnLoad
     Left = 4
     Height = 23
     Top = 4
-    Width = 908
+    Width = 611
     Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 4
     BorderSpacing.Right = 4
     TabOrder = 1
-    Text = 'https://www.dwd.de/DE/leistungen/klimadatendeutschland/stationsuebersicht.html?nn=16102&lsbId=526270'
+    Text = 'table.html'
   end
   object PageControl1: TPageControl
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = EdFilename
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
     Left = 4
-    Height = 427
+    Height = 447
     Top = 29
-    Width = 979
-    ActivePage = TabText
+    Width = 740
+    ActivePage = TabHTML
     Anchors = [akTop, akLeft, akRight, akBottom]
     BorderSpacing.Left = 4
     BorderSpacing.Top = 2
     BorderSpacing.Right = 4
     BorderSpacing.Bottom = 4
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 2
     object TabHTML: TTabSheet
       Caption = 'HTML'
-      ClientHeight = 399
+      ClientHeight = 419
       ClientWidth = 732
       inline SynEdit1: TSynEdit
         Left = 0
-        Height = 399
+        Height = 419
         Top = 0
         Width = 732
         Align = alClient
@@ -554,14 +562,14 @@ object Form1: TForm1
       end
     end
     object TabText: TTabSheet
-      Caption = 'Text (fasthtmlparser)'
-      ClientHeight = 399
-      ClientWidth = 971
+      Caption = 'Text'
+      ClientHeight = 419
+      ClientWidth = 732
       object MemoText: TMemo
         Left = 0
-        Height = 399
+        Height = 419
         Top = 0
-        Width = 971
+        Width = 732
         Align = alClient
         Anchors = []
         Font.Pitch = fpFixed
@@ -571,25 +579,20 @@ object Form1: TForm1
       end
     end
   end
-  object StatusBar: TStatusBar
-    Left = 0
-    Height = 23
-    Top = 457
-    Width = 987
-    Panels = <    
-      item
-        Width = 150
-      end    
-      item
-        Width = 150
-      end    
-      item
-        Width = 150
-      end    
-      item
-        Width = 150
-      end>
-    SimplePanel = False
+  object BtnLoad: TButton
+    AnchorSideTop.Control = EdFilename
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = BtnExecute
+    Left = 619
+    Height = 25
+    Top = 3
+    Width = 52
+    Anchors = [akTop, akRight]
+    AutoSize = True
+    BorderSpacing.Right = 6
+    Caption = 'Load'
+    OnClick = BtnLoadClick
+    TabOrder = 3
   end
   object SynHTMLSyn1: TSynHTMLSyn
     DefaultFilter = 'HTML Document (*.htm,*.html)|*.htm;*.html'
