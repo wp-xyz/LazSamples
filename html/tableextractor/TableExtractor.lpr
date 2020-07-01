@@ -1,4 +1,4 @@
-program TextExtractor;
+program TableExtractor;
 
 {$mode objfpc}{$H+}
 
@@ -7,8 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, txMain
-  { you can add units after this };
+  Forms, txMain;
 
 {$R *.res}
 
