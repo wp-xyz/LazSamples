@@ -1,3 +1,5 @@
+{ Shows how a menu can be custom-drawn }
+
 unit Unit1;
 
 {$mode objfpc}{$H+}

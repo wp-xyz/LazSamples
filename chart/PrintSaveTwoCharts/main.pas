@@ -1,3 +1,5 @@
+{ This demo shows how two charts can be printed or copied to the clipboard. }
+
 unit Main;
 
 {$mode objfpc}{$H+}

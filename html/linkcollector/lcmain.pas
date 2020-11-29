@@ -1,3 +1,5 @@
+{ Demonstrates how the html links embedded in an html page can be extracted. }
+
 unit lcmain;
 
 {$mode objfpc}{$H+}
@@ -37,7 +39,11 @@ implementation
 {$R *.lfm}
 
 uses
-  fphttpclient, openssl;
+  fphttpclient,
+  {$IF FPC_FullVersion >= 30200}
+  opensslsockets,
+  {$IFEND}
+  openssl;
 
 // http://forum.lazarus.freepascal.org/index.php/topic,17621.msg97473.html#msg97473
 // also:

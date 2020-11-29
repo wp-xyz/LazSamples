@@ -1,3 +1,5 @@
+{ Demonstrates usage of a TFlowPanel }
+
 unit Unit1;
 
 {$mode objfpc}{$H+}

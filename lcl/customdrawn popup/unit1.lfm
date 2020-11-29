@@ -63,8 +63,8 @@ object Form1: TForm1
   end
   object ImageList1: TImageList
     Scaled = True
-    left = 216
-    top = 104
+    Left = 216
+    Top = 104
     Bitmap = {
       4C7A040000001000000010000000050600000000000078DAED535950935714BE
       2AD83656ED4C292034B60484564491D5B6A31DB156677C71A9D322D676BA3FD8
@@ -321,8 +321,8 @@ object Form1: TForm1
   object PopupMenu1: TPopupMenu
     Images = ImageList1
     OnDrawItem = MenuItemDrawHandler
-    left = 216
-    top = 24
+    Left = 216
+    Top = 24
     object MenuItem1: TMenuItem
       Caption = 'MenuItem1'
       ImageIndex = 0

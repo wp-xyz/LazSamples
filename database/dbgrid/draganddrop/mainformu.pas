@@ -44,7 +44,6 @@ type
     PopupMenu1: TPopupMenu;
     Remove1: TMenuItem;
     DisplaySequenceCB: TCheckBox;
-    StatusBar1: TStatusBar;
     ShowHeaderCB: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure OKBtnClick(Sender: TObject);

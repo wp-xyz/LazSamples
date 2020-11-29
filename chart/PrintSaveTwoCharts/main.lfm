@@ -144,21 +144,19 @@ object Form1: TForm1
     XMin = -5
     YMax = 5
     YMin = -5
-    left = 152
-    top = 56
+    Left = 152
+    Top = 56
   end
   object PrintDialog1: TPrintDialog
-    left = 244
-    top = 56
+    Left = 244
+    Top = 56
   end
   object RandomChartSource2: TRandomChartSource
     PointsNumber = 20
     RandSeed = 1515514156
     XMax = 100
-    XMin = 0
     YMax = 1
-    YMin = 0
-    left = 141
-    top = 237
+    Left = 141
+    Top = 237
   end
 end

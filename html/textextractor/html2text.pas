@@ -19,7 +19,9 @@ type
   private
     FParser: THTMLParser;
     FText: String;
+    FInBody: Boolean;
   protected
+    procedure FoundTagHandler(NoCaseTag, ActualTag: String);
     procedure FoundTextHandler(AText: String);
   public
     constructor Create(AHTMLText: String);
@@ -31,6 +33,7 @@ constructor THTMLTextExtractor.Create(AHTMLText: String);
 begin
   FParser := THTMLParser.Create(AHTMLText);
   FParser.OnFoundText := @FoundTextHandler;
+  FParser.OnFoundTag := @FoundTagHandler;
 end;
 
 destructor THTMLTextExtractor.Destroy;
@@ -46,8 +49,18 @@ begin
   Result := FText;
 end;
 
-procedure THTMLTextExtractor.FoundTextHandler(AText: String);
+procedure THTMLTextExtractor.FoundTagHandler(NoCaseTag, ActualTag: String);
 begin
+  if NoCaseTag = '<BODY>' then FInBody := true;
+end;
+
+procedure THTMLTextExtractor.FoundTextHandler(AText: String);
+var
+  s: String;
+begin
+  if not FInBody then  // Exclude text in the meta data
+    exit;
+
   if AText = '' then
     exit;
 
@@ -55,18 +68,20 @@ begin
   if (AText[1] in [#10, #13]) then begin
     while (AText <> '') and (AText[1] in [#10, #13]) do
       Delete(AText, 1, 1);
-    AText := LineEnding + AText;
-    if AText = '' then
+    s := Trim(AText);
+    if s = '' then
       exit;
+    AText := LineEnding + AText;
   end;
 
   // ... and from text end
   if (AText[Length(AText)] in [#10, #13]) then begin
     while (AText <> '') and (AText[Length(AText)] in [#10, #13]) do
       Delete(AText, Length(AText), 1);
-    AText := AText + LineEnding;
-    if AText = '' then
+    s := Trim(AText);
+    if trim(s) = '' then
       exit;
+    AText := AText + LineEnding;
   end;
 
   FText := FText + AText;

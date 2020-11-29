@@ -17,14 +17,14 @@
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="default" Default="True"/>
-      <SessionMatrixOptions Count="1">
-        <Item1 ID="029626261541" Modes="default" Value="-gw2"/>
-      </SessionMatrixOptions>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
     </PublishOptions>
     <RunParams>
+      <local>
+        <LaunchingApplication PathPlusParams="/usr/X11R6/bin/xterm -T &apos;Lazarus Run Output&apos; -e $(LazarusDir)/tools/runwait.sh $(TargetCmdLine)"/>
+      </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
@@ -65,7 +65,7 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
         <TopLine Value="3"/>
-        <CursorPos X="23" Y="9"/>
+        <CursorPos X="34" Y="22"/>
         <UsageCount Value="31"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -250,8 +250,8 @@
     </CodeGeneration>
     <Linking>
       <Debugging>
+        <DebugInfoType Value="dsDwarf2"/>
         <StripSymbols Value="True"/>
-        <UseExternalDbgSyms Value="True"/>
       </Debugging>
       <LinkSmart Value="True"/>
       <Options>

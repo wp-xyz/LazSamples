@@ -1,3 +1,5 @@
+{ Demonstrates how a directory can be read from an ftp server using synapse. }
+
 unit Unit1;
 
 {$mode objfpc}{$H+}

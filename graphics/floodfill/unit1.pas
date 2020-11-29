@@ -1,3 +1,5 @@
+{ Demonstrates application of the floodfill procedure }
+
 unit Unit1;
 
 {$mode objfpc}{$H+}

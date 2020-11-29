@@ -1,3 +1,7 @@
+{ Executes a gamma correction of a graphics image. Based on fp-image classes.
+
+  NOTE: Adjust the path to the Lazarus cheetah in the "src" variable. }
+
 program project1;
 
 uses
@@ -44,7 +48,7 @@ begin
 end;
 
 const
-  src = 'C:\lazarus-trunk_fpc304\images\splash_source\cheetah.jpg';
+  src = 'C:\lazarus\lazarus-trunk_fpc-3.2.0\images\splash_source\cheetah.jpg';
   dest1 = './cheetah-gamma20.jpg';
   dest2 = './cheetah-gamma05.jpg';
 begin
@@ -52,8 +56,4 @@ begin
   GammaCorrection(src, dest2, 0.5);
 end.
 
-
-
-begin
-end.
 

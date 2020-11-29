@@ -5,7 +5,6 @@
     <PathDelim Value="\"/>
     <General>
       <Flags>
-        <UseDefaultCompilerOptions Value="True"/>
         <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
@@ -16,7 +15,6 @@
       <XPManifest>
         <DpiAware Value="True"/>
       </XPManifest>
-      <Icon Value="0"/>
     </General>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -33,11 +31,18 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="1">
+    <Units Count="2">
       <Unit0>
         <Filename Value="DBGridDragDrop.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
+      <Unit1>
+        <Filename Value="mainformu.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="Form1"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit1>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -51,6 +56,9 @@
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>
+      <Debugging>
+        <DebugInfoType Value="dsDwarf2"/>
+      </Debugging>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>

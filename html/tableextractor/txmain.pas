@@ -1,3 +1,5 @@
+{ Extracts the cells of an html table. }
+
 unit txMain;
 
 {$mode objfpc}{$H+}
@@ -40,6 +42,8 @@ implementation
 
 {$R *.lfm}
 
+const
+  SEPARATOR = ';';
 
 { TForm1 }
 
@@ -92,10 +96,10 @@ begin
     FInTable := false;
 
   if (NoCaseTag = '</TD>') or (NoCaseTag = '</TH>') then
-    FTextInTable := FTextInTable + ';';
+    FTextInTable := FTextInTable + SEPARATOR;
 
   if NoCaseTag = '</TR>' then begin
-    if FTextInTable[Length(FTextInTable)] = ';' then
+    if FTextInTable[Length(FTextInTable)] = SEPARATOR then
       Delete(FTextInTable, Length(FTextInTable), 1);
     FTextInTable := FTextInTable + LineEnding;
   end;

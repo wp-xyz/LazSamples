@@ -1,4 +1,6 @@
-unit Unit1; 
+{ This demo shows how the table names of an Access database can be determined. }
+
+unit Unit1;
 
 {$mode objfpc}{$H+}
 

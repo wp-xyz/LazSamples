@@ -78,15 +78,15 @@ object Form1: TForm1
     Transaction = SQLTransaction1
     LogEvents = []
     Driver = 'Microsoft Access Driver (*.mdb)'
-    left = 672
-    top = 112
+    Left = 672
+    Top = 112
   end
   object SQLTransaction1: TSQLTransaction
     Active = False
     Action = caNone
     Database = ODBCConnection1
-    left = 672
-    top = 192
+    Left = 672
+    Top = 192
   end
   object Query: TSQLQuery
     FieldDefs = <>
@@ -94,12 +94,12 @@ object Form1: TForm1
       ''
     )
     Params = <>
-    left = 312
-    top = 160
+    Left = 312
+    Top = 160
   end
   object DataSource: TDataSource
     DataSet = Query
-    left = 312
-    top = 248
+    Left = 312
+    Top = 248
   end
 end
