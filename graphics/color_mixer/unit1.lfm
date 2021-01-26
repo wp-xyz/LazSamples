@@ -1,0 +1,95 @@
+object Form1: TForm1
+  Left = 253
+  Height = 429
+  Top = 131
+  Width = 339
+  Caption = 'Form1'
+  ClientHeight = 429
+  ClientWidth = 339
+  OnCreate = FormCreate
+  LCLVersion = '2.1.0.0'
+  object PaintBox1: TPaintBox
+    Left = 27
+    Height = 249
+    Top = 15
+    Width = 277
+    OnPaint = PaintBox1Paint
+  end
+  object sbRed: TScrollBar
+    Left = 56
+    Height = 17
+    Top = 281
+    Width = 249
+    Max = 255
+    PageSize = 0
+    Position = 255
+    TabOrder = 0
+    OnChange = sbColorChange
+  end
+  object Label1: TLabel
+    AnchorSideTop.Control = sbRed
+    AnchorSideTop.Side = asrCenter
+    Left = 24
+    Height = 15
+    Top = 282
+    Width = 7
+    Caption = 'R'
+    ParentColor = False
+  end
+  object sbGreen: TScrollBar
+    Left = 59
+    Height = 17
+    Top = 312
+    Width = 249
+    Max = 255
+    PageSize = 0
+    Position = 255
+    TabOrder = 1
+    OnChange = sbColorChange
+  end
+  object Label2: TLabel
+    AnchorSideTop.Control = sbGreen
+    AnchorSideTop.Side = asrCenter
+    Left = 27
+    Height = 15
+    Top = 313
+    Width = 8
+    Caption = 'G'
+    ParentColor = False
+  end
+  object sbBlue: TScrollBar
+    Left = 59
+    Height = 17
+    Top = 344
+    Width = 249
+    Max = 255
+    PageSize = 0
+    Position = 255
+    TabOrder = 2
+    OnChange = sbColorChange
+  end
+  object Label3: TLabel
+    AnchorSideTop.Control = sbBlue
+    AnchorSideTop.Side = asrCenter
+    Left = 27
+    Height = 15
+    Top = 345
+    Width = 7
+    Caption = 'B'
+    ParentColor = False
+  end
+  object Panel1: TPanel
+    AnchorSideLeft.Control = sbBlue
+    AnchorSideRight.Control = sbBlue
+    AnchorSideRight.Side = asrBottom
+    Left = 59
+    Height = 41
+    Top = 377
+    Width = 249
+    Anchors = [akTop, akLeft, akRight]
+    BevelOuter = bvNone
+    BorderStyle = bsSingle
+    Caption = 'Panel1'
+    TabOrder = 3
+  end
+end
