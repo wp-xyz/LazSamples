@@ -1,0 +1,84 @@
+object Form1: TForm1
+  Left = 275
+  Height = 140
+  Top = 160
+  Width = 300
+  Caption = 'Form1'
+  ClientHeight = 140
+  ClientWidth = 300
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '2.1.0.0'
+  object PaintBox1: TPaintBox
+    Left = 16
+    Height = 105
+    Top = 15
+    Width = 105
+    OnPaint = PaintBox1Paint
+  end
+  object CbFGColor: TColorBox
+    Left = 176
+    Height = 22
+    Top = 16
+    Width = 100
+    NoneColorColor = clNone
+    Selected = clYellow
+    Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone]
+    ItemHeight = 16
+    OnChange = BrushChanged
+    TabOrder = 0
+  end
+  object CbBGColor: TColorBox
+    Left = 176
+    Height = 22
+    Top = 52
+    Width = 100
+    NoneColorColor = clNone
+    Selected = clRed
+    Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone]
+    ItemHeight = 16
+    OnChange = BrushChanged
+    TabOrder = 1
+  end
+  object Label1: TLabel
+    Left = 152
+    Height = 15
+    Top = 20
+    Width = 14
+    Caption = 'FG'
+    ParentColor = False
+  end
+  object Label2: TLabel
+    Left = 152
+    Height = 15
+    Top = 56
+    Width = 15
+    Caption = 'BG'
+    ParentColor = False
+  end
+  object CbStyle: TComboBox
+    Left = 176
+    Height = 23
+    Top = 88
+    Width = 100
+    DropDownCount = 24
+    ItemHeight = 15
+    ItemIndex = 0
+    Items.Strings = (
+      'bsSolid'
+      'bsClear'
+      'bsHorizontal'
+      'bsVertical'
+      'bsFDiagonal                   '
+      'bsBDiagonal'
+      'bsCross'
+      'bsDiagCross'
+      'bsImage'
+      'bsPattern'
+    )
+    OnChange = BrushChanged
+    Style = csDropDownList
+    TabOrder = 2
+    Text = 'bsSolid'
+  end
+end
