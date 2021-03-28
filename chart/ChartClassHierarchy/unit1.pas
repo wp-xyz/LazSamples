@@ -6,10 +6,9 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  LvlGraphCtrl,
-  TAGraph, TASources, TAIntervalSources,
-  TACustomSeries, TASeries, TAFuncSeries, TAExpressionSeries,  TAPolygonSeries,
-  TAMultiSeries, TARadialSeries, TADbSource, TAAnimatedSource, TAAxisSource;
+  Spin, LvlGraphCtrl, TAGraph, TASources, TAIntervalSources, TACustomSeries,
+  TASeries, TAFuncSeries, TAExpressionSeries, TAPolygonSeries, TAMultiSeries,
+  TARadialSeries, TADbSource, TAAnimatedSource, TAAxisSource;
 
 type
 
@@ -23,15 +22,24 @@ type
     cbStraightenGraph: TCheckBox;
     cbReduceBackEdges: TCheckBox;
     cbHighLevels: TCheckBox;
+    Label2: TLabel;
+    Label3: TLabel;
+    seCaptionScale: TFloatSpinEdit;
+    GroupBox1: TGroupBox;
     ImageList1: TImageList;
+    Label1: TLabel;
     LvlGraphControl1: TLvlGraphControl;
     Panel1: TPanel;
+    seGapBottom: TSpinEdit;
+    seGapTop: TSpinEdit;
     procedure btnSeriesHierarchyClick(Sender: TObject);
     procedure btnSourceHierarchyClick(Sender: TObject);
     procedure cbStraightenGraphChange(Sender: TObject);
     procedure cbReduceBackEdgesChange(Sender: TObject);
     procedure cbHighLevelsChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure seCaptionScaleChange(Sender: TObject);
+    procedure seGapChange(Sender: TObject);
   private
     FDisplay: TClassDisplay;
     FRootClassName: String;
@@ -84,8 +92,10 @@ const
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   LvlGraphControl1.Images := ImageList1;
+  LvlGraphControl1.NodeStyle.CaptionScale := seCaptionScale.Value;
+  LvlGraphControl1.NodeStyle.GapTop := seGapTop.Value;
+  LvlGraphControl1.NodeStyle.GapBottom := seGapBottom.Value;
 end;
-
 
 procedure TForm1.cbReduceBackEdgesChange(Sender: TObject);
 var
@@ -259,10 +269,10 @@ begin
   with LvlGraphControl1 do begin
     NodeStyle.Shape := lgnsNone;
     NodeStyle.Width := 15;
-    NodeStyle.GapTop := 12;
-    NodeStyle.GapBottom := 0;
+    NodeStyle.GapTop := seGapTop.Value;  //12;
+    NodeStyle.GapBottom := seGapBottom.Value;  // 0;
     NodeStyle.CaptionPosition := lgncBottom;
-    NodeStyle.CaptionScale := 1.0;
+    NodeStyle.CaptionScale := seCaptionScale.Value;  //1.0;
 
     EdgeStyle.Shape := lgesStraight;
 
@@ -280,6 +290,24 @@ begin
     cdSource: btnSourceHierarchyClick(nil);
   end;
 end;
+
+procedure TForm1.seCaptionScaleChange(Sender: TObject);
+begin
+  LvlGraphControl1.NodeStyle.CaptionScale := seCaptionScale.Value;
+end;
+
+procedure TForm1.seGapChange(Sender: TObject);
+begin
+  LvlGraphControl1.Clear;
+
+  if Sender = seGapTop then
+    LvlGraphControl1.NodeStyle.GapTop := seGapTop.Value;
+  if Sender = seGapBottom then
+    LvlGraphControl1.NodeStyle.GapBottom := seGapBottom.Value;
+
+  RecreateGraph;
+end;
+
 
 end.
 
