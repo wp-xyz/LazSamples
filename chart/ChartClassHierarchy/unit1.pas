@@ -93,9 +93,6 @@ var
 begin
   LvlGraphControl1.Clear;
 
-  for i:=0 to LvlGraphControl1.Graph.NodeCount-1 do
-    LvlGraphControl1.Graph.Nodes[i].DrawPosition := 0;
-
   if cbReduceBackEdges.Checked then
     LvlGraphControl1.Options := LvlGraphControl1.Options + [lgoReduceBackEdges]
   else
@@ -110,9 +107,6 @@ var
 begin
   LvlGraphcontrol1.Clear;
 
-  for i:=0 to LvlGraphControl1.Graph.NodeCount-1 do
-    LvlGraphControl1.Graph.Nodes[i].DrawPosition := 0;
-
   if cbHighLevels.Checked then
     LvlGraphControl1.Options := LvlGraphControl1.Options + [lgoHighLevels]
   else
@@ -126,9 +120,6 @@ var
   i: Integer;
 begin
   LvlGraphControl1.Clear;
-
-  for i:=0 to LvlGraphControl1.Graph.NodeCount-1 do
-    LvlGraphControl1.Graph.Nodes[i].DrawPosition := 0;
 
   if cbStraightenGraph.Checked then
     LvlGraphControl1.Options := LvlGraphControl1.Options + [lgoStraightenGraph]
