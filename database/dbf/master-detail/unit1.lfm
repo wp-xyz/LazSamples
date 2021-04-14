@@ -1,0 +1,108 @@
+object Form1: TForm1
+  Left = 431
+  Height = 448
+  Top = 160
+  Width = 514
+  Caption = 'Form1'
+  ClientHeight = 448
+  ClientWidth = 514
+  OnCreate = FormCreate
+  LCLVersion = '2.1.0.0'
+  object DBGrid1: TDBGrid
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Bevel1
+    Left = 0
+    Height = 195
+    Top = 25
+    Width = 514
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Color = clWindow
+    Columns = <>
+    DataSource = dsMaster
+    TabOrder = 0
+  end
+  object DBGrid2: TDBGrid
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Label2
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 0
+    Height = 195
+    Top = 253
+    Width = 514
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    Color = clWindow
+    Columns = <>
+    DataSource = dsDetail
+    TabOrder = 1
+  end
+  object Bevel1: TBevel
+    AnchorSideTop.Control = Owner
+    AnchorSideTop.Side = asrCenter
+    Left = 179
+    Height = 8
+    Top = 220
+    Width = 50
+    Shape = bsSpacer
+  end
+  object Label1: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = Owner
+    Left = 205
+    Height = 25
+    Top = 0
+    Width = 105
+    Caption = 'Master table'
+    Font.Height = -19
+    ParentColor = False
+    ParentFont = False
+  end
+  object Label2: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = Bevel1
+    AnchorSideTop.Side = asrBottom
+    Left = 209
+    Height = 25
+    Top = 228
+    Width = 96
+    Caption = 'Detail table'
+    Font.Height = -19
+    ParentColor = False
+    ParentFont = False
+  end
+  object dbfMaster: TDbf
+    IndexDefs = <>
+    TableName = 'master.dbf'
+    TableLevel = 4
+    FilterOptions = []
+    Left = 416
+    Top = 23
+  end
+  object dbfDetail: TDbf
+    IndexDefs = <>
+    TableName = 'holdings.dbf'
+    TableLevel = 4
+    FilterOptions = []
+    Left = 416
+    Top = 248
+  end
+  object dsMaster: TDataSource
+    DataSet = dbfMaster
+    Left = 416
+    Top = 80
+  end
+  object dsDetail: TDataSource
+    DataSet = dbfDetail
+    Left = 416
+    Top = 312
+  end
+end
