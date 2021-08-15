@@ -1,0 +1,96 @@
+object Form1: TForm1
+  Left = 280
+  Height = 389
+  Top = 130
+  Width = 877
+  Caption = 'Form1'
+  ClientHeight = 389
+  ClientWidth = 877
+  OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
+  object DBNavigator1: TDBNavigator
+    Left = 8
+    Height = 25
+    Top = 5
+    Width = 241
+    BevelOuter = bvNone
+    ChildSizing.EnlargeHorizontal = crsScaleChilds
+    ChildSizing.EnlargeVertical = crsScaleChilds
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 100
+    ClientHeight = 25
+    ClientWidth = 241
+    DataSource = DsArticles
+    Options = []
+    TabOrder = 0
+  end
+  object DBGrid1: TDBGrid
+    AnchorSideLeft.Control = Owner
+    AnchorSideRight.Control = DBMemo1
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 4
+    Height = 349
+    Hint = 'Grid'
+    Top = 36
+    Width = 656
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 4
+    BorderSpacing.Right = 4
+    BorderSpacing.Bottom = 4
+    Color = clWindow
+    Columns = <>
+    DataSource = DsArticles
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgTruncCellHints, dgCellEllipsis, dgThumbTracking]
+    ShowHint = True
+    TabOrder = 1
+    OnDrawColumnCell = DBGrid1DrawColumnCell
+    OnGetCellHint = DBGrid1GetCellHint
+  end
+  object DBMemo1: TDBMemo
+    AnchorSideTop.Control = DBGrid1
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 664
+    Height = 349
+    Top = 36
+    Width = 213
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Bottom = 4
+    DataSource = DsArticles
+    TabOrder = 2
+  end
+  object SQLite3Connection1: TSQLite3Connection
+    Connected = False
+    LoginPrompt = False
+    KeepConnection = False
+    Transaction = SQLTransaction1
+    AlwaysUseBigint = False
+    Left = 66
+    Top = 88
+  end
+  object QryArticles: TSQLQuery
+    FieldDefs = <>
+    Database = SQLite3Connection1
+    Transaction = SQLTransaction1
+    Params = <>
+    Left = 192
+    Top = 88
+  end
+  object SQLTransaction1: TSQLTransaction
+    Active = False
+    Action = caCommit
+    Database = SQLite3Connection1
+    Left = 66
+    Top = 152
+  end
+  object DsArticles: TDataSource
+    DataSet = QryArticles
+    Left = 192
+    Top = 152
+  end
+end
