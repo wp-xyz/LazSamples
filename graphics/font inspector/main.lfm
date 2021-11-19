@@ -1,0 +1,157 @@
+object MainForm: TMainForm
+  Left = 348
+  Height = 650
+  Top = 130
+  Width = 468
+  Caption = 'Font Inspector'
+  ClientHeight = 650
+  ClientWidth = 468
+  Font.Height = -12
+  OnActivate = FormActivate
+  OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
+  object ValueListEditor1: TValueListEditor
+    AnchorSideLeft.Control = cbFontName
+    AnchorSideTop.Control = cbFontName
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = cbFontSize
+    AnchorSideRight.Side = asrBottom
+    Left = 16
+    Height = 405
+    Top = 76
+    Width = 436
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 16
+    BorderSpacing.Bottom = 16
+    DefaultColWidth = 150
+    FixedCols = 0
+    RowCount = 2
+    TabOrder = 2
+    OnPrepareCanvas = ValueListEditor1PrepareCanvas
+    Options = [goFixedVertLine, goFixedHorzLine, goHorzLine, goColSizing, goAlwaysShowEditor, goThumbTracking]
+    TitleCaptions.Strings = (
+      'Property'
+      'Value'
+    )
+    ColWidths = (
+      150
+      282
+    )
+  end
+  object cbFontName: TComboBox
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Label1
+    AnchorSideTop.Side = asrBottom
+    Left = 16
+    Height = 23
+    Top = 37
+    Width = 359
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 16
+    BorderSpacing.Top = 2
+    DropDownCount = 32
+    ItemHeight = 15
+    OnChange = cbFontNameChange
+    Style = csDropDownList
+    TabOrder = 0
+  end
+  object Label1: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    AnchorSideBottom.Control = cbFontName
+    Left = 16
+    Height = 15
+    Top = 16
+    Width = 56
+    BorderSpacing.Left = 16
+    BorderSpacing.Top = 16
+    BorderSpacing.Bottom = 6
+    Caption = 'Select font'
+  end
+  object TestPanel: TPanel
+    AnchorSideLeft.Control = ValueListEditor1
+    AnchorSideTop.Control = ValueListEditor1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = ValueListEditor1
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 16
+    Height = 137
+    Top = 497
+    Width = 436
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Bottom = 16
+    BevelInner = bvRaised
+    BevelOuter = bvLowered
+    ClientHeight = 137
+    ClientWidth = 436
+    TabOrder = 3
+    object PaintBox: TPaintBox
+      AnchorSideBottom.Side = asrBottom
+      Left = 2
+      Height = 133
+      Top = 2
+      Width = 432
+      Align = alClient
+      Font.Height = -48
+      ParentFont = False
+      OnPaint = PaintBoxPaint
+    end
+  end
+  object cbFontSize: TComboBox
+    AnchorSideLeft.Control = cbFontName
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = cbFontName
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 383
+    Height = 23
+    Top = 37
+    Width = 69
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 8
+    BorderSpacing.Right = 16
+    ItemHeight = 15
+    ItemIndex = 10
+    Items.Strings = (
+      '8'
+      '10'
+      '12'
+      '14'
+      '16'
+      '18'
+      '20'
+      '24'
+      '28'
+      '32'
+      '36'
+      '40'
+      '48'
+      '56'
+      '64'
+      '72'
+      '80'
+      '90'
+      '100'
+      '110'
+      '120'
+    )
+    OnChange = cbFontSizeChange
+    Style = csDropDownList
+    TabOrder = 1
+    Text = '36'
+  end
+  object Label2: TLabel
+    AnchorSideLeft.Control = cbFontSize
+    AnchorSideTop.Control = Label1
+    AnchorSideBottom.Control = cbFontName
+    Left = 383
+    Height = 15
+    Top = 16
+    Width = 46
+    BorderSpacing.Bottom = 2
+    Caption = 'Font size'
+  end
+end
