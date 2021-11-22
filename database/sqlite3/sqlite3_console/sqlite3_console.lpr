@@ -24,7 +24,7 @@ begin
   Randomize;
 
   fn := GetCurrentDir + '/test.db';
-  //DeleteFile(fn);  // uncomment to begin with new empty db
+  DeleteFile(fn);  // uncomment to begin with new empty db
 
   { Set up databse components }
   SQLiteConn := TSQLite3Connection.Create(nil);
@@ -40,18 +40,22 @@ begin
   SQLQuery.SQL.Text := 'CREATE TABLE IF NOT EXISTS "tbl_data" ('+
     '"ID" INTEGER NOT NULL UNIQUE, '+
     '"StringData" TEXT, '+
+    '"IntegerData" INTEGER, ' +
     'PRIMARY KEY("ID")'+
   ')';
   SQLQuery.ExecSQL;
   Transaction.Commit;
 
   { Add three records }
-  SQLQuery.SQL.Text := 'INSERT INTO tbl_data (StringData) VALUES (:ParamData);';
-  SQLQuery.ParamByName('ParamData').AsString := RandomString(Random(20) + 1);
+  SQLQuery.SQL.Text := 'INSERT INTO tbl_data (StringData, IntegerData) VALUES (:StringData, :IntegerData);';
+  SQLQuery.ParamByName('StringData').AsString := RandomString(Random(20) + 1);
+  SQLQuery.ParamByName('IntegerData').AsInteger := Random(1000);
   SQLQuery.ExecSQL;
-  SQLQuery.ParamByName('ParamData').AsString := RandomString(Random(20) + 1);
+  SQLQuery.ParamByName('StringData').AsString := RandomString(Random(20) + 1);
+  SQLQuery.ParamByName('IntegerData').AsInteger := Random(1000);
   SQLQuery.ExecSQL;
-  SQLQuery.ParamByName('ParamData').AsString := RandomString(Random(20) + 1);
+  SQLQuery.ParamByName('StringData').AsString := RandomString(Random(20) + 1);
+  SQLQuery.ParamByName('IntegerData').AsInteger := Random(1000);
   SQLQuery.ExecSQL;
   Transaction.Commit;
 
@@ -59,12 +63,13 @@ begin
   SQLQuery.SQL.Text:='SELECT * FROM tbl_data;';
   SQLQuery.Open;
   SQLQuery.First;
-  WriteLn('ID':10, ' StringData':20);
-  WriteLn('---------- --------------------');
+  WriteLn('ID':10, 'StringData':20, 'IntegerData':15);
+  WriteLn('---------- ------------------- --------------');
   while not SQLQuery.EoF do
   begin
     Write(SQLQuery.FieldByName('ID').AsInteger:10);
-    WriteLn(SQLQuery.FieldByName('StringData').AsString:20);
+    Write(SQLQuery.FieldByName('StringData').AsString:20);
+    WriteLn(SQLQuery.FieldByName('IntegerData').AsString:15);
     SQLQuery.Next;
   end;
   WriteLn;
@@ -73,10 +78,9 @@ begin
   SQLQuery.Close;
   SQLQuery.SQL.Text:='SELECT * FROM tbl_data WHERE ID=3;';
   SQLQuery.Open;
-  Writeln(
-    'StringData for ID=',SQLQuery.FieldByName('ID').AsString,': ',
-    '"' + SQLQuery.FieldByName('StringData').AsString + '"'
-  );
+  WriteLn('Searching for ID=3...');
+  Writeln('  Found StringData:  ', '"' + SQLQuery.FieldByName('StringData').AsString + '"');
+  Writeln('  Found IntegerData: ', SQLQuery.FieldByName('IntegerData').AsString);
   SQLQuery.Close;
 
   { Clean up }
