@@ -14,13 +14,14 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
-    btnSampleText: TButton;
+    btnRestoreSampleTexts: TButton;
     cbFontName: TComboBox;
     cbFontSize: TComboBox;
     cbBold: TCheckBox;
     cbItalic: TCheckBox;
     cbUnderline: TCheckBox;
     cbStrikeout: TCheckBox;
+    cbSampleText: TComboBox;
     gbFont: TGroupBox;
     gbSample: TGroupBox;
     Label1: TLabel;
@@ -29,13 +30,16 @@ type
     Panel1: TPanel;
     TabControl: TTabControl;
     ValueListEditor1: TValueListEditor;
-    procedure btnSampleTextClick(Sender: TObject);
+    procedure btnRestoreSampleTextsClick(Sender: TObject);
     procedure cbBoldChange(Sender: TObject);
     procedure cbFontNameChange(Sender: TObject);
     procedure cbFontSizeChange(Sender: TObject);
     procedure cbItalicChange(Sender: TObject);
+    procedure cbSampleTextEditingDone(Sender: TObject);
+    procedure cbSampleTextSelect(Sender: TObject);
     procedure cbStrikeoutChange(Sender: TObject);
     procedure cbUnderlineChange(Sender: TObject);
+    procedure cbSampleTextChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure PaintBoxPaint(Sender: TObject);
@@ -43,9 +47,9 @@ type
     procedure ValueListEditor1PrepareCanvas(sender: TObject; aCol,
       aRow: Integer; aState: TGridDrawState);
   private
-    FSampleText: String;
     FUpdateNeeded: Boolean;
     procedure ListFont(AFontData: TFontData; ATextMetric: TTextMetric);
+    procedure RestoreSampleText;
 
   public
 
@@ -59,15 +63,54 @@ implementation
 {$R *.lfm}
 
 uses
-  Math, TypInfo, GraphUtil;
+  Math, TypInfo;
+
+procedure BoldGroupbox(AGroupbox: TCustomGroupbox);
+var
+  i: Integer;
+  propinfo: PPropInfo;
+  cntrl: TControl;
+  fnt: TFont;
+begin
+  for i:=0 to AGroupbox.ControlCount-1 do begin
+    cntrl := AGroupbox.Controls[i];
+    propinfo := GetPropInfo(cntrl, 'ParentFont');
+    if propinfo <> nil then
+      SetOrdProp(cntrl, propinfo, Longint(false));
+    propinfo := GetPropInfo(cntrl, 'Font');
+    if propinfo <> nil then begin
+      fnt := TFont(GetObjectProp(cntrl, 'Font'));
+      fnt.Style := [];
+      SetObjectProp(cntrl, 'Font', fnt);
+    end;
+  end;
+  AGroupbox.Font.Style := [fsBold];
+end;
+
+
+{ Requests painting of the headers of TCustomGroupbox descendants (TGroupbox,
+  TRadiogroup, TCheckgroup) in bold. To be called from form or frame after
+  construction with self as parameter. }
+procedure BoldControl(AControl: TControl);
+var
+  i, n: Integer;
+  s: String;
+begin
+  s := AControl.Name;
+  if (AControl is TToolbar) then
+    // skip all the toolbuttons
+  else
+  if (AControl is TCustomGroupbox) then
+    BoldGroupbox(AControl as TCustomGroupbox)
+  else begin
+    n := AControl.ComponentCount;
+    for i:=0 to AControl.ComponentCount-1 do
+      if AControl.Components[i] is TControl then
+        BoldControl(AControl.Components[i] as TControl)
+  end;
+end;
 
 { TMainForm }
-
-procedure TMainForm.btnSampleTextClick(Sender: TObject);
-begin
-  FSampleText := InputBox('Enter sample text', 'Text:', FSampleText);
-  Paintbox.Invalidate;
-end;
 
 procedure TMainForm.cbBoldChange(Sender: TObject);
 begin
@@ -75,6 +118,11 @@ begin
     Paintbox.Font.Style := Paintbox.Font.Style + [fsBold]
   else
     Paintbox.Font.Style := Paintbox.Font.Style - [fsBold]
+end;
+
+procedure TMainForm.btnRestoreSampleTextsClick(Sender: TObject);
+begin
+  RestoreSampleText;
 end;
 
 procedure TMainForm.cbFontNameChange(Sender: TObject);
@@ -104,12 +152,33 @@ begin
     Paintbox.Font.Style := Paintbox.Font.Style - [fsItalic]
 end;
 
+procedure TMainForm.cbSampleTextEditingDone(Sender: TObject);
+var
+  idx: Integer;
+begin
+  if cbSampleText.Text = '' then
+    exit;
+  idx := cbSampleText.Items.IndexOf(cbSampleText.Text);
+  if idx = -1 then
+    cbSampleText.Items.Insert(0, cbSampleText.Text);
+end;
+
+procedure TMainForm.cbSampleTextSelect(Sender: TObject);
+begin
+  cbSampleText.Text := cbSampleText.Items[cbSampleText.ItemIndex];
+end;
+
 procedure TMainForm.cbUnderlineChange(Sender: TObject);
 begin
   if cbUnderline.Checked then
     Paintbox.Font.Style := Paintbox.Font.Style + [fsUnderline]
   else
     Paintbox.Font.Style := Paintbox.Font.Style - [fsUnderline]
+end;
+
+procedure TMainForm.cbSampleTextChange(Sender: TObject);
+begin
+  Paintbox.Invalidate;
 end;
 
 procedure TMainForm.FormActivate(Sender: TObject);
@@ -133,7 +202,9 @@ begin
   ValueListEditor1.DefaultRowHeight := abs(ValueListEditor1.Font.Height)+2*varCellPadding;
   ValueListEditor1.Constraints.MinHeight := 24*ValueListEditor1.DefaultRowHeight;
   
-  FSampleText := 'AghjyÄŠŢ';
+  BoldControl(self);
+  RestoreSampleText;
+  
   cbFontName.Items.Assign(Screen.Fonts);
   cbFontName.Items.Insert(0, 'default');
   cbFontName.ItemIndex := 0;
@@ -145,6 +216,7 @@ procedure TMainForm.ListFont(AFontData: TFontData; ATextMetric: TTextMetric);
 var
   fd: TFontData absolute AFontData;
   tm: TTextMetric;
+  s: String;
 begin
   tm := ATextMetric;
   with ValueListEditor1 do
@@ -182,7 +254,22 @@ begin
       InsertRow('Underlined', IntToStr(tm.tmUnderlined), true);
       InsertRow('Struck out', IntToStr(tm.tmStruckOut), true);
       InsertRow('Pitch and Family', IntToStr(tm.tmPitchAndFamily), true);
-      InsertRow('CharSet', IntToStr(tm.tmCharSet), true);
+      case tm.tmPitchAndFamily and $01 of
+        0: s := 'fixed pitch';
+        1: s := 'variable pitch';
+      end;
+      if tm.tmPitchAndFamily and $02 = $02 then
+        s := s + '; vector';
+      if tm.tmPitchAndFamily and $04 = $04 then
+        s := s + '; true-type';
+      if tm.tmPitchAndFamily and $08 = $08 then
+        s := s + '; device';
+      InsertRow('  Pitch', s, true);
+      {
+      if tm.tmPitchAndFamily and $F0 <> 0 then
+        InsertRow('  Family', CharsetToString((tm.tmPitchAndFamily and $F0) shr 4), true);
+        }
+      InsertRow('CharSet', Format('%s (%d)', [CharsetToString(tm.tmCharset), tm.tmCharSet]), true);
     end;
   end;
 end;
@@ -190,6 +277,7 @@ end;
 procedure TMainForm.PaintBoxPaint(Sender: TObject);
 var
   x, y, yt, h: Integer;
+  R: TRect;
   tm: TTextMetric;
 begin
   x := 0;
@@ -197,17 +285,18 @@ begin
   with PaintBox do
   begin
     Canvas.Brush.Style := bsClear;
-    Canvas.Brush.Color := clWindow; //GetHighlightColor(ColorToRgb(clSilver), 40);
+    Canvas.Brush.Color := clWindow; 
     Canvas.FillRect(0, 0, Width, Height);
     
     Canvas.Font.Assign(Font);
     GetTextMetrics(Canvas.Handle, tm);
     
     y := (Height - tm.tmHeight) div 2;
-//    Canvas.Brush.Color := clWhite;
-//    Canvas.FillRect(10, y, Width, y+tm.tmHeight);
     
-    Canvas.TextOut(x, y, FSampleText);
+    R := Rect(x, y, x + Canvas.TextWidth(cbSampleText.Text), y + Canvas.TextHeight('Tg'));
+    DrawText(Canvas.Handle, PChar(cbSampleText.Text), length(cbSampleText.Text), R, DT_NOCLIP);
+
+//    Canvas.TextOut(x, y, cbSampleText.Text);  // does not always show unicode chars.
 
     Canvas.Pen.Color := clMedGray;
     Canvas.Line(0, y, Width, y);
@@ -260,6 +349,29 @@ begin
   begin
     ListFont(GetFontData(Paintbox.Font.Handle), tm);
     FUpdateNeeded := false;
+  end;
+end;
+
+procedure TMainForm.RestoreSampleText;
+var
+  idx: Integer;
+begin
+  idx := cbSampleText.ItemIndex;
+  cbSampleText.Items.BeginUpdate;
+  try
+    cbSampleText.items.Clear;
+    cbSampleText.Items.Add('AghjyÄŠŢ');
+    cbSampleText.Items.Add('ABCDEFG');
+    cbSampleText.Items.Add('abcdefg');
+    cbSampleText.Items.Add('123456');
+    cbSampleText.Items.Add('Λορεμ ιπσθμ');
+    cbSampleText.Items.Add('Лорем ипсум');
+    if idx = -1 then
+      cbSampleText.ItemIndex := 0
+    else
+      cbSampleText.ItemIndex := idx;
+  finally
+    cbSampleText.Items.EndUpdate;
   end;
 end;
 
