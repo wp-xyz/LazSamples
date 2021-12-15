@@ -88,6 +88,8 @@ begin
   Transaction.Free;
   SQLiteConn.Free;
 
+  WriteLn();
+  WriteLn('Press ENTER to close...');
   ReadLn;
 end.
 
