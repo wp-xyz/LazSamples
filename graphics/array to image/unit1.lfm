@@ -1,0 +1,30 @@
+object Form1: TForm1
+  Left = 338
+  Height = 325
+  Top = 127
+  Width = 273
+  BorderStyle = bsDialog
+  Caption = 'Form1'
+  ClientHeight = 325
+  ClientWidth = 273
+  OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
+  object Image1: TImage
+    Left = 8
+    Height = 256
+    Top = 8
+    Width = 256
+  end
+  object Button1: TButton
+    AnchorSideLeft.Control = Image1
+    AnchorSideLeft.Side = asrCenter
+    Left = 46
+    Height = 25
+    Top = 280
+    Width = 180
+    AutoSize = True
+    Caption = 'Create image from data array'
+    OnClick = Button1Click
+    TabOrder = 0
+  end
+end
