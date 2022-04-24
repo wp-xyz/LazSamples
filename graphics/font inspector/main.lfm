@@ -112,6 +112,7 @@ object MainForm: TMainForm
       BorderSpacing.Top = 8
       Caption = 'Font name'
       Font.Height = -12
+      ParentColor = False
       ParentFont = False
     end
     object cbFontSize: TComboBox
@@ -167,6 +168,7 @@ object MainForm: TMainForm
       Width = 46
       Caption = 'Font size'
       Font.Height = -12
+      ParentColor = False
       ParentFont = False
     end
     object cbBold: TCheckBox

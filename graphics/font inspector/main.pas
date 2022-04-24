@@ -222,6 +222,7 @@ begin
   with ValueListEditor1 do
   begin
     Clear;
+    Strings.NameValueSeparator := ':';
     if TabControl.TabIndex = 0 then // Font Data
     begin
       InsertRow('Handle', IntToStr(fd.Handle), true);
@@ -308,6 +309,7 @@ begin
     Canvas.Brush.Style := bsClear;
     Canvas.Font.Name := 'DejaVu Sans';
     Canvas.Font.Size := 9;
+    Canvas.Font.Style := [];
     h := Canvas.TextHeight('Tg');
     
     x := Width-10;
