@@ -51,7 +51,8 @@ end;
 
 procedure THTMLTextExtractor.FoundTagHandler(NoCaseTag, ActualTag: String);
 begin
-  if NoCaseTag = '<BODY>' then FInBody := true;
+  if pos('<BODY', NoCaseTag) = 1 then
+    FInBody := true;
 end;
 
 procedure THTMLTextExtractor.FoundTextHandler(AText: String);
