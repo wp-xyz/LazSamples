@@ -1,0 +1,283 @@
+object MainForm: TMainForm
+  Left = 804
+  Height = 354
+  Top = 187
+  Width = 274
+  AutoSize = True
+  BorderStyle = bsSingle
+  Caption = 'WAV Generator'
+  ClientHeight = 354
+  ClientWidth = 274
+  OnCreate = FormCreate
+  object btnWriteWAV: TButton
+    AnchorSideTop.Control = btnClose
+    AnchorSideRight.Control = btnClose
+    Left = 108
+    Height = 25
+    Top = 313
+    Width = 83
+    Anchors = [akTop, akRight]
+    AutoSize = True
+    BorderSpacing.Right = 12
+    Caption = 'Write WAV'
+    OnClick = btnWriteWAVClick
+    TabOrder = 1
+  end
+  object Panel1: TPanel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    Left = 16
+    Height = 267
+    Top = 16
+    Width = 242
+    AutoSize = True
+    BorderSpacing.Around = 16
+    BevelOuter = bvNone
+    ClientHeight = 267
+    ClientWidth = 242
+    TabOrder = 0
+    object tbFrequency: TTrackBar
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = lblFrequency
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = lblFrequencyValue
+      Left = 0
+      Height = 25
+      Top = 19
+      Width = 184
+      Max = 8
+      OnChange = tbFrequencyChange
+      Position = 4
+      BorderSpacing.Top = 4
+      TabOrder = 0
+    end
+    object lblFrequency: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = Panel1
+      Left = 0
+      Height = 15
+      Top = 0
+      Width = 55
+      Caption = 'Frequency'
+      Color = clDefault
+      ParentColor = False
+    end
+    object lblFrequencyValue: TLabel
+      AnchorSideLeft.Control = tbFrequency
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = tbFrequency
+      AnchorSideRight.Control = rgWaveForm
+      AnchorSideRight.Side = asrBottom
+      Left = 201
+      Height = 15
+      Top = 19
+      Width = 41
+      Anchors = [akTop, akRight]
+      BorderSpacing.Left = 8
+      Caption = '1000 Hz'
+      Color = clDefault
+      ParentColor = False
+    end
+    object rgChannels: TRadioGroup
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = seDuration
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 89
+      Top = 178
+      Width = 112
+      AutoFill = True
+      AutoSize = True
+      BorderSpacing.Top = 16
+      Caption = 'Channels'
+      ChildSizing.LeftRightSpacing = 12
+      ChildSizing.TopBottomSpacing = 6
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.ShrinkHorizontal = crsScaleChilds
+      ChildSizing.ShrinkVertical = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 69
+      ClientWidth = 108
+      ItemIndex = 0
+      Items.Strings = (
+        'mono'
+        'left only'
+        'right only     '
+      )
+      TabOrder = 3
+    end
+    object rgWaveForm: TRadioGroup
+      AnchorSideLeft.Control = rgChannels
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = rgChannels
+      AnchorSideBottom.Control = rgChannels
+      AnchorSideBottom.Side = asrBottom
+      Left = 136
+      Height = 89
+      Top = 178
+      Width = 106
+      Anchors = [akTop, akLeft, akBottom]
+      AutoFill = True
+      AutoSize = True
+      BorderSpacing.Left = 24
+      Caption = 'Wave form'
+      ChildSizing.LeftRightSpacing = 12
+      ChildSizing.TopBottomSpacing = 6
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.EnlargeVertical = crsHomogenousChildResize
+      ChildSizing.ShrinkHorizontal = crsScaleChilds
+      ChildSizing.ShrinkVertical = crsScaleChilds
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 1
+      ClientHeight = 69
+      ClientWidth = 102
+      ItemIndex = 0
+      Items.Strings = (
+        'sine'
+        'trianglular'
+        'rectangular'
+      )
+      OnClick = rgWaveFormClick
+      TabOrder = 4
+    end
+    object lblAmplitude: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = tbFrequency
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 60
+      Width = 56
+      BorderSpacing.Top = 16
+      Caption = 'Amplitude'
+      Color = clDefault
+      ParentColor = False
+    end
+    object tbAmplitude: TTrackBar
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = lblAmplitude
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = tbFrequency
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 25
+      Top = 79
+      Width = 184
+      OnChange = tbAmplitudeChange
+      Position = 5
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 4
+      TabOrder = 1
+    end
+    object lblAmplitudeValue: TLabel
+      AnchorSideLeft.Control = tbAmplitude
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = tbAmplitude
+      AnchorSideRight.Control = rgWaveForm
+      AnchorSideRight.Side = asrBottom
+      Left = 211
+      Height = 15
+      Top = 79
+      Width = 31
+      Anchors = [akTop, akRight]
+      BorderSpacing.Left = 8
+      Caption = '100 %'
+      Color = clDefault
+      ParentColor = False
+    end
+    object lblDuration: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = tbAmplitude
+      AnchorSideTop.Side = asrBottom
+      Left = 0
+      Height = 15
+      Top = 120
+      Width = 62
+      BorderSpacing.Top = 16
+      Caption = 'Duration (s)'
+    end
+    object seDuration: TFloatSpinEdit
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = lblDuration
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = rgChannels
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 23
+      Top = 139
+      Width = 112
+      Alignment = taRightJustify
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 4
+      DecimalPlaces = 3
+      MaxValue = 100
+      TabOrder = 2
+      Value = 10
+    end
+    object lblDutyCycle: TLabel
+      AnchorSideLeft.Control = rgWaveForm
+      AnchorSideTop.Control = tbAmplitude
+      AnchorSideTop.Side = asrBottom
+      Left = 136
+      Height = 15
+      Top = 120
+      Width = 49
+      BorderSpacing.Top = 16
+      Caption = 'Duty cyle'
+      Visible = False
+    end
+    object seDutyCycle: TFloatSpinEdit
+      AnchorSideLeft.Control = rgWaveForm
+      AnchorSideTop.Control = lblDutyCycle
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = rgWaveForm
+      AnchorSideRight.Side = asrBottom
+      Left = 136
+      Height = 23
+      Top = 139
+      Width = 106
+      Alignment = taRightJustify
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 4
+      DecimalPlaces = 3
+      MaxValue = 1
+      TabOrder = 5
+      Value = 0.5
+      Visible = False
+    end
+  end
+  object btnClose: TButton
+    AnchorSideTop.Control = Bevel1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Panel1
+    AnchorSideRight.Side = asrBottom
+    Left = 203
+    Height = 25
+    Top = 313
+    Width = 55
+    Anchors = [akTop, akRight]
+    AutoSize = True
+    BorderSpacing.Top = 12
+    BorderSpacing.Bottom = 16
+    Caption = 'Close'
+    OnClick = btnCloseClick
+    TabOrder = 2
+  end
+  object Bevel1: TBevel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Panel1
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 6
+    Height = 2
+    Top = 299
+    Width = 262
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Left = 6
+    BorderSpacing.Right = 6
+    Shape = bsTopLine
+  end
+end
