@@ -356,6 +356,7 @@ object Form1: TForm1
       Height = 21
       Top = 464
       Width = 8
+      Shape = bsSpacer
     end
     object gbFixedCellsDividerLine: TGroupBox
       AnchorSideLeft.Control = Panel1
@@ -563,6 +564,7 @@ object Form1: TForm1
         Color = clAppWorkspace
         ParentColor = False
         TabOrder = 0
+        OnMouseWheel = Image1MouseWheel
         object Image1: TImage
           AnchorSideLeft.Control = ScrollBox1
           AnchorSideTop.Control = ScrollBox1
@@ -570,6 +572,7 @@ object Form1: TForm1
           Height = 90
           Top = 0
           Width = 90
+          OnMouseWheel = Image1MouseWheel
         end
       end
       object ToolBar1: TToolBar

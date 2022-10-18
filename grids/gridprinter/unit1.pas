@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Grids, ExtCtrls,
-  StdCtrls, ComCtrls, Spin, Buttons, PrintersDlgs, GridPrn;
+  StdCtrls, ComCtrls, Spin, Buttons, PrintersDlgs, GridPrn, Types;
 
 type
 
@@ -82,6 +82,8 @@ type
     procedure edFooterTextChange(Sender: TObject);
     procedure edHeaderTextChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure Image1MouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure seBorderLineWidthChange(Sender: TObject);
     procedure seFixedCellsDividerLineWidthChange(Sender: TObject);
     procedure seGridLineWidthChange(Sender: TObject);
@@ -97,6 +99,7 @@ type
   private
     FGridPrinter: TGridPrinter;
     FPageNo: Integer;
+    FZoom: Integer;
     procedure PopulateGrid;
     procedure PopulateGrid_Columns;
     procedure PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid; ACol,
@@ -122,12 +125,9 @@ uses
 procedure TForm1.ShowPreview(APageNo: Integer);
 var
   bmp: TBitmap;
-  zoom: String;
 begin
   FPageNo := APageNo;
-  zoom := cmbPercent.Items[cmbPercent.ItemIndex];
-  Delete(zoom, Length(zoom), 1);
-  bmp := FGridPrinter.CreatePreviewBitmap(FPageNo, StrToInt(zoom));
+  bmp := FGridPrinter.CreatePreviewBitmap(FPageNo, FZoom);
   try
     Image1.Width := bmp.Width;
     Image1.Height := bmp.Height;
@@ -244,8 +244,13 @@ begin
 end;
 
 procedure TForm1.cmbPercentChange(Sender: TObject);
+var
+  zoomStr: String;
 begin
-  ShowPreview(FPageNo);
+  zoomStr := cmbPercent.Items[cmbPercent.ItemIndex];
+  Delete(zoomStr, Length(zoomStr), 1);
+  FZoom := StrToInt(zoomStr);
+
   ShowPreview(FPageNo);
 end;
 
@@ -291,7 +296,21 @@ begin
   cbDefaultGridLineColor.Checked := FGridPrinter.GridLineColor = clDefault;
   seGridLineWidth.Value := FGridPrinter.GridLineWidth;
 
+  FZoom := 100;
   ShowPreview(1);
+end;
+
+procedure TForm1.Image1MouseWheel(Sender: TObject; Shift: TShiftState;
+  WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+begin
+  if (ssCtrl in Shift) then
+  begin
+    if WheelDelta > 0 then
+      FZoom := round(FZoom * 1.1)
+    else
+      FZoom := round(FZoom / 1.1);
+    ShowPreview(FPageNo);
+  end;
 end;
 
 procedure TForm1.seBorderLineWidthChange(Sender: TObject);
@@ -431,14 +450,14 @@ begin
     StringGrid1.Cells[1, r] := 'Test';
   end;
   // Populate cells with some dummy text
-  for r := 1 to StringGrid1.RowCount-1 do
-    for c := 1 to StringGrid1.ColCount-1 do
-      StringGrid1.Cells[c, r] := Format('C%d R%d', [c, r]);
+  for r := StringGrid1.FixedRows to StringGrid1.RowCount-1 do
+    for c := StringGrid1.FixedCols to StringGrid1.ColCount-1 do
+      StringGrid1.Cells[c, r] := Format('C%d R%d', [c - StringGrid1.FixedCols + 1, r]);
 
   // String in col=2, row=5 is interpreted as cell background color
   StringGrid1.cells[2, 5] := 'clYellow';
 
-  // Long text in col=5 and 6, row=2
+  // Long text in cols=5, 6, 7, row=2
   StringGrid1.Cells[5, 2] := StringGrid1.Cells[5, 2] + ' This is a long text.';
   StringGrid1.Cells[6, 2] := StringGrid1.Cells[6, 2] + ' This is a long text.';
   StringGrid1.Cells[7, 2] := StringGrid1.Cells[7, 2] + ' This is a long text.';
@@ -447,8 +466,8 @@ begin
   StringGrid1.RowHeights[2] := 2* StringGrid1.DefaultRowHeight;
   StringGrid1.RowHeights[4] := 40;
 
-  // Different col width in col 6
-  StringGrid1.ColWidths[6] := 120;
+  // Different col width in col 5
+  StringGrid1.ColWidths[5] := 150;
 end;
 
 procedure TForm1.PopulateGrid_Columns;
