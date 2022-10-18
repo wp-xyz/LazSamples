@@ -84,6 +84,8 @@ type
     FPageBreakCols: array of Integer;  // Indices of first columns on new page
     FPageNumber: Integer;
     FPageCount: Integer;
+    FPixelsPerInchX: Integer;
+    FPixelsPerInchY: Integer;
     FColCount: Integer;
     FRowCount: Integer;
     FFixedCols: Integer;
@@ -114,6 +116,8 @@ type
     destructor Destroy; override;
     function GetCellText(ACol, ARow: Integer): String; virtual;
     procedure Print;
+    function ScaleX(AValue: Integer): Integer; inline;
+    function ScaleY(AValue: Integer): Integer; inline;
     property Footer[AIndex: TGridPrnHeaderFooterPart]: string read GetFooter write SetFooter;
     property Header[AIndex: TGridPrnHeaderFooterPart]: string read GetHeader write SetHeader;
   published
@@ -408,19 +412,20 @@ begin
   Printer.Orientation := FOrientation;
   Printer.BeginDoc;
   try
+    FPixelsPerInchX := Printer.XDPI;
+    FPixelsPerInchY := Printer.YDPI;
     FPageWidth := Printer.PageWidth;
     FPageHeight := Printer.PageHeight;
+    FFactorX := FPixelsPerInchX / ScreenInfo.PixelsPerInchX;
+    FFactorY := FPixelsPerInchY / ScreenInfo.PixelsPerInchY;
 
-    FFactorX := Printer.XDPI / ScreenInfo.PixelsPerInchX;
-    FFactorY := Printer.YDPI / ScreenInfo.PixelsPerInchY;
-
-    FLeftMarginPx := mm2px(FMargins.LeftMargin, Printer.XDPI);
-    FTopMarginPx := mm2px(FMargins.TopMargin, Printer.YDPI);
-    FRightMarginPx := mm2px(FMargins.RightMargin, Printer.XDPI);
-    FBottomMarginPx := mm2px(FMargins.BottomMargin, Printer.YDPI);
-    FHeaderMarginPx := mm2px(FMargins.HeaderMargin, Printer.YDPI);
-    FFooterMarginPx := mm2px(FMargins.FooterMargin, Printer.YDPI);
-    FPadding := round(FFactorX * varCellPadding);
+    FLeftMarginPx := mm2px(FMargins.LeftMargin, FPixelsPerInchX);
+    FTopMarginPx := mm2px(FMargins.TopMargin, FPixelsPerInchY);
+    FRightMarginPx := mm2px(FMargins.RightMargin, FPixelsPerInchX);
+    FBottomMarginPx := mm2px(FMargins.BottomMargin, FPixelsPerInchY);
+    FHeaderMarginPx := mm2px(FMargins.HeaderMargin, FPixelsPerInchY);
+    FFooterMarginPx := mm2px(FMargins.FooterMargin, FPixelsPerInchY);
+    FPadding := ScaleX(varCellPadding);
 
     ScaleColWidths;
     ScaleRowHeights;
@@ -547,12 +552,12 @@ var
 begin
   details := ThemeServices.GetElementDetails(arrtb[ACheckState]);
   cSize := ThemeServices.GetDetailSize(Details);
-  cSize.cx := round(FFactorX * cSize.cx);
-  cSize.cy := round(FFactorY * cSize.cy);
+  cSize.cx := ScaleX(cSize.cx);
+  cSize.cy := ScaleY(cSize.cy);
   R.Left := (ARect.Left + ARect.Right - cSize.cx) div 2;
   R.Top := (ARect.Top + ARect.Bottom - cSize.cy) div 2;
   R.BottomRight := Point(R.Left + cSize.cx, R.Top + cSize.cy);
-  ACanvas.Pen.Width := round(FFactorX * 1);
+  ACanvas.Pen.Width := ScaleX(1);
   ACanvas.Pen.Color := clBlack;
   ACanvas.Pen.Style := psSolid;
   if ACheckState = cbGrayed then
@@ -566,7 +571,7 @@ begin
   if ACheckState in [cbChecked, cbGrayed] then
   begin
     if ACheckState = cbGrayed then ACanvas.Pen.Color := clGray;
-    ACanvas.Pen.Width := round(FFactorX * 2);
+    ACanvas.Pen.Width := ScaleX(2);
     P[0] := Point(R.Left + cSize.cx div 6, R.Top + cSize.cy div 2);
     P[1] := Point(R.Left + cSize.cx div 3, R.Bottom - cSize.cy div 6);
     P[2] := Point(R.Right - cSize.cx div 6, R.Top + cSize.cy div 6);
@@ -664,7 +669,7 @@ begin
   if FFooterLine then
   begin
     ACanvas.Pen.Color := IfThen(FMonochrome or (FFooterLineColor = clDefault), clBlack, FFooterLineColor);
-    ACanvas.Pen.Width := IfThen(FFooterLineWidth = 0, round(FFactorY), FFooterlineWidth);
+    ACanvas.Pen.Width := IfThen(FFooterLineWidth = 0, ScaleY(1), FFooterlineWidth);
     ACanvas.Pen.Style := psSolid;
     ACanvas.Line(FLeftMarginPx, y, FPageWidth - FRightMarginPx, y);
   end;
@@ -757,11 +762,10 @@ begin
   // ... horizontal
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := IfThen(FMonochrome or (FFixedLineColor = clDefault), clBlack, FFixedLineColor);
-  ACanvas.Pen.Width := IfThen(FFixedLineWidth = 0, round(FFactorY * HEADERBORDER_LINEWIDTH), FFixedLineWidth);
+  ACanvas.Pen.Width := IfThen(FFixedLineWidth = 0, ScaleY(HEADERBORDER_LINEWIDTH), FFixedLineWidth);
   ACanvas.Line(FLeftMarginPx, FFixedRowPos, XEnd, FFixedRowPos);
   // ... vertical
-  ACanvas.Pen.Width := IfThen(FFixedLineWidth = 0, round(FFactorX * HEADERBORDER_LINEWIDTH), FFixedLineWidth);
-  ACanvas.Pen.Width := round(FFactorX * HEADERBORDER_LINEWIDTH);
+  ACanvas.Pen.Width := IfThen(FFixedLineWidth = 0, ScaleX(HEADERBORDER_LINEWIDTH), FFixedLineWidth);
   ACanvas.Line(FFixedColPos, FTopMarginPx, FFixedColPos, YEnd);
 
   // Print outer border lines
@@ -769,11 +773,11 @@ begin
   ACanvas.Pen.Color := IfThen(FMonochrome, clBlack,
     IfThen(FBorderLineColor = clDefault, clBlack, ColorToRGB(FBorderLineColor)));
   // ... horizontal
-  ACanvas.Pen.Width := IfThen(FBorderLineWidth = 0, round(FFactorY * OUTERBORDER_LINEWIDTH), FBorderLineWidth);
+  ACanvas.Pen.Width := IfThen(FBorderLineWidth = 0, ScaleY(OUTERBORDER_LINEWIDTH), FBorderLineWidth);
   ACanvas.Line(FLeftMarginPx, FTopMarginPx, XEnd, FTopMarginPx);
   ACanvas.Line(FLeftMarginPx, YEnd, XEnd, YEnd);
   // ... vertical
-  ACanvas.Pen.Width := IfThen(FBorderLineWidth = 0, round(FFactorX * OUTERBORDER_LINEWIDTH), FBorderLineWidth);
+  ACanvas.Pen.Width := IfThen(FBorderLineWidth = 0, ScaleX(OUTERBORDER_LINEWIDTH), FBorderLineWidth);
   ACanvas.Line(FLeftMarginPx, FTopMarginPx, FLeftMarginPx, YEnd);
   ACanvas.Line(XEnd, FTopMarginPx, XEnd, YEnd);
 end;
@@ -837,7 +841,7 @@ begin
   if FHeaderLine then
   begin
     ACanvas.Pen.Color := IfThen(FMonochrome or (FHeaderLineColor = clDefault), clBlack, FHeaderLineColor);
-    ACanvas.Pen.Width := IfThen(FHeaderLineWidth = 0, round(FFactorY), FHeaderlineWidth);
+    ACanvas.Pen.Width := IfThen(FHeaderLineWidth = 0, ScaleY(1), FHeaderlineWidth);
     ACanvas.Pen.Style := psSolid;
     ACanvas.Line(FLeftMarginPx, y+h, FPageWidth - FRightMarginPx, y+h);
   end;
@@ -914,7 +918,7 @@ begin
   sum := 0;
   for i := 0 to FColCount-1 do
   begin
-    w := round(TGridAccess(FGrid).ColWidths[i] * FFactorX);
+    w := ScaleX(TGridAccess(FGrid).ColWidths[i]);
     FColWidths[i] := w;
     sum := sum + w;
     if i < FFixedCols then
@@ -931,12 +935,22 @@ begin
   sum := 0;
   for i := 0 to FRowCount-1 do
   begin
-    h := round(TGridAccess(FGrid).RowHeights[i] * FFactorY);
+    h := ScaleY(TGridAccess(FGrid).RowHeights[i]);
     FRowHeights[i] := h;
     sum := sum + h;
     if i < FFixedRows then
       FFixedRowPos := FTopMarginPx + sum;
   end;
+end;
+
+function TGridPrinter.ScaleX(AValue: Integer): Integer;
+begin
+  Result := Round(FFactorX * AValue);
+end;
+
+function TGridPrinter.ScaleY(AValue: Integer): Integer;
+begin
+  Result := Round(FFactorY * AValue);
 end;
 
 procedure TGridPrinter.SelectFont(ACanvas: TCanvas; AFont: TFont);
