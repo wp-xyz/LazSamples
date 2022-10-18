@@ -1,63 +1,38 @@
 object Form1: TForm1
   Left = 331
-  Height = 404
+  Height = 535
   Top = 132
-  Width = 912
+  Width = 957
   Caption = 'Form1'
-  ClientHeight = 404
-  ClientWidth = 912
+  ClientHeight = 535
+  ClientWidth = 957
   OnCreate = FormCreate
-  object StringGrid1: TStringGrid
-    Left = 0
-    Height = 224
-    Top = 0
-    Width = 912
-    Align = alClient
-    AlternateColor = clSkyBlue
-    ColCount = 1
-    MouseWheelOption = mwGrid
-    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goThumbTracking, goSmoothScroll, goCellEllipsis]
-    ParentFont = False
-    TabOrder = 0
-    OnPrepareCanvas = StringGrid1PrepareCanvas
-  end
   object Panel1: TPanel
     Left = 6
-    Height = 168
-    Top = 230
-    Width = 900
-    Align = alBottom
+    Height = 523
+    Top = 6
+    Width = 223
+    Align = alLeft
     AutoSize = True
     BorderSpacing.Left = 6
     BorderSpacing.Top = 6
     BorderSpacing.Right = 6
     BorderSpacing.Bottom = 6
     BevelOuter = bvNone
-    ClientHeight = 168
-    ClientWidth = 900
-    TabOrder = 1
-    object Button1: TButton
-      AnchorSideTop.Control = Panel1
-      AnchorSideRight.Control = Panel1
-      AnchorSideRight.Side = asrBottom
-      Left = 801
-      Height = 42
-      Top = 6
-      Width = 99
-      Anchors = [akTop, akRight]
-      BorderSpacing.Top = 6
-      BorderSpacing.Bottom = 6
-      Caption = 'Print'
-      OnClick = Button1Click
-      TabOrder = 0
-    end
+    ClientHeight = 523
+    ClientWidth = 223
+    TabOrder = 0
     object cbPageOrientation: TComboBox
       AnchorSideLeft.Control = Panel1
-      AnchorSideTop.Control = Panel1
+      AnchorSideTop.Control = gbGridLines
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = Bevel1
       Left = 0
       Height = 23
-      Top = 0
-      Width = 183
+      Top = 459
+      Width = 107
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Top = 8
       ItemHeight = 15
       ItemIndex = 0
       Items.Strings = (
@@ -68,18 +43,20 @@ object Form1: TForm1
       )
       OnChange = cbPageOrientationChange
       Style = csDropDownList
-      TabOrder = 1
+      TabOrder = 0
       Text = 'Portrait'
     end
     object cbPrintOrder: TComboBox
-      AnchorSideLeft.Control = cbPageOrientation
+      AnchorSideLeft.Control = Bevel1
       AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = Panel1
-      Left = 199
+      AnchorSideTop.Control = cbPageOrientation
+      AnchorSideRight.Control = gbFooter
+      AnchorSideRight.Side = asrBottom
+      Left = 115
       Height = 23
-      Top = 0
-      Width = 172
-      BorderSpacing.Left = 16
+      Top = 459
+      Width = 108
+      Anchors = [akTop, akLeft, akRight]
       ItemHeight = 15
       ItemIndex = 0
       Items.Strings = (
@@ -88,213 +65,729 @@ object Form1: TForm1
       )
       OnChange = cbPrintOrderChange
       Style = csDropDownList
-      TabOrder = 2
+      TabOrder = 1
       Text = 'Print by rows'
     end
     object cbMonochrome: TCheckBox
-      AnchorSideLeft.Control = cbPrintOrder
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = Panel1
-      Left = 387
-      Height = 19
-      Top = 0
-      Width = 91
-      BorderSpacing.Left = 16
-      Caption = 'Monochrome'
-      OnChange = cbMonochromeChange
-      TabOrder = 3
-    end
-    object gbHeader: TGroupBox
-      AnchorSideLeft.Control = Panel1
+      AnchorSideLeft.Control = gbFooter
       AnchorSideTop.Control = cbPageOrientation
       AnchorSideTop.Side = asrBottom
       Left = 0
-      Height = 137
-      Top = 31
-      Width = 260
-      AutoSize = True
+      Height = 19
+      Top = 490
+      Width = 91
       BorderSpacing.Top = 8
+      Caption = 'Monochrome'
+      OnChange = cbMonochromeChange
+      TabOrder = 2
+    end
+    object gbHeader: TGroupBox
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = Panel1
+      AnchorSideRight.Control = gbBorderLine
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 98
+      Top = 0
+      Width = 223
+      Anchors = [akTop, akLeft, akRight]
       Caption = 'Header'
-      ChildSizing.LeftRightSpacing = 12
-      ChildSizing.TopBottomSpacing = 6
-      ChildSizing.HorizontalSpacing = 4
       ChildSizing.VerticalSpacing = 4
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 117
-      ClientWidth = 256
-      Constraints.MinWidth = 200
-      TabOrder = 4
-      object Label1: TLabel
+      ClientHeight = 78
+      ClientWidth = 219
+      TabOrder = 3
+      object lblHeaderText: TLabel
+        AnchorSideLeft.Control = gbHeader
+        AnchorSideTop.Control = gbHeader
+        Left = 12
+        Height = 15
+        Top = 0
+        Width = 169
+        BorderSpacing.Left = 12
+        Caption = 'Text (use ''|'' to separate sections)'
+      end
+      object edHeaderText: TEdit
+        AnchorSideLeft.Control = lblHeaderText
+        AnchorSideTop.Control = lblHeaderText
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = sbHeaderFont
         Left = 12
         Height = 23
-        Top = 6
-        Width = 78
-        Caption = 'Text left:'
-      end
-      object edHeaderTextleft: TEdit
-        Left = 94
-        Height = 23
-        Top = 6
-        Width = 150
-        Constraints.MinWidth = 150
-        OnChange = edHeaderTextleftChange
+        Top = 19
+        Width = 174
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 2
+        BorderSpacing.Right = 2
+        Constraints.MinWidth = 120
+        OnChange = edHeaderTextChange
         TabOrder = 0
       end
-      object Label2: TLabel
-        Left = 12
-        Height = 23
-        Top = 33
-        Width = 78
-        Caption = 'Text centered'
-      end
-      object edHeaderTextCenter: TEdit
-        Left = 94
-        Height = 23
-        Top = 33
-        Width = 150
-        OnChange = edHeaderTextCenterChange
-        TabOrder = 1
-      end
-      object Label3: TLabel
-        Left = 12
-        Height = 23
-        Top = 60
-        Width = 78
-        Caption = 'Text right'
-      end
-      object edHeaderTextRight: TEdit
-        Left = 94
-        Height = 23
-        Top = 60
-        Width = 150
-        OnChange = edHeaderTextRightChange
-        TabOrder = 2
-      end
       object cbHeaderLine: TCheckBox
+        AnchorSideLeft.Control = lblHeaderText
+        AnchorSideTop.Control = clbHeaderLinecolor
+        AnchorSideTop.Side = asrCenter
         Left = 12
-        Height = 24
-        Top = 87
+        Height = 19
+        Top = 49
         Width = 78
         Caption = 'Header line'
         Checked = True
         OnChange = cbHeaderLineChange
         State = cbChecked
-        TabOrder = 3
+        TabOrder = 1
       end
       object clbHeaderLinecolor: TColorButton
-        Left = 94
+        AnchorSideLeft.Control = cbHeaderLine
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = edHeaderText
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = gbHeader
+        AnchorSideRight.Side = asrBottom
+        Left = 106
         Height = 24
-        Top = 87
-        Width = 150
+        Top = 46
+        Width = 105
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 16
+        BorderSpacing.Right = 8
+        BorderSpacing.Bottom = 8
         BorderWidth = 2
         ButtonColorAutoSize = False
         ButtonColorSize = 16
         ButtonColor = clBlack
-        Caption = 'Header line color'
+        Caption = 'Line color'
         Margin = 4
         OnColorChanged = clbHeaderLinecolorColorChanged
       end
+      object sbHeaderFont: TSpeedButton
+        AnchorSideTop.Control = edHeaderText
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = gbHeader
+        AnchorSideRight.Side = asrBottom
+        Left = 188
+        Height = 22
+        Top = 19
+        Width = 23
+        Anchors = [akTop, akRight]
+        BorderSpacing.Right = 8
+        Images = ImageList1
+        ImageIndex = 5
+        OnClick = sbHeaderFontClick
+      end
     end
     object gbFooter: TGroupBox
-      AnchorSideLeft.Control = gbHeader
-      AnchorSideLeft.Side = asrBottom
-      AnchorSideTop.Control = cbPageOrientation
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = gbHeader
       AnchorSideTop.Side = asrBottom
-      Left = 276
-      Height = 137
-      Top = 31
-      Width = 256
+      AnchorSideRight.Control = gbBorderLine
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 90
+      Top = 106
+      Width = 223
+      Anchors = [akTop, akLeft, akRight]
       AutoSize = True
-      BorderSpacing.Left = 16
       BorderSpacing.Top = 8
       Caption = 'Footer'
-      ChildSizing.LeftRightSpacing = 12
-      ChildSizing.TopBottomSpacing = 6
-      ChildSizing.HorizontalSpacing = 4
       ChildSizing.VerticalSpacing = 4
-      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
-      ChildSizing.Layout = cclLeftToRightThenTopToBottom
-      ChildSizing.ControlsPerLine = 2
-      ClientHeight = 117
-      ClientWidth = 252
-      Constraints.MinWidth = 200
-      TabOrder = 5
-      object Label4: TLabel
+      ClientHeight = 70
+      ClientWidth = 219
+      TabOrder = 4
+      object lblFooterText: TLabel
+        AnchorSideLeft.Control = gbFooter
+        AnchorSideTop.Control = gbFooter
+        Left = 12
+        Height = 15
+        Top = 0
+        Width = 169
+        BorderSpacing.Left = 12
+        Caption = 'Text (use ''|'' to separate sections)'
+      end
+      object edFooterText: TEdit
+        AnchorSideLeft.Control = lblFooterText
+        AnchorSideTop.Control = lblFooterText
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = sbFooterFont
         Left = 12
         Height = 23
-        Top = 6
-        Width = 74
-        Caption = 'Text left:'
-      end
-      object edFooterTextLeft: TEdit
-        Left = 90
-        Height = 23
-        Top = 6
-        Width = 150
-        Constraints.MinWidth = 150
-        OnChange = edFooterTextLeftChange
+        Top = 19
+        Width = 174
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 2
+        BorderSpacing.Right = 2
+        Constraints.MinWidth = 120
+        OnChange = edFooterTextChange
         TabOrder = 0
       end
-      object Label5: TLabel
-        Left = 12
-        Height = 23
-        Top = 33
-        Width = 74
-        Caption = 'Text centered'
-      end
-      object edFooterTextCenter: TEdit
-        Left = 90
-        Height = 23
-        Top = 33
-        Width = 150
-        OnChange = edFooterTextCenterChange
-        TabOrder = 1
-      end
-      object Label6: TLabel
-        Left = 12
-        Height = 23
-        Top = 60
-        Width = 74
-        Caption = 'Text right'
-      end
-      object edFooterTextRight: TEdit
-        Left = 90
-        Height = 23
-        Top = 60
-        Width = 150
-        OnChange = edFooterTextRightChange
-        TabOrder = 2
-      end
       object cbFooterLine: TCheckBox
+        AnchorSideLeft.Control = lblFooterText
+        AnchorSideTop.Control = clbFooterLineColor
+        AnchorSideTop.Side = asrCenter
         Left = 12
-        Height = 24
-        Top = 87
+        Height = 19
+        Top = 49
         Width = 74
         Caption = 'Footer line'
         Checked = True
         OnChange = cbFooterLineChange
         State = cbChecked
-        TabOrder = 3
+        TabOrder = 1
       end
       object clbFooterLineColor: TColorButton
-        Left = 90
+        AnchorSideLeft.Control = cbFooterLine
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = edFooterText
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = edFooterText
+        AnchorSideRight.Side = asrBottom
+        Left = 102
         Height = 24
-        Top = 87
-        Width = 150
+        Top = 46
+        Width = 84
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 16
         BorderWidth = 2
         ButtonColorAutoSize = False
         ButtonColorSize = 16
         ButtonColor = clBlack
-        Caption = 'Footer line color'
+        Caption = 'Line color'
         Margin = 4
         OnColorChanged = clbFooterLineColorColorChanged
+      end
+      object sbFooterFont: TSpeedButton
+        AnchorSideTop.Control = edFooterText
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = gbFooter
+        AnchorSideRight.Side = asrBottom
+        Left = 188
+        Height = 22
+        Top = 19
+        Width = 23
+        Anchors = [akTop, akRight]
+        BorderSpacing.Right = 8
+        Images = ImageList1
+        ImageIndex = 5
+        OnClick = sbFooterFontClick
+      end
+    end
+    object gbBorderLine: TGroupBox
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = gbFooter
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = gbHeader
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 77
+      Top = 204
+      Width = 223
+      AutoSize = True
+      BorderSpacing.Top = 8
+      Caption = 'Border line'
+      ClientHeight = 57
+      ClientWidth = 219
+      TabOrder = 5
+      object lblBorderLineWidth: TLabel
+        AnchorSideLeft.Control = gbBorderLine
+        AnchorSideTop.Control = seBorderLineWidth
+        AnchorSideTop.Side = asrCenter
+        Left = 12
+        Height = 15
+        Top = 4
+        Width = 55
+        BorderSpacing.Left = 12
+        Caption = 'Line width'
+      end
+      object seBorderLineWidth: TSpinEdit
+        AnchorSideLeft.Control = lblBorderLineWidth
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = gbBorderLine
+        Left = 75
+        Height = 23
+        Top = 0
+        Width = 50
+        BorderSpacing.Left = 8
+        MaxValue = 100
+        OnChange = seBorderLineWidthChange
+        TabOrder = 0
+      end
+      object clbBorderLineColor: TColorButton
+        AnchorSideLeft.Control = seBorderLineWidth
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = seBorderLineWidth
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = gbBorderLine
+        AnchorSideRight.Side = asrBottom
+        Left = 133
+        Height = 25
+        Top = -1
+        Width = 86
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 8
+        BorderSpacing.Bottom = 6
+        BorderWidth = 2
+        ButtonColorAutoSize = False
+        ButtonColorSize = 16
+        ButtonColor = clRed
+        Caption = 'Line color'
+        Enabled = False
+        Margin = 4
+        OnColorChanged = clbBorderLineColorColorChanged
+      end
+      object cbDefaultBorderLinecolor: TCheckBox
+        AnchorSideLeft.Control = clbBorderLineColor
+        AnchorSideTop.Control = clbBorderLineColor
+        AnchorSideTop.Side = asrBottom
+        Left = 133
+        Height = 19
+        Top = 30
+        Width = 86
+        BorderSpacing.Bottom = 8
+        Caption = 'Default color'
+        Checked = True
+        OnChange = cbDefaultBorderLinecolorChange
+        State = cbChecked
+        TabOrder = 1
+      end
+    end
+    object Bevel1: TBevel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideLeft.Side = asrCenter
+      Left = 107
+      Height = 21
+      Top = 464
+      Width = 8
+    end
+    object gbFixedCellsDividerLine: TGroupBox
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = gbBorderLine
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = gbHeader
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 77
+      Top = 289
+      Width = 223
+      AutoSize = True
+      BorderSpacing.Top = 8
+      Caption = 'Fixed cells divider line'
+      ClientHeight = 57
+      ClientWidth = 219
+      TabOrder = 6
+      object lblFixedCellsDividerLineWidth: TLabel
+        AnchorSideLeft.Control = gbFixedCellsDividerLine
+        AnchorSideTop.Control = seFixedCellsDividerLineWidth
+        AnchorSideTop.Side = asrCenter
+        Left = 12
+        Height = 15
+        Top = 4
+        Width = 55
+        BorderSpacing.Left = 12
+        Caption = 'Line width'
+      end
+      object seFixedCellsDividerLineWidth: TSpinEdit
+        AnchorSideLeft.Control = lblFixedCellsDividerLineWidth
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = gbFixedCellsDividerLine
+        Left = 75
+        Height = 23
+        Top = 0
+        Width = 50
+        BorderSpacing.Left = 8
+        MaxValue = 100
+        OnChange = seFixedCellsDividerLineWidthChange
+        TabOrder = 0
+      end
+      object clbFixedCellsDividerLineColor: TColorButton
+        AnchorSideLeft.Control = seFixedCellsDividerLineWidth
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = seFixedCellsDividerLineWidth
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = gbFixedCellsDividerLine
+        AnchorSideRight.Side = asrBottom
+        Left = 133
+        Height = 25
+        Top = -1
+        Width = 86
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 8
+        BorderSpacing.Bottom = 6
+        BorderWidth = 2
+        ButtonColorAutoSize = False
+        ButtonColorSize = 16
+        ButtonColor = clBlue
+        Caption = 'Line color'
+        Enabled = False
+        Margin = 4
+        OnColorChanged = clbFixedCellsDividerLineColorColorChanged
+      end
+      object cbDefaultFixedCellsDividerLineColor: TCheckBox
+        AnchorSideLeft.Control = clbFixedCellsDividerLineColor
+        AnchorSideTop.Control = clbFixedCellsDividerLineColor
+        AnchorSideTop.Side = asrBottom
+        Left = 133
+        Height = 19
+        Top = 30
+        Width = 86
+        BorderSpacing.Bottom = 8
+        Caption = 'Default color'
+        Checked = True
+        OnChange = cbDefaultFixedCellsDividerLineColorChange
+        State = cbChecked
+        TabOrder = 1
+      end
+    end
+    object gbGridLines: TGroupBox
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = gbFixedCellsDividerLine
+      AnchorSideTop.Side = asrBottom
+      AnchorSideRight.Control = gbHeader
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 77
+      Top = 374
+      Width = 223
+      AutoSize = True
+      BorderSpacing.Top = 8
+      Caption = 'Grid lines'
+      ClientHeight = 57
+      ClientWidth = 219
+      TabOrder = 7
+      object lblGridLineWidth: TLabel
+        AnchorSideLeft.Control = gbGridLines
+        AnchorSideTop.Control = seGridLineWidth
+        AnchorSideTop.Side = asrCenter
+        Left = 12
+        Height = 15
+        Top = 4
+        Width = 55
+        BorderSpacing.Left = 12
+        Caption = 'Line width'
+      end
+      object seGridLineWidth: TSpinEdit
+        AnchorSideLeft.Control = lblGridLineWidth
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = gbGridLines
+        Left = 75
+        Height = 23
+        Top = 0
+        Width = 50
+        BorderSpacing.Left = 8
+        MaxValue = 100
+        OnChange = seGridLineWidthChange
+        TabOrder = 0
+      end
+      object clbGridLineColor: TColorButton
+        AnchorSideLeft.Control = seGridLineWidth
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = seGridLineWidth
+        AnchorSideTop.Side = asrCenter
+        AnchorSideRight.Control = gbGridLines
+        AnchorSideRight.Side = asrBottom
+        Left = 133
+        Height = 25
+        Top = -1
+        Width = 86
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 8
+        BorderSpacing.Bottom = 6
+        BorderWidth = 2
+        ButtonColorAutoSize = False
+        ButtonColorSize = 16
+        ButtonColor = clMoneyGreen
+        Caption = 'Line color'
+        Enabled = False
+        Margin = 4
+        OnColorChanged = clbGridLineColorColorChanged
+      end
+      object cbDefaultGridLineColor: TCheckBox
+        AnchorSideLeft.Control = clbGridLineColor
+        AnchorSideTop.Control = clbGridLineColor
+        AnchorSideTop.Side = asrBottom
+        Left = 133
+        Height = 19
+        Top = 30
+        Width = 86
+        BorderSpacing.Bottom = 8
+        Caption = 'Default color'
+        Checked = True
+        OnChange = cbDefaultGridLineColorChange
+        State = cbChecked
+        TabOrder = 1
+      end
+    end
+  end
+  object PageControl1: TPageControl
+    Left = 235
+    Height = 535
+    Top = 0
+    Width = 722
+    ActivePage = pgPreview
+    Align = alClient
+    TabIndex = 1
+    TabOrder = 1
+    object pgGrid: TTabSheet
+      Caption = 'Grid to be printed'
+      ClientHeight = 507
+      ClientWidth = 714
+      object StringGrid1: TStringGrid
+        Left = 0
+        Height = 507
+        Top = 0
+        Width = 714
+        Align = alClient
+        AlternateColor = clSkyBlue
+        ColCount = 1
+        MouseWheelOption = mwGrid
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goThumbTracking, goSmoothScroll, goCellEllipsis]
+        ParentFont = False
+        TabOrder = 0
+        OnPrepareCanvas = StringGrid1PrepareCanvas
+      end
+    end
+    object pgPreview: TTabSheet
+      Caption = 'Print preview'
+      ClientHeight = 507
+      ClientWidth = 714
+      object ScrollBox1: TScrollBox
+        Left = 0
+        Height = 482
+        Top = 25
+        Width = 714
+        HorzScrollBar.Page = 90
+        HorzScrollBar.Tracking = True
+        VertScrollBar.Page = 90
+        VertScrollBar.Tracking = True
+        Align = alClient
+        ClientHeight = 478
+        ClientWidth = 710
+        Color = clAppWorkspace
+        ParentColor = False
+        TabOrder = 0
+        object Image1: TImage
+          AnchorSideLeft.Control = ScrollBox1
+          AnchorSideTop.Control = ScrollBox1
+          Left = 0
+          Height = 90
+          Top = 0
+          Width = 90
+        end
+      end
+      object ToolBar1: TToolBar
+        Left = 0
+        Height = 25
+        Top = 0
+        Width = 714
+        AutoSize = True
+        Caption = 'ToolBar1'
+        Images = ImageList1
+        TabOrder = 1
+        object tbFirstPage: TToolButton
+          Left = 94
+          Top = 2
+          Caption = 'tbFirstPage'
+          Enabled = False
+          ImageIndex = 0
+          OnClick = tbFirstPageClick
+        end
+        object tbPrevPage: TToolButton
+          Left = 117
+          Top = 2
+          Caption = 'tbPrevPage'
+          Enabled = False
+          ImageIndex = 1
+          OnClick = tbPrevPageClick
+        end
+        object tbNextPage: TToolButton
+          Left = 140
+          Top = 2
+          Caption = 'tbNextPage'
+          Enabled = False
+          ImageIndex = 2
+          OnClick = tbNextPageClick
+        end
+        object tbLastPage: TToolButton
+          Left = 163
+          Top = 2
+          Caption = 'tbLastPage'
+          Enabled = False
+          ImageIndex = 3
+          OnClick = tbLastPageClick
+        end
+        object Panel2: TPanel
+          Left = 186
+          Height = 22
+          Top = 2
+          Width = 79
+          BevelOuter = bvNone
+          ClientHeight = 22
+          ClientWidth = 79
+          TabOrder = 0
+          object PageInfo: TLabel
+            AnchorSideLeft.Control = Panel2
+            AnchorSideTop.Control = Panel2
+            AnchorSideTop.Side = asrCenter
+            Left = 0
+            Height = 15
+            Top = 4
+            Width = 50
+            Caption = 'Page info'
+          end
+        end
+        object tbPrint: TToolButton
+          Left = 1
+          Top = 2
+          Caption = 'tbPrint'
+          ImageIndex = 4
+          OnClick = tbPrintClick
+        end
+        object ToolButton2: TToolButton
+          Left = 24
+          Height = 22
+          Top = 2
+          Caption = 'ToolButton2'
+          Style = tbsDivider
+        end
+        object cmbPercent: TComboBox
+          AnchorSideLeft.Side = asrBottom
+          AnchorSideTop.Side = asrCenter
+          AnchorSideRight.Control = gbFooter
+          AnchorSideRight.Side = asrBottom
+          Left = 29
+          Height = 23
+          Top = 2
+          Width = 60
+          BorderSpacing.Left = 6
+          ItemHeight = 15
+          ItemIndex = 3
+          Items.Strings = (
+            '25%'
+            '50%'
+            '75%'
+            '100%'
+            '150%'
+            '200%'
+            '300%'
+          )
+          OnChange = cmbPercentChange
+          Style = csDropDownList
+          TabOrder = 1
+          Text = '100%'
+        end
+        object ToolButton1: TToolButton
+          Left = 89
+          Height = 22
+          Top = 2
+          Caption = 'ToolButton1'
+          Style = tbsDivider
+        end
       end
     end
   end
   object PrintDialog1: TPrintDialog
-    Left = 119
-    Top = 75
+    Left = 470
+    Top = 88
+  end
+  object ImageList1: TImageList
+    Scaled = True
+    Left = 470
+    Top = 160
+    Bitmap = {
+      4C7A0600000010000000100000006F0200000000000078DAED583B4FDC40101E
+      A810D408090A404129225151F18C9444A1A3E5D2011505F4D0F11005D0D32025
+      0A05E03D511D3F8208C4CB70D02024F80106440502339F594BCEE638EF7A8DF3
+      BA62B4B7E3FB666667BEDD1DDBF77DF2FF213912B477E4D0B2AA3F16F4AEE850
+      9F06DE67D98EEA0E0575B2EE9AC533C547B00F1CC390093E827D741D1AD55C7F
+      803F59A396D02F63470CF2970ADE36FE34F297B07E56FCA9C89F275CBB81D335
+      6A4C84CDD31C38C536969262592E0E04B51A9D630ECD8658779DDE18AE772C29
+      360D7C107F9E66A48D4BB6D76693FB24F94BA37E69F0A722D90B6A859A59D47B
+      29E00C7327091E5C05676D6C1437A899F1E7D2C662121BD8BB9138C6B3C4FF14
+      BFA0852CF3675B3F5BFE54E4F7097A34F46A25EED365F4761AFD9F875E113DA3
+      A2DF06A734B837845E55B5A18B9777D6B0B471CB36DE9BE283BDCB3D7B1887DC
+      4F99E1A3F1873D7356F9B3AD9F2D7FFE6791BD5AAC94C3EBF8887BC6DC9D527D
+      42A78BCFDABFE4ACAFEB5F8AA7FA35893F327ABA752B219EC999F2D25AFE167C
+      D8CF604CD1BF55FE5F733FEF0AAAE7F3F013C644EB73683E88934763FC1455E3
+      DD91E50E23E6863DE00760F91E68C7C877D247A3DED7A1AF8C2B485B9B98EB62
+      CFBF510D63AEF81D3827F3F00577D24E816A35DF9D73B83B0F56A80E73E0787E
+      E30A1AD4E455817D7E57F2B112AE27AEE6C8979BA7CF4A2DFB597FEFAE5283C6
+      B78347CE772FE7BE2314CCA57E3C26F61F319CDF7A097BB24E6F83B3364F5D25
+      6BCA7A3CC7FFCA7CB32896E5852097FF33FDEB33AA62FD19AF7F22A6379A7C3E
+      3FA84AC96F37F283EFAEE5F0FB829A826FB2CA1AF1BEC5BE7B34F7460FFE8FDF
+      4FC5F1DA45
+    }
+    BitmapAdv = {
+      4C69020000004C7A060000001800000018000000C10300000000000078DAED5A
+      4968144114FD51895BC4ED26EE0BDEBC78531073537251543CB95C8C570F46C1
+      8B5144CCC178097AC8417021767726890C8CA0C618095E5464D29305424CDC08
+      8222E20E66C6FFDB3FA11CBA677AA9EA64923A3CC854FD7AD555F5FFABAA9FCA
+      E57290D39872B05B614BC682137D262C53C19F31610C91CB18D0ECF90D2DB00A
+      6D2EA34D7508FE1C23E9569F36611DD68DB2CD2799FC05DC84942C7E5C8FD588
+      57427DCFE05D5824835F16B71BBF4C6E377EDB841742D913ECAB2AA27FC6CAAF
+      7A7E54AF6F1CFE19477C49D407A5FAA65A9F3534342607032DB01663BBB1DF80
+      1DB2B9512F36A2E6BC655D1B53C84DE8903A27268CC8DC83CB9D9BCF25B6C0DD
+      F93C090BA4DE0314F3AB9E9FE9D487CAF88A431FE2D0370D0D8DF20169006901
+      6982D23C136A1A699B02FE0E418FA5F741FB2DF23ED47DF8EEA353E8235D2EFC
+      2AE7A75CB9E3882FD5FAA05ADF3434342607947BA51C2CE56203EB8E01D594FB
+      A51C70119BE6B0F730CA5973DB51CA657BD824F3DA1A823F25E8B26B1F51F879
+      5F7924F4F1C6BE031B64F1FBE9232A7FA93E64F0B31F5651BE41E8E359B9F0BB
+      CCCFEBDE04AC57B4BE13DC0AFCF33FEEA91E5FCAF541B1BEA9D6678D698A7A98
+      85FE960D036C5E518ADF346136FBF43DDB80337E40B64E8CE1B7F9E5B74DA8F3
+      1D8B169C0ACB8F3154590C51F9058D7345547E9CDF8BC53053E607EB87C57661
+      E647C0B0C77B8A1EB46D08EB9FB81F34381C2EFB8DC369407D54FF270E91BFE0
+      AD8A5408DC291CDB69A910CF07383EE9794D71CD67303FFAD921D6FFFCBA0EC9
+      E4A7BC10FAC905E4B844C0BF8FC63E3F0AFD53757CE9338DD45C6892F789A4F4
+      3C682B6C12E308EF1C9B25FBF3F902FF38278F1F2A785EB27D169CE5710CFB39
+      0FFABC2B6DE73DAD9BD7C1B96BDB166C93720FB2E01AC74B2DFF3ECEBFAF4AB8
+      635522D747C4EF8136584E65BDB76129FEFE4577CCA114CC8DF8FE642F7F6B5B
+      41793B95F71BB027A2CFB7F2D9635FC1B8F6B31F59A1731B262C469E1FC8F1E5
+      A909F3C5BA91EB300FCB3F237EBE6C872521E7BEB6D81BD389FBB501C742CE7D
+      37FBE14ED77A2CE7B5791C580F12B006DB8E63DB7774A62B1277F4A626EB95A3
+      F0FCF67FF72AE7AC8AE338883E7FA010549E3F17937D40BFC904DCAFFAFD72F7
+      9AB095DBBCCF9F0B8A82ECD09EDAF9D49B2B3CE6933EFDA08ECF218DA56CBBBA
+      600EFF4F6D3C9D80957EF8075B6005FAC11F6CF381DA97D0B2DDEC73F703FAF2
+      036EB7AB84DFDCE2B11E0EA8E1471C7E0B6E7AD9A46FC042B4F98AF81EF44DBC
+      D0F69BD7BB321C638DE3CF163485DC439B385E6AE23A73FC059966B8314C7A06
+      0000002000000020000000660400000000000078DAED5C4D681341147EF50FFF
+      50295E54504410C48307BDA81414AB55506F0A0A8A0A7AD083580F82F4E0C5D6
+      1FD49342B150D1A2D94D455450FCA36AB45AA8FD316954440A151111295AFFAA
+      D6F54D9C94E9369BEC26B3339BE41D3EDA6CDECCF776E6CD7B6F665FD6B22CB0
+      0804424A440DD81133A117D1D665C24CD5FC9CDB6240FE6399E45F37C0A49801
+      6751FE5E5718CA24F05B026AD3C9B69A3019655A04F91E55FC29B895F13B70FF
+      881B50EE373FE77E6A93FB190DC35A49F6E7C8EF37773A7E15DC4EFC89359662
+      BE71DD55F8B0FE87F1C7C250A5823BA8FCBAC73F8DFDF5ABB03F953A64E97FFA
+      55F89F20F8DF20C41F9FE3AFD6FC4377FE452010080442908131771FC6C88751
+      13F6AAE6C6387F7C489E128205DAB815F2A7E40EC31145E752D5C3B84D3841DC
+      3ECE37E6BF766E66034AD637DAB42EEE20F0EB1E7F61CD1F4EB1E64F920E5A74
+      D0E67F83107F82107F83907F100804028150D0B508185B598CC53CB852797CB7
+      E5FFAAF36EDA7F50EE9F0FFB0F37CFC80A69FF11B4F33755E34FE76F74FEA6F3
+      FC4D75DCD19D7F10080402811064B01A3556ABC66AD658ED9A841CB72C514B67
+      421DABEFF39823F54AA8FFEB11FA6BC9A403AB5114F314C9FC197590CD8F39CF
+      CA446DB14B1D64F3277408C32A9CD7EF62BFA8D733BC56AA82DF8B0E7EF1BBD5
+      C14F7EFE9CAB22953DB0BA5715FC8E3A84A1AA18F8758E3FB33F3BB72AFB73C3
+      EDA7FF71C35D88FE5777FCD11D7F75E71FBAF32F02815084F5D4C3CFB87342BE
+      F2CB1AC742E0CF66AC0B899FE6BF70E71F652232FC864B3F1671EBEFFCF2E399
+      C6DB2FFB0B1ABFD3BC2B824E6ECBEF73122F7649FCC45F48FC0E6B3B522CFCF9
+      36FF451A0322B4D7CD4FB45F812931030E24C13E2B3E67DC35C4960CD8A9B816
+      EB81ADEEF1BE2AEEF86598859C03B6B5F4B7D384D98A6A100F0ABCEF069F49E0
+      7545BE33CE393BAC433082FDE59FE3BEDF7B232C12E6BC929FD1EF4F5E7B6EC2
+      429F7FE7778A730D749830835D7B7909A6A32E7FFCAEC16E6A8251C8F19E3F7F
+      BA639B93BB5CAF0F4CCEA77AE335C2D86FB37DB75DF86EB54F76DF907CB795FD
+      590C7F27DA375E1B7A413677E77998807DF7F1FB0B393C2734B87E5F5166A254
+      BB0BC356C1D7AE73F0C9EB85E7935B24FBFBDBBCEF4FF8FF9894EFDFAA85D1F8
+      FD472E774BA2BF9D36B8BE0C389D41CF33F6F529C1EE07FD0BCEF1920CFE61A9
+      DD3F49F0B7EDBCCF6EFC58925E1E4A50EE0D976FCBF9DE1B61BE105FAABDD6C8
+      B3F639DE7B8D10EB1E89398F234C782CB4A9C99E3F3196DD39E6D83D2C466619
+      6B96CBC8F3D1669765B9E6EB781FBFA32198E7C957A33C6BC7D7419D57EEEE7A
+      182BBC7BEF4696B67393B7FFDC6CC2388FB166A3E06F3765397E9B85DF2B6CF0
+      A8FB35DEB68FC59E6CF85BAFC3786CFF85F773D583DEA5EC1D96BC5D7D8E71EB
+      1CEFE7D7AB8B30D5A5DDEF11C66D454EB1C38072A1466BB7CBBDC593646E6D9A
+      3032271FFA3F3F7ECBD741B38B753387ED25B8DD1D95FDBBA11721989B4E16F3
+      E7C5EC1D220C4C1729791BBB27DE27EB3F48FBE87F9CC1A65C
+    }
+  end
+  object FontDialog1: TFontDialog
+    MinFontSize = 0
+    MaxFontSize = 0
+    Left = 470
+    Top = 224
   end
 end

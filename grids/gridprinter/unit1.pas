@@ -6,61 +6,102 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, Grids, ExtCtrls,
-  StdCtrls, PrintersDlgs, GridPrn;
+  StdCtrls, ComCtrls, Spin, Buttons, PrintersDlgs, GridPrn;
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
-    Button1: TButton;
+    Bevel1: TBevel;
+    cbDefaultFixedCellsDividerLineColor: TCheckBox;
+    cbDefaultGridLineColor: TCheckBox;
     cbPageOrientation: TComboBox;
     cbPrintOrder: TComboBox;
     cbMonochrome: TCheckBox;
     cbHeaderLine: TCheckBox;
     cbFooterLine: TCheckBox;
+    cbDefaultBorderLinecolor: TCheckBox;
+    clbFixedCellsDividerLineColor: TColorButton;
+    clbGridLineColor: TColorButton;
     clbHeaderLinecolor: TColorButton;
     clbFooterLineColor: TColorButton;
-    edFooterTextCenter: TEdit;
-    edHeaderTextleft: TEdit;
-    edHeaderTextCenter: TEdit;
-    edFooterTextLeft: TEdit;
-    edHeaderTextRight: TEdit;
-    edFooterTextRight: TEdit;
+    cmbPercent: TComboBox;
+    clbBorderLineColor: TColorButton;
+    edHeaderText: TEdit;
+    edFooterText: TEdit;
+    FontDialog1: TFontDialog;
+    gbFixedCellsDividerLine: TGroupBox;
+    gbGridLines: TGroupBox;
     gbHeader: TGroupBox;
     gbFooter: TGroupBox;
-    Label1: TLabel;
-    Label2: TLabel;
-    Label3: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
+    gbBorderLine: TGroupBox;
+    Image1: TImage;
+    ImageList1: TImageList;
+    lblHeaderText: TLabel;
+    lblFooterText: TLabel;
+    lblBorderLineWidth: TLabel;
+    lblFixedCellsDividerLineWidth: TLabel;
+    lblGridLineWidth: TLabel;
+    PageInfo: TLabel;
+    PageControl1: TPageControl;
     Panel1: TPanel;
+    Panel2: TPanel;
     PrintDialog1: TPrintDialog;
+    ScrollBox1: TScrollBox;
+    seBorderLineWidth: TSpinEdit;
+    seFixedCellsDividerLineWidth: TSpinEdit;
+    seGridLineWidth: TSpinEdit;
+    sbHeaderFont: TSpeedButton;
+    sbFooterFont: TSpeedButton;
     StringGrid1: TStringGrid;
-    procedure Button1Click(Sender: TObject);
+    pgGrid: TTabSheet;
+    pgPreview: TTabSheet;
+    ToolBar1: TToolBar;
+    tbFirstPage: TToolButton;
+    tbPrevPage: TToolButton;
+    tbNextPage: TToolButton;
+    tbLastPage: TToolButton;
+    tbPrint: TToolButton;
+    ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
+    procedure cbDefaultFixedCellsDividerLineColorChange(Sender: TObject);
+    procedure cbDefaultGridLineColorChange(Sender: TObject);
     procedure cbFooterLineChange(Sender: TObject);
     procedure cbHeaderLineChange(Sender: TObject);
     procedure cbMonochromeChange(Sender: TObject);
     procedure cbPageOrientationChange(Sender: TObject);
     procedure cbPrintOrderChange(Sender: TObject);
+    procedure cbDefaultBorderLinecolorChange(Sender: TObject);
+    procedure clbBorderLineColorColorChanged(Sender: TObject);
+    procedure clbFixedCellsDividerLineColorColorChanged(Sender: TObject);
+    procedure clbGridLineColorColorChanged(Sender: TObject);
     procedure clbHeaderLinecolorColorChanged(Sender: TObject);
     procedure clbFooterLineColorColorChanged(Sender: TObject);
-    procedure edFooterTextCenterChange(Sender: TObject);
-    procedure edFooterTextLeftChange(Sender: TObject);
-    procedure edFooterTextRightChange(Sender: TObject);
-    procedure edHeaderTextCenterChange(Sender: TObject);
-    procedure edHeaderTextleftChange(Sender: TObject);
-    procedure edHeaderTextRightChange(Sender: TObject);
+    procedure cmbPercentChange(Sender: TObject);
+    procedure edFooterTextChange(Sender: TObject);
+    procedure edHeaderTextChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure seBorderLineWidthChange(Sender: TObject);
+    procedure seFixedCellsDividerLineWidthChange(Sender: TObject);
+    procedure seGridLineWidthChange(Sender: TObject);
+    procedure sbHeaderFontClick(Sender: TObject);
+    procedure sbFooterFontClick(Sender: TObject);
     procedure StringGrid1PrepareCanvas(Sender: TObject; aCol, aRow: Integer;
       aState: TGridDrawState);
+    procedure tbFirstPageClick(Sender: TObject);
+    procedure tbLastPageClick(Sender: TObject);
+    procedure tbNextPageClick(Sender: TObject);
+    procedure tbPrevPageClick(Sender: TObject);
+    procedure tbPrintClick(Sender: TObject);
   private
     FGridPrinter: TGridPrinter;
+    FPageNo: Integer;
     procedure PopulateGrid;
     procedure PopulateGrid_Columns;
     procedure PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid; ACol,
       ARow: Integer; var AText: String);
+    procedure ShowPreview(APageNo: Integer);
 
   public
 
@@ -78,75 +119,146 @@ uses
 
 { TForm1 }
 
-procedure TForm1.Button1Click(Sender: TObject);
+procedure TForm1.ShowPreview(APageNo: Integer);
+var
+  bmp: TBitmap;
+  zoom: String;
 begin
-  if PrintDialog1.Execute then
-    FGridPrinter.Print;
+  FPageNo := APageNo;
+  zoom := cmbPercent.Items[cmbPercent.ItemIndex];
+  Delete(zoom, Length(zoom), 1);
+  bmp := FGridPrinter.CreatePreviewBitmap(FPageNo, StrToInt(zoom));
+  try
+    Image1.Width := bmp.Width;
+    Image1.Height := bmp.Height;
+    Image1.Picture.Bitmap.Assign(bmp);
+  finally
+    bmp.Free;
+  end;
+  PageControl1.ActivePage := pgPreview;
+
+  tbFirstPage.Enabled := FPageNo > 1;
+  tbPrevPage.Enabled := FPageNo > 1;
+  tbNextPage.Enabled := FPageNo < FGridPrinter.PageCount;
+  tbLastPage.Enabled := FPageNo < FGridPrinter.PageCount;
+  PageInfo.Caption := Format('Page %d of %d', [FPageNo, FGridPrinter.PageCount]);
 end;
 
 procedure TForm1.cbFooterLineChange(Sender: TObject);
 begin
   FGridPrinter.FooterLine := cbFooterLine.Checked;
+  ShowPreview(FPageNo);
+end;
+
+procedure TForm1.cbDefaultFixedCellsDividerLineColorChange(Sender: TObject);
+begin
+  clbFixedCellsDividerLineColor.Enabled := not cbDefaultFixedCellsDividerLinecolor.Checked;
+  if cbDefaultFixedCellsDividerLineColor.Checked then
+    FGridPrinter.FixedLineColor := clDefault
+  else
+    FGridPrinter.FixedLineColor := clbFixedCellsDividerLinecolor.ButtonColor;
+  ShowPreview(FPageNo);
+end;
+
+procedure TForm1.cbDefaultGridLineColorChange(Sender: TObject);
+begin
+  clbGridLineColor.Enabled := not cbDefaultGridLinecolor.Checked;
+  if cbDefaultGridLineColor.Checked then
+    FGridPrinter.GridLineColor := clDefault
+  else
+    FGridPrinter.GridLineColor := clbGridLinecolor.ButtonColor;
+  ShowPreview(FPageNo);
 end;
 
 procedure TForm1.cbHeaderLineChange(Sender: TObject);
 begin
   FGridPrinter.HeaderLine := cbHeaderLine.Checked;
+  ShowPreview(FPageNo);
 end;
 
 procedure TForm1.cbMonochromeChange(Sender: TObject);
 begin
   FGridPrinter.Monochrome := cbMonochrome.Checked;
+  ShowPreview(FPageNo);
 end;
 
 procedure TForm1.cbPageOrientationChange(Sender: TObject);
 begin
   FGridPrinter.Orientation := TPrinterOrientation(cbPageOrientation.ItemIndex);
+  ShowPreview(FPageNo);
 end;
 
 procedure TForm1.cbPrintOrderChange(Sender: TObject);
 begin
   FGridPrinter.PrintOrder := TGridPrnOrder(cbPrintOrder.ItemIndex);
+  ShowPreview(FPageno);
+end;
+
+procedure TForm1.cbDefaultBorderLinecolorChange(Sender: TObject);
+begin
+  clbBorderLineColor.Enabled := not cbDefaultBorderLinecolor.Checked;
+  if cbDefaultBorderLineColor.Checked then
+    FGridPrinter.BorderLineColor := clDefault
+  else
+    FGridPrinter.BorderLineColor := clbBorderLinecolor.ButtonColor;
+  ShowPreview(FPageNo);
+end;
+
+procedure TForm1.clbBorderLineColorColorChanged(Sender: TObject);
+begin
+  if not cbDefaultBorderLineColor.Checked then
+  begin
+    FGridPrinter.BorderLineColor := clbBorderLineColor.ButtonColor;
+    ShowPreview(FPageNo);
+  end;
+end;
+
+procedure TForm1.clbFixedCellsDividerLineColorColorChanged(Sender: TObject);
+begin
+  if not cbDefaultFixedCellsDividerLineColor.Checked then
+  begin
+    FGridPrinter.FixedLineColor := clbFixedCellsDividerLineColor.ButtonColor;
+    ShowPreview(FPageNo);
+  end;
+end;
+
+procedure TForm1.clbGridLineColorColorChanged(Sender: TObject);
+begin
+  if not cbDefaultGridLineColor.Checked then
+  begin
+    FGridPrinter.GridLineColor := clbGridLineColor.ButtonColor;
+    ShowPreview(FPageNo);
+  end;
 end;
 
 procedure TForm1.clbHeaderLinecolorColorChanged(Sender: TObject);
 begin
   FGridPrinter.HeaderLineColor := clbHeaderLineColor.ButtonColor;
+  ShowPreview(FPageNo);
 end;
 
 procedure TForm1.clbFooterLineColorColorChanged(Sender: TObject);
 begin
   FGridPrinter.FooterLineColor := clbFooterLineColor.ButtonColor;
+  ShowPreview(FPageNo);
 end;
 
-procedure TForm1.edFooterTextCenterChange(Sender: TObject);
+procedure TForm1.cmbPercentChange(Sender: TObject);
 begin
-  FGridPrinter.Footer[hfpCenter] := edFooterTextCenter.Text;
+  ShowPreview(FPageNo);
+  ShowPreview(FPageNo);
 end;
 
-procedure TForm1.edFooterTextLeftChange(Sender: TObject);
+procedure TForm1.edFooterTextChange(Sender: TObject);
 begin
-  FGridPrinter.Footer[hfpLeft] := edFooterTextLeft.Text;
+  FGridPrinter.Footer := edFooterText.Text;
+  ShowPreview(FPageNo);
 end;
 
-procedure TForm1.edFooterTextRightChange(Sender: TObject);
+procedure TForm1.edHeaderTextChange(Sender: TObject);
 begin
-  FGridPrinter.Footer[hfpRight] := edFooterTextRight.Text;
-end;
-
-procedure TForm1.edHeaderTextCenterChange(Sender: TObject);
-begin
-  FGridPrinter.Header[hfpCenter] := edHeaderTextCenter.Text;
-end;
-
-procedure TForm1.edHeaderTextleftChange(Sender: TObject);
-begin
-  FGridPrinter.Header[hfpLeft] := edHeaderTextLeft.Text;
-end;
-
-procedure TForm1.edHeaderTextRightChange(Sender: TObject);
-begin
-  FGridPrinter.Header[hfpRight] := edHeaderTextRight.Text;
+  FGridPrinter.Header := edHeaderText.Text;
+  ShowPreview(FPageNo);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -156,24 +268,68 @@ begin
 
   FGridPrinter := TGridPrinter.Create(self);
   FGridPrinter.Grid := StringGrid1;
-  FGridPrinter.BorderLineColor := clRed;
-  FGridPrinter.Header[hfpLeft] := 'This is a print test.';
-  FGridPrinter.Footer[hfpCenter] := 'Page $PAGE of $PAGECOUNT';
+  FGridPrinter.HeaderPart[hfpLeft] := 'This is a print test.';
+  FGridPrinter.FooterPart[hfpCenter] := 'Page $PAGE of $PAGECOUNT';
   FgridPrinter.FooterLine := false;
 //  FGridPrinter.OnGetCellText := @PrinterGetCellText;
   FGridPrinter.OnPrepareCanvas := @StringGrid1PrepareCanvas;
 
-  edHeaderTextLeft.Text := FGridPrinter.Header[hfpLeft];
-  edHeaderTextCenter.Text := FGridPrinter.Header[hfpCenter];
-  edHeaderTextRight.Text := FGridPrinter.Header[hfpRight];
+  edHeaderText.Text := FGridPrinter.Header;
   cbHeaderLine.Checked := FGridPrinter.HeaderLine;
   clbHeaderLineColor.ButtonColor := FGridPrinter.HeaderLineColor;
 
-  edFooterTextLeft.Text := FGridPrinter.Footer[hfpLeft];
-  edFooterTextCenter.Text := FGridPrinter.Footer[hfpCenter];
-  edFooterTextRight.Text := FGridPrinter.Footer[hfpRight];
+  edFooterText.Text := FGridPrinter.Footer;
   cbFooterLine.Checked := FGridPrinter.FooterLine;
   clbFooterLineColor.ButtonColor := FGridPrinter.FooterLineColor;
+
+  cbDefaultBorderLineColor.Checked := FGridPrinter.BorderLineColor = clDefault;
+  seBorderLineWidth.Value := FGridPrinter.BorderlineWidth;
+
+  cbDefaultFixedCellsDividerLineColor.Checked := FGridPrinter.FixedLineColor = clDefault;
+  seFixedCellsDividerLineWidth.Value := FGridPrinter.FixedLineWidth;
+
+  cbDefaultGridLineColor.Checked := FGridPrinter.GridLineColor = clDefault;
+  seGridLineWidth.Value := FGridPrinter.GridLineWidth;
+
+  ShowPreview(1);
+end;
+
+procedure TForm1.seBorderLineWidthChange(Sender: TObject);
+begin
+  FGridPrinter.BorderLineWidth := seBorderLineWidth.Value;
+  ShowPreview(FPageNo);
+end;
+
+procedure TForm1.seFixedCellsDividerLineWidthChange(Sender: TObject);
+begin
+  FGridPrinter.FixedLineWidth := seFixedCellsDividerLineWidth.Value;
+  ShowPreview(FPageNo);
+end;
+
+procedure TForm1.seGridLineWidthChange(Sender: TObject);
+begin
+  FGridPrinter.GridLineWidth := seGridLineWidth.Value;
+  ShowPreview(FPageNo);
+end;
+
+procedure TForm1.sbHeaderFontClick(Sender: TObject);
+begin
+  FontDialog1.Font := FGridPrinter.HeaderFont;
+  if FontDialog1.Execute then
+  begin
+    FGridPrinter.HeaderFont.Assign(FontDialog1.Font);
+    ShowPreview(FPageNo);
+  end;
+end;
+
+procedure TForm1.sbFooterFontClick(Sender: TObject);
+begin
+  FontDialog1.Font := FGridPrinter.FooterFont;
+  if FontDialog1.Execute then
+  begin
+    FGridPrinter.FooterFont.Assign(FontDialog1.Font);
+    ShowPreview(FPageNo);
+  end;
 end;
 
 procedure TForm1.StringGrid1PrepareCanvas(Sender: TObject; aCol, aRow: Integer;
@@ -185,7 +341,7 @@ begin
   if Sender is TStringGrid then
     lCanvas := TStringGrid(Sender).Canvas
   else if Sender is TGridPrinter then
-    lCanvas := Printer.Canvas
+    lCanvas := FGridPrinter.Canvas
   else
     exit;
 
@@ -221,6 +377,32 @@ begin
     ts.Alignment := taCenter;
     lCanvas.TextStyle := ts;
   end;
+end;
+
+procedure TForm1.tbFirstPageClick(Sender: TObject);
+begin
+  ShowPreview(1);
+end;
+
+procedure TForm1.tbLastPageClick(Sender: TObject);
+begin
+  ShowPreview(FGridPrinter.PageCount);
+end;
+
+procedure TForm1.tbNextPageClick(Sender: TObject);
+begin
+  ShowPreview(FPageNo+1);
+end;
+
+procedure TForm1.tbPrevPageClick(Sender: TObject);
+begin
+  ShowPreview(FPageNo-1);
+end;
+
+procedure TForm1.tbPrintClick(Sender: TObject);
+begin
+  if PrintDialog1.Execute then
+    FGridPrinter.Print;
 end;
 
 procedure TForm1.PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid;
