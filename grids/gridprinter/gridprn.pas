@@ -177,7 +177,7 @@ const
     Alignment: taLeftJustify;
     Layout: tlCenter;
     SingleLine: true;
-    Clipping: true;
+    Clipping: false; //true;
     ExpandTabs: false;
     ShowPrefix: false;
     WordBreak: false;
@@ -447,9 +447,6 @@ begin
 end;
 
 procedure TGridPrinter.Prepare;
-const
-  Wmm = 210;  // A4 page size
-  Hmm = 297;
 begin
   Printer.Orientation := FOrientation;
 
@@ -624,6 +621,8 @@ begin
   if not FMonochrome then
     ACanvas.FillRect(ARect);
 
+  ACanvas.ClipRect := ARect;
+
   s := GetCellText(ACol, ARow);
   InflateRect(ARect, -FPadding, -FPadding);
 
@@ -660,13 +659,16 @@ var
   R: TRect;
   P: Array[0..2] of TPoint;
 begin
+  // Determine size of checkbox
   details := ThemeServices.GetElementDetails(arrtb[ACheckState]);
   cSize := ThemeServices.GetDetailSize(Details);
   cSize.cx := ScaleX(cSize.cx);
   cSize.cy := ScaleY(cSize.cy);
+  // Position the checkbox within the given rectangle, ARect.
   R.Left := (ARect.Left + ARect.Right - cSize.cx) div 2;
   R.Top := (ARect.Top + ARect.Bottom - cSize.cy) div 2;
   R.BottomRight := Point(R.Left + cSize.cx, R.Top + cSize.cy);
+  // Prepare pen and brush
   ACanvas.Pen.Width := ScaleX(1);
   ACanvas.Pen.Color := clBlack;
   ACanvas.Pen.Style := psSolid;
@@ -675,9 +677,11 @@ begin
   else
     ACanvas.Brush.Color := clWhite;
   ACanvas.Brush.Style := bsSolid;
+  // Draw checkbox border (= unchecked state)
   InflateRect(R, -ACanvas.Pen.Width div 2, -ACanvas.Pen.Width div 2);
   ACanvas.Rectangle(R);
   InflateRect(R, -ACanvas.Pen.Width div 2, -ACanvas.Pen.Width div 2);
+  // Draw checkmark if checked or grayed
   if ACheckState in [cbChecked, cbGrayed] then
   begin
     if ACheckState = cbGrayed then ACanvas.Pen.Color := clGray;
@@ -800,12 +804,12 @@ begin
 
   // Print inner grid lines
   ACanvas.Pen.Style := lGrid.GridLineStyle;
-  ACanvas.Pen.Width := IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth);
   ACanvas.Pen.Color := IfThen(FMonoChrome, clBlack,
     IfThen(FGridLineColor = clDefault, lGrid.GridLineColor, FGridLineColor));
   // ... vertical fixed cell lines
   if (goFixedVertLine in lGrid.Options) then
   begin
+    ACanvas.Pen.Width := ScaleX(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
     col := 1;
     x := FLeftMarginPx;
     while col < lGrid.FixedCols do
@@ -826,6 +830,7 @@ begin
   // ... vertical grid lines
   if (goVertLine in lGrid.Options) then
   begin
+    ACanvas.Pen.Width := ScaleX(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
     col := AFirstCol;
     x := FFixedColPos;
     while (x < XEnd) and (col < lGrid.ColCount) do
@@ -838,6 +843,7 @@ begin
   // ... horizontal fixed cell lines
   if (goFixedHorzLine in lGrid.Options) then
   begin
+    ACanvas.Pen.Width := ScaleY(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
     row := 1;
     y := FTopMarginPx;
     while row < lGrid.FixedRows do
@@ -858,6 +864,7 @@ begin
   // ... horizontal grid lines
   if (goHorzLine in lGrid.Options) then
   begin
+    ACanvas.Pen.Width := ScaleY(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
     row := AFirstRow;
     y := FFixedRowPos;
     while (y < YEnd) and (row < lGrid.RowCount) do
@@ -872,10 +879,10 @@ begin
   // ... horizontal
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := IfThen(FMonochrome or (FFixedLineColor = clDefault), clBlack, FFixedLineColor);
-  ACanvas.Pen.Width := IfThen(FFixedLineWidth = 0, ScaleY(HEADERBORDER_LINEWIDTH), FFixedLineWidth);
+  ACanvas.Pen.Width := ScaleY(IfThen(FFixedLineWidth = 0, HEADERBORDER_LINEWIDTH, FFixedLineWidth));
   ACanvas.Line(FLeftMarginPx, FFixedRowPos, XEnd, FFixedRowPos);
   // ... vertical
-  ACanvas.Pen.Width := IfThen(FFixedLineWidth = 0, ScaleX(HEADERBORDER_LINEWIDTH), FFixedLineWidth);
+  ACanvas.Pen.Width := ScaleX(IfThen(FFixedLineWidth = 0, HEADERBORDER_LINEWIDTH, FFixedLineWidth));
   ACanvas.Line(FFixedColPos, FTopMarginPx, FFixedColPos, YEnd);
 
   // Print outer border lines
@@ -883,11 +890,11 @@ begin
   ACanvas.Pen.Color := IfThen(FMonochrome, clBlack,
     IfThen(FBorderLineColor = clDefault, clBlack, ColorToRGB(FBorderLineColor)));
   // ... horizontal
-  ACanvas.Pen.Width := IfThen(FBorderLineWidth = 0, ScaleY(OUTERBORDER_LINEWIDTH), FBorderLineWidth);
+  ACanvas.Pen.Width := ScaleY(IfThen(FBorderLineWidth = 0, OUTERBORDER_LINEWIDTH, FBorderLineWidth));
   ACanvas.Line(FLeftMarginPx, FTopMarginPx, XEnd, FTopMarginPx);
   ACanvas.Line(FLeftMarginPx, YEnd, XEnd, YEnd);
   // ... vertical
-  ACanvas.Pen.Width := IfThen(FBorderLineWidth = 0, ScaleX(OUTERBORDER_LINEWIDTH), FBorderLineWidth);
+  ACanvas.Pen.Width := ScaleX(IfThen(FBorderLineWidth = 0, OUTERBORDER_LINEWIDTH, FBorderLineWidth));
   ACanvas.Line(FLeftMarginPx, FTopMarginPx, FLeftMarginPx, YEnd);
   ACanvas.Line(XEnd, FTopMarginPx, XEnd, YEnd);
 end;

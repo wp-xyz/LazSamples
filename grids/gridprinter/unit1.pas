@@ -396,6 +396,14 @@ begin
     ts.Alignment := taCenter;
     lCanvas.TextStyle := ts;
   end;
+
+  // Cell col=6/row=3: no endellipsis
+  if (aCol=6) and (aRow = 3) then
+  begin
+    ts := lCanvas.TextStyle;
+    ts.EndEllipsis := false;
+    lCanvas.TextStyle := ts;
+  end;
 end;
 
 procedure TForm1.tbFirstPageClick(Sender: TObject);
@@ -460,7 +468,9 @@ begin
   // Long text in cols=5, 6, 7, row=2
   StringGrid1.Cells[5, 2] := StringGrid1.Cells[5, 2] + ' This is a long text.';
   StringGrid1.Cells[6, 2] := StringGrid1.Cells[6, 2] + ' This is a long text.';
+  StringGrid1.Cells[6, 3] := StringGrid1.Cells[6, 3] + ' This is a long text.';
   StringGrid1.Cells[7, 2] := StringGrid1.Cells[7, 2] + ' This is a long text.';
+  StringGrid1.Cells[7, 3] := '';         // there must not be overflow text from prev cell.
 
   // Different row height in row 2 and 4
   StringGrid1.RowHeights[2] := 2* StringGrid1.DefaultRowHeight;
