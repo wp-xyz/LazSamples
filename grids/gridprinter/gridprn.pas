@@ -1019,35 +1019,31 @@ end;
 
 procedure TGridPrinter.ScaleColWidths;
 var
-  i: Integer;
-  w, sum: Integer;
+  i, w: Integer;
 begin
+  FFixedColPos := FLeftMarginPx;
   SetLength(FColWidths, FColCount);
-  sum := 0;
   for i := 0 to FColCount-1 do
   begin
     w := ScaleX(TGridAccess(FGrid).ColWidths[i]);
     FColWidths[i] := w;
-    sum := sum + w;
     if i < FFixedCols then
-      FFixedColPos := FLeftMarginPx + sum;
+      FFixedColPos := FFixedColPos + w;
   end;
 end;
 
 procedure TGridPrinter.ScaleRowHeights;
 var
-  i: Integer;
-  h, sum: Integer;
+  i, h: Integer;
 begin
+  FFixedRowPos := FTopMarginPx;
   SetLength(FRowHeights, FRowCount);
-  sum := 0;
   for i := 0 to FRowCount-1 do
   begin
     h := ScaleY(TGridAccess(FGrid).RowHeights[i]);
     FRowHeights[i] := h;
-    sum := sum + h;
     if i < FFixedRows then
-      FFixedRowPos := FTopMarginPx + sum;
+      FFixedRowPos := FFixedRowPos + h;
   end;
 end;
 

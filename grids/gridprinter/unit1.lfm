@@ -7,6 +7,7 @@ object Form1: TForm1
   ClientHeight = 535
   ClientWidth = 957
   OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
   object Panel1: TPanel
     Left = 6
     Height = 523
@@ -645,7 +646,7 @@ object Form1: TForm1
         end
         object ToolButton2: TToolButton
           Left = 24
-          Height = 22
+          Height = 5
           Top = 2
           Caption = 'ToolButton2'
           Style = tbsDivider
@@ -678,7 +679,7 @@ object Form1: TForm1
         end
         object ToolButton1: TToolButton
           Left = 89
-          Height = 22
+          Height = 5
           Top = 2
           Caption = 'ToolButton1'
           Style = tbsDivider
