@@ -24,12 +24,12 @@ type
   public
     constructor Create;
   published
-    property LeftMargin: Double index 0 read GetMargin write SetMargin stored IsStoredMargin;
-    property TopMargin: Double index 1 read GetMargin write SetMargin stored IsStoredMargin;
-    property RightMargin: Double index 2 read GetMargin write SetMargin stored IsStoredMargin;
-    property BottomMargin: Double index 3 read GetMargin write SetMargin stored IsStoredMargin;
-    property HeaderMargin: Double index 4 read GetMargin write SetMargin stored IsStoredMargin;
-    property FooterMargin: Double index 5 read GetMargin write SetMargin stored IsStoredMargin;
+    property Left: Double index 0 read GetMargin write SetMargin stored IsStoredMargin;
+    property Top: Double index 1 read GetMargin write SetMargin stored IsStoredMargin;
+    property Right: Double index 2 read GetMargin write SetMargin stored IsStoredMargin;
+    property Bottom: Double index 3 read GetMargin write SetMargin stored IsStoredMargin;
+    property Header: Double index 4 read GetMargin write SetMargin stored IsStoredMargin;
+    property Footer: Double index 5 read GetMargin write SetMargin stored IsStoredMargin;
   end;
 
   { TGridPrinter }
@@ -155,6 +155,7 @@ type
     property HeaderLineColor: TColor read FHeaderLineColor write FHeaderLineColor default clDefault;
     property HeaderLineWidth: Integer read FHeaderLineWidth write FHeaderLineWidth default 0;
     property HeaderFont: TFont read FHeaderFont write FHeaderFont;
+    property Margins: TGridPrnMargins read FMargins write FMargins;
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
     property Orientation: TPrinterOrientation read FOrientation write FOrientation default poPortrait;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
@@ -470,12 +471,12 @@ begin
   FFactorX := FPixelsPerInchX / ScreenInfo.PixelsPerInchX;
   FFactorY := FPixelsPerInchY / ScreenInfo.PixelsPerInchY;
 
-  FLeftMarginPx := mm2px(FMargins.LeftMargin, FPixelsPerInchX);
-  FTopMarginPx := mm2px(FMargins.TopMargin, FPixelsPerInchY);
-  FRightMarginPx := mm2px(FMargins.RightMargin, FPixelsPerInchX);
-  FBottomMarginPx := mm2px(FMargins.BottomMargin, FPixelsPerInchY);
-  FHeaderMarginPx := mm2px(FMargins.HeaderMargin, FPixelsPerInchY);
-  FFooterMarginPx := mm2px(FMargins.FooterMargin, FPixelsPerInchY);
+  FLeftMarginPx := mm2px(FMargins.Left, FPixelsPerInchX);
+  FTopMarginPx := mm2px(FMargins.Top, FPixelsPerInchY);
+  FRightMarginPx := mm2px(FMargins.Right, FPixelsPerInchX);
+  FBottomMarginPx := mm2px(FMargins.Bottom, FPixelsPerInchY);
+  FHeaderMarginPx := mm2px(FMargins.Header, FPixelsPerInchY);
+  FFooterMarginPx := mm2px(FMargins.Footer, FPixelsPerInchY);
   FPadding := ScaleX(varCellPadding);
 
   ScaleColWidths;
