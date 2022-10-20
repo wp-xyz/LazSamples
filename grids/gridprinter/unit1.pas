@@ -67,6 +67,7 @@ type
     ToolButton2: TToolButton;
     tbZoomIn: TToolButton;
     tbZoomOut: TToolButton;
+    ToolButton3: TToolButton;
     ToolButton5: TToolButton;
     procedure cbDefaultFixedCellsDividerLineColorChange(Sender: TObject);
     procedure cbDefaultGridLineColorChange(Sender: TObject);
@@ -102,6 +103,7 @@ type
     procedure tbPrintClick(Sender: TObject);
     procedure tbZoomInClick(Sender: TObject);
     procedure tbZoomOutClick(Sender: TObject);
+    procedure ToolButton3Click(Sender: TObject);
   private
     FGridPrinter: TGridPrinter;
     FPageNo: Integer;
@@ -459,6 +461,35 @@ procedure TForm1.tbZoomOutClick(Sender: TObject);
 begin
   FZoom := round(FZoom / ZOOM_MULTIPLIER);
   ShowPreview(FPageNo);
+end;
+
+procedure TForm1.ToolButton3Click(Sender: TObject);
+var
+  L: TStrings;
+  i: Integer;
+begin
+  L := TStringList.Create;
+  L.Add('aaaa');
+  L.Add('bbbb');
+  L.Add('cccc.');
+  L.Add(Lineending);
+  L.add('ddddd ddddd');
+  L.Add('eee ');
+  L.Add('fff ffff');
+  L.Add('gg ');
+  L.Add('hh.');
+  L.Add(LineEnding);
+  L.Add('Ende.');
+
+  FGridPrinter.TextBeforeGrid := L;
+
+  L.Free;
+
+  L := FGridPrinter.TextBeforeGrid;
+  for i := 0 to L.Count-1 do
+    WriteLn(L[i]);
+
+
 end;
 
 procedure TForm1.PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid;

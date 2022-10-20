@@ -15,6 +15,8 @@ type
 
   TGridPrnHeaderFooterPart = (hfpLeft, hfpCenter, hfpRight);
 
+  TGridPrnExtraText = (etTitle, etBeforeGrid, etAfterGrid);
+
   TGridPrnMargins = class(TPersistent)
   private
     FMargins: array[0..5] of Double;
@@ -38,6 +40,7 @@ type
   private
     FBorderLineColor: Integer;
     FBorderLineWidth: Integer;
+    FExtraText: Array[TGridPrnExtraText] of TStrings;
     FFixedLineColor: TColor;
     FFixedLineWidth: Integer;
     FGrid: TCustomGrid;
@@ -63,11 +66,13 @@ type
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     function GetCanvas: TCanvas;
+    function GetExtraText(AIndex: TGridPrnExtraText): TStrings;
     function GetFooter: String;
     function GetFooterPart(AIndex: TGridPrnHeaderFooterPart): String;
     function GetHeader: String;
     function GetHeaderPart(AIndex: TGridPrnHeaderFooterPart): String;
     function GetPageCount: Integer;
+    procedure SetExtraText(AIndex: TGridPrnExtraText; AValue: TStrings);
     procedure SetFooter(AValue: String);
     procedure SetFooterPart(AIndex: TGridPrnHeaderFooterPart; AValue: String);
     procedure SetGrid(AValue: TCustomGrid);
@@ -159,6 +164,9 @@ type
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
     property Orientation: TPrinterOrientation read FOrientation write FOrientation default poPortrait;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
+    property TextAfterGrid: TStrings index etAfterGrid read GetExtraText write SetExtraText;
+    property TextBeforeGrid: TStrings index etBeforeGrid read GetExtraText write SetExtraText;
+    property Title: TStrings index etTitle read GetExtraText write SetExtraText;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
   end;
@@ -255,6 +263,8 @@ end;
 { TGridPrinter }
 
 constructor TGridPrinter.Create(AOwner: TComponent);
+var
+  extra: TGridPrnExtraText;
 begin
   inherited;
 
@@ -276,10 +286,16 @@ begin
   FBorderLineColor := clDefault;
   FFixedLineColor := clDefault;
   FGridLineColor := clDefault;
+
+  for extra in TGridPrnExtraText do
+    FExtraText[extra] := TStringList.Create;
 end;
 
 destructor TGridPrinter.Destroy;
+var
+  extra: TGridPrnExtraText;
 begin
+  for extra in TGridPrnExtraText do FExtraText[extra].Free;
   FHeaderFont.Free;
   FFooterFont.Free;
   FMargins.Free;
@@ -358,6 +374,11 @@ begin
     FOnGetCellText(self, FGrid, ACol, ARow, Result)
   else
     Result := lGrid.GetCells(Acol, ARow);
+end;
+
+function TGridPrinter.GetExtraText(AIndex: TGridPrnExtraText): TStrings;
+begin
+  Result := FExtraText[AIndex];
 end;
 
 function TGridPrinter.GetFooter: String;
@@ -1073,6 +1094,41 @@ begin
   begin
     fd := GetFontData(AFont.Handle);
     ACanvas.Font.Size := abs(fd.Height) * 72 div ScreenInfo.PixelsPerInchY;
+  end;
+end;
+
+{ Setter for the extra texts.
+  Un-wraps the strings: Single line-endings are removed while
+  double line endings are considered as paragraph splitters. }
+procedure TGridPrinter.SetExtraText(AIndex: TGridPrnExtraText; AValue: TStrings);
+var
+  i, j: Integer;
+  paragraphs: TStringArray;
+  L: TStringList;
+  s: String;
+begin
+  FExtraText[AIndex].Clear;
+
+  // Split at the double line-endings.
+  L := TStringList.Create;
+  try
+    L.SkipLastLineBreak := true;
+    paragraphs := AValue.Text.Split(LineEnding + LineEnding);
+    for i := 0 to High(paragraphs) do
+    begin
+      // Merge all original paragraph lines (single line endings) to a single string
+      L.Text := paragraphs[i];
+      s := '';
+      for j := 0 to L.Count-1 do
+      begin
+        s := s + L[j];
+        if (s <> '') and not (s[Length(s)] in [' ', #9]) then
+          s := s + ' ';  // Replace the line ending by a space.
+      end;
+      FExtraText[AIndex].Add(s);
+    end;
+  finally
+    L.Free;
   end;
 end;
 
