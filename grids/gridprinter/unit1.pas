@@ -65,6 +65,9 @@ type
     tbPrint: TToolButton;
     ToolButton1: TToolButton;
     ToolButton2: TToolButton;
+    tbZoomIn: TToolButton;
+    tbZoomOut: TToolButton;
+    ToolButton5: TToolButton;
     procedure cbDefaultFixedCellsDividerLineColorChange(Sender: TObject);
     procedure cbDefaultGridLineColorChange(Sender: TObject);
     procedure cbFooterLineChange(Sender: TObject);
@@ -78,7 +81,7 @@ type
     procedure clbGridLineColorColorChanged(Sender: TObject);
     procedure clbHeaderLinecolorColorChanged(Sender: TObject);
     procedure clbFooterLineColorColorChanged(Sender: TObject);
-    procedure cmbPercentChange(Sender: TObject);
+    procedure cmbPercentEditingDone(Sender: TObject);
     procedure edFooterTextChange(Sender: TObject);
     procedure edHeaderTextChange(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -97,6 +100,8 @@ type
     procedure tbNextPageClick(Sender: TObject);
     procedure tbPrevPageClick(Sender: TObject);
     procedure tbPrintClick(Sender: TObject);
+    procedure tbZoomInClick(Sender: TObject);
+    procedure tbZoomOutClick(Sender: TObject);
   private
     FGridPrinter: TGridPrinter;
     FPageNo: Integer;
@@ -121,6 +126,9 @@ implementation
 uses
   Printers;
 
+const
+  ZOOM_MULTIPLIER = 1.05;
+
 { TForm1 }
 
 procedure TForm1.ShowPreview(APageNo: Integer);
@@ -143,6 +151,8 @@ begin
   tbNextPage.Enabled := FPageNo < FGridPrinter.PageCount;
   tbLastPage.Enabled := FPageNo < FGridPrinter.PageCount;
   PageInfo.Caption := Format('Page %d of %d', [FPageNo, FGridPrinter.PageCount]);
+
+  cmbPercent.Text := IntToStr(FZoom) + '%';
 end;
 
 procedure TForm1.cbFooterLineChange(Sender: TObject);
@@ -244,15 +254,15 @@ begin
   ShowPreview(FPageNo);
 end;
 
-procedure TForm1.cmbPercentChange(Sender: TObject);
+procedure TForm1.cmbPercentEditingDone(Sender: TObject);
 var
   zoomStr: String;
 begin
-  zoomStr := cmbPercent.Items[cmbPercent.ItemIndex];
-  Delete(zoomStr, Length(zoomStr), 1);
-  FZoom := StrToInt(zoomStr);
-
-  ShowPreview(FPageNo);
+  zoomStr := cmbPercent.Text;
+  while (zoomStr <> '') and (zoomStr[Length(zoomStr)] in [' ', '%']) do
+    Delete(zoomStr, Length(zoomStr), 1);
+  if TryStrToInt(zoomStr, FZoom) then
+    ShowPreview(FPageNo);
 end;
 
 procedure TForm1.edFooterTextChange(Sender: TObject);
@@ -307,9 +317,9 @@ begin
   if (ssCtrl in Shift) then
   begin
     if WheelDelta > 0 then
-      FZoom := round(FZoom * 1.1)
+      FZoom := round(FZoom * ZOOM_MULTIPLIER)
     else
-      FZoom := round(FZoom / 1.1);
+      FZoom := round(FZoom / ZOOM_MULTIPLIER);
     ShowPreview(FPageNo);
   end;
 end;
@@ -437,6 +447,18 @@ procedure TForm1.tbPrintClick(Sender: TObject);
 begin
   if PrintDialog1.Execute then
     FGridPrinter.Print;
+end;
+
+procedure TForm1.tbZoomInClick(Sender: TObject);
+begin
+  FZoom := round(FZoom * ZOOM_MULTIPLIER);
+  ShowPreview(FPageNo);
+end;
+
+procedure TForm1.tbZoomOutClick(Sender: TObject);
+begin
+  FZoom := round(FZoom / ZOOM_MULTIPLIER);
+  ShowPreview(FPageNo);
 end;
 
 procedure TForm1.PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid;
