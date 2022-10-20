@@ -523,10 +523,11 @@ object Form1: TForm1
     Height = 535
     Top = 0
     Width = 722
-    ActivePage = pgPreview
+    ActivePage = pgGrid
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 1
+    OnChange = PageControl1Change
     object pgGrid: TTabSheet
       Caption = 'Grid to be printed'
       ClientHeight = 507
@@ -540,7 +541,7 @@ object Form1: TForm1
         AlternateColor = clSkyBlue
         ColCount = 1
         MouseWheelOption = mwGrid
-        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goThumbTracking, goSmoothScroll, goCellEllipsis]
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing, goColSizing, goEditing, goThumbTracking, goSmoothScroll, goFixedColSizing, goCellEllipsis]
         ParentFont = False
         TabOrder = 0
         OnPrepareCanvas = StringGrid1PrepareCanvas
@@ -555,9 +556,9 @@ object Form1: TForm1
         Height = 482
         Top = 25
         Width = 714
-        HorzScrollBar.Page = 90
+        HorzScrollBar.Page = 100
         HorzScrollBar.Tracking = True
-        VertScrollBar.Page = 90
+        VertScrollBar.Page = 100
         VertScrollBar.Tracking = True
         Align = alClient
         ClientHeight = 478
@@ -569,10 +570,12 @@ object Form1: TForm1
         object Image1: TImage
           AnchorSideLeft.Control = ScrollBox1
           AnchorSideTop.Control = ScrollBox1
-          Left = 0
+          Left = 10
           Height = 90
-          Top = 0
+          Top = 10
           Width = 90
+          BorderSpacing.Left = 10
+          BorderSpacing.Top = 10
           OnMouseWheel = Image1MouseWheel
         end
       end
@@ -646,7 +649,7 @@ object Form1: TForm1
         end
         object ToolButton2: TToolButton
           Left = 24
-          Height = 5
+          Height = 22
           Top = 2
           Caption = 'ToolButton2'
           Style = tbsDivider
@@ -679,7 +682,7 @@ object Form1: TForm1
         end
         object ToolButton1: TToolButton
           Left = 89
-          Height = 5
+          Height = 22
           Top = 2
           Caption = 'ToolButton1'
           Style = tbsDivider

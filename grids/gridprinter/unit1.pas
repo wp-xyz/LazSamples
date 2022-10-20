@@ -84,6 +84,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure Image1MouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+    procedure PageControl1Change(Sender: TObject);
     procedure seBorderLineWidthChange(Sender: TObject);
     procedure seFixedCellsDividerLineWidthChange(Sender: TObject);
     procedure seGridLineWidthChange(Sender: TObject);
@@ -311,6 +312,12 @@ begin
       FZoom := round(FZoom / 1.1);
     ShowPreview(FPageNo);
   end;
+end;
+
+procedure TForm1.PageControl1Change(Sender: TObject);
+begin
+  if PageControl1.ActivePage = pgPreview then
+    ShowPreview(FPageNo);
 end;
 
 procedure TForm1.seBorderLineWidthChange(Sender: TObject);

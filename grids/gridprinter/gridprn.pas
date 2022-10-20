@@ -178,7 +178,7 @@ const
     Alignment: taLeftJustify;
     Layout: tlCenter;
     SingleLine: true;
-    Clipping: false; //true;
+    Clipping: true;
     ExpandTabs: false;
     ShowPrefix: false;
     WordBreak: false;
@@ -622,10 +622,8 @@ begin
   if not FMonochrome then
     ACanvas.FillRect(ARect);
 
-  ACanvas.ClipRect := ARect;
-
   s := GetCellText(ACol, ARow);
-  InflateRect(ARect, -FPadding, -FPadding);
+  InflateRect(ARect, -FPadding, 0);
 
   // Handle checkbox columns
   if lGrid.Columns.Enabled and (ACol >= FFixedCols) and (ARow >= FFixedRows) then
