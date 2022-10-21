@@ -70,7 +70,7 @@ type
     procedure acZoomToFitWidthExecute(Sender: TObject);
     procedure edPageNoEditingDone(Sender: TObject);
     procedure edPageNoMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
+      WheelDelta: Integer; MousePos: TPoint; var {%H-}Handled: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
@@ -110,7 +110,7 @@ implementation
 {$R *.lfm}
 
 uses
-  Printers;
+  LCLIntf, LCLType, Printers;
 
 const
   ZOOM_MULTIPLIER = 1.05;
@@ -206,11 +206,14 @@ begin
     ShowPage(FPageNumber, round(FZoom / ZOOM_MULTIPLIER));
 end;
 
+{ Selects a zoom factor such that the preview of the page fills the form. }
 procedure TGridPrintPreviewForm.acZoomToFitWidthExecute(Sender: TObject);
 begin
   ZoomToFitWidth;
 end;
 
+{ Allows to select a page by entering its number in the PageNo edit and
+  pressing ENTER: }
 procedure TGridPrintPreviewForm.edPageNoEditingDone(Sender: TObject);
 begin
   if TryStrToInt(edPageNo.Text, FPageNumber) then
@@ -221,6 +224,8 @@ begin
   end;
 end;
 
+{ Activates scrolling of pages by means of rotating mouse wheel over the
+  PageNo edit. }
 procedure TGridPrintPreviewForm.edPageNoMouseWheel(Sender: TObject;
   Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
   var Handled: Boolean);
@@ -335,7 +340,16 @@ var
 begin
   if Printer = nil then
     exit;
-  w := Scrollbox.ClientWidth - 2*PreviewImage.Left;
+
+  // Correct for scrollbar width when the vert scrollbar is currently hidden,
+  // but will be shown after displaying the preview page.
+  if (not Scrollbox.VertScrollbar.IsScrollbarVisible) and
+     (Printer.PageHeight/Printer.PageWidth > Scrollbox.ClientHeight/Scrollbox.ClientWidth)
+  then
+    w := Scrollbox.VertScrollbar.ClientSizeWithBar
+  else
+    w := Scrollbox.ClientWidth;
+  w := w - 2*PreviewImage.Left;
   FZoom := round(w / Printer.PageWidth * Printer.XDPI/ ScreenInfo.PixelsPerInchX * 100);
   ShowPage(FPageNumber, FZoom);
 end;
@@ -346,7 +360,16 @@ var
 begin
   if Printer = nil then
     exit;
-  h := Scrollbox.ClientHeight - 2*PreviewImage.Top;
+
+  // Correct for scrollbar height when the horizontal scrollbar is currently hidden,
+  // but will be shown after displaying the preview page.
+  if (not Scrollbox.HorzScrollbar.IsScrollbarVisible) and
+     (Printer.PageHeight/Printer.PageWidth < Scrollbox.ClientHeight/Scrollbox.ClientWidth)
+  then
+    h := Scrollbox.HorzScrollbar.ClientSizeWithBar
+  else
+    h := Scrollbox.ClientHeight;
+  h := h - 2*PreviewImage.Top;
   FZoom := round(h / Printer.PageHeight * Printer.YDPI / ScreenInfo.PixelsPerInchY * 100);
   ShowPage(FPageNumber, FZoom);
 end;
