@@ -10,8 +10,7 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Unit1, printer4lazarus, GridPrn
-  { you can add units after this };
+  Forms, Unit1, printer4lazarus, GridPrn, GridPrnPreviewForm;
 
 {$R *.res}
 
@@ -20,6 +19,7 @@ begin
   Application.Scaled:=True;
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TGridPrintPreviewForm, GridPrintPreviewForm);
   Application.Run;
 end.
 

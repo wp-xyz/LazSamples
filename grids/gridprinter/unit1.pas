@@ -14,6 +14,7 @@ type
 
   TForm1 = class(TForm)
     Bevel1: TBevel;
+    btnPrintPreviewform: TButton;
     cbDefaultFixedCellsDividerLineColor: TCheckBox;
     cbDefaultGridLineColor: TCheckBox;
     cbPageOrientation: TComboBox;
@@ -68,6 +69,7 @@ type
     tbZoomIn: TToolButton;
     tbZoomOut: TToolButton;
     ToolButton5: TToolButton;
+    procedure btnPrintPreviewformClick(Sender: TObject);
     procedure cbDefaultFixedCellsDividerLineColorChange(Sender: TObject);
     procedure cbDefaultGridLineColorChange(Sender: TObject);
     procedure cbFooterLineChange(Sender: TObject);
@@ -124,7 +126,7 @@ implementation
 {$R *.lfm}
 
 uses
-  Printers;
+  Printers, GridPrnPreviewForm;
 
 const
   ZOOM_MULTIPLIER = 1.05;
@@ -169,6 +171,20 @@ begin
   else
     FGridPrinter.FixedLineColor := clbFixedCellsDividerLinecolor.ButtonColor;
   ShowPreview(FPageNo);
+end;
+
+procedure TForm1.btnPrintPreviewformClick(Sender: TObject);
+var
+  F: TGridPrintPreviewForm;
+begin
+  F := TGridPrintPreviewForm.Create(nil);
+  try
+    F.GridPrinter := FGridPrinter;
+    if (F.ShowModal = mrOK) and PrintDialog1.Execute then
+      FGridPrinter.Print;
+  finally
+    F.Free;
+  end;
 end;
 
 procedure TForm1.cbDefaultGridLineColorChange(Sender: TObject);
