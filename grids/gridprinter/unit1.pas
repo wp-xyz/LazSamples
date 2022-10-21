@@ -108,6 +108,7 @@ type
     FGridPrinter: TGridPrinter;
     FPageNo: Integer;
     FZoom: Integer;
+    procedure CreateSampleText(AList: TStrings);
     procedure PopulateGrid;
     procedure PopulateGrid_Columns;
     procedure PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid; ACol,
@@ -130,8 +131,32 @@ uses
 
 const
   ZOOM_MULTIPLIER = 1.05;
+  LE = LineEnding;
+
+  SAMPLE_TEXT = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, ' + LE +
+    'sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, ' + LE +
+    'sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.' + LE + LE +
+    'Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. ' + LE +
+    'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, ' + LE +
+    'sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, ' + LE +
+    'sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. ' + LE +
+    'Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.';
 
 { TForm1 }
+
+procedure TForm1.CreateSampleText(AList: TStrings);
+var
+  i, j: Integer;
+  s1, s: String;
+begin
+  for i := 1 to 150 do begin
+    s1 := IntToStr(i);
+    s := '';
+    for j := 1 to 20 do
+      s := s + ' ' + s1;
+    AList.Add(s);
+  end;
+end;
 
 procedure TForm1.ShowPreview(APageNo: Integer);
 var
@@ -280,6 +305,8 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
+var
+  L: TStrings;
 begin
   PopulateGrid;
   //PopulateGrid_Columns;
@@ -291,6 +318,13 @@ begin
   FgridPrinter.FooterLine := false;
 //  FGridPrinter.OnGetCellText := @PrinterGetCellText;
   FGridPrinter.OnPrepareCanvas := @StringGrid1PrepareCanvas;
+  L := TStringList.Create;
+  try
+    CreateSampleText(L);
+    FGridPrinter.TextBeforeGrid := L;
+  finally
+    L.Free;
+  end;
 
   edHeaderText.Text := FGridPrinter.Header;
   cbHeaderLine.Checked := FGridPrinter.HeaderLine;
@@ -488,8 +522,6 @@ begin
   L := FGridPrinter.TextBeforeGrid;
   for i := 0 to L.Count-1 do
     WriteLn(L[i]);
-
-
 end;
 
 procedure TForm1.PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid;

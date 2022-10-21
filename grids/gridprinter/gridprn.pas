@@ -5,7 +5,7 @@ unit GridPrn;
 interface
 
 uses
-  Classes, SysUtils, Types, Graphics, StdCtrls, Grids, Printers;
+  Classes, SysUtils, Contnrs, Types, Graphics, StdCtrls, Grids, Printers;
 
 type
   TGridPrnGetCellTextEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
@@ -51,6 +51,7 @@ type
     FHeaderLineColor: TColor;
     FHeaderLineWidth: Integer;
     FHeaderText: array[TGridPrnHeaderFooterPart] of string;
+    FFont: TFont;   // Font of extra text
     FFooterFont: TFont;
     FFooterLine: Boolean;
     FFooterLineColor: TColor;
@@ -59,10 +60,12 @@ type
     FMargins: TGridPrnMargins;
     FMonochrome: Boolean;
     FOrientation: TPrinterOrientation;
+    FPageInfoList: TFPObjectList;
     FPadding: Integer;
     FPageHeight: Integer;
     FPageWidth: Integer;
     FPrintOrder: TGridPrnOrder;
+    FTitleFont: TFont;
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     function GetCanvas: TCanvas;
@@ -99,6 +102,7 @@ type
     FPageBreakCols: array of Integer;  // Indices of first columns on new page
     FPageNumber: Integer;
     FPageCount: Integer;
+    FPageRect: TRect;                  // Bounding rectangle of printable page, in printer pixels
     FPixelsPerInchX: Integer;
     FPixelsPerInchY: Integer;
     FPreviewBitmap: TBitmap;           // Bitmap to which the preview image is printed
@@ -112,6 +116,8 @@ type
     procedure DoPrepareCanvas(ACol, ARow: Integer); virtual;
     procedure Execute(ACanvas: TCanvas);
     function GetHeaderFooterText(AText: String): String;
+    procedure LayoutExtraText(ACanvas: TCanvas; AIndex: TGridPrnExtraText;
+      var Y, APageNo: Integer);
     procedure LayoutPagebreaks;
     procedure NewPage;
     procedure Prepare;
@@ -148,6 +154,7 @@ type
     property BorderLineWidth: Integer read FBorderLineWidth write FBorderLineWidth default 0;
     property FixedLineColor: TColor read FFixedLineColor write FFixedLineColor default clDefault;
     property FixedLineWidth: Integer read FFixedLineWidth write FFixedLineWidth default 0;
+    property Font: TFont read FFont write FFont;
     property Footer: string read GetFooter write SetFooter;
     property FooterFont: TFont read FFooterFont write FFooterFont;
     property FooterLine: Boolean read FFooterLine write FFooterline default true;
@@ -167,6 +174,7 @@ type
     property TextAfterGrid: TStrings index etAfterGrid read GetExtraText write SetExtraText;
     property TextBeforeGrid: TStrings index etBeforeGrid read GetExtraText write SetExtraText;
     property Title: TStrings index etTitle read GetExtraText write SetExtraText;
+    property TitleFont: TFont read FTitleFont write FTitleFont;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
   end;
@@ -174,10 +182,7 @@ type
 implementation
 
 uses
-  LCLIntf, LCLType, OSPrinters, Themes;
-
-type
-  TGridAccess = class(TCustomGrid);
+  LCLIntf, LCLType, OSPrinters, StrUtils, Themes;
 
 const
   INCH = 25.4;    // 1" = 25.4 mm
@@ -195,6 +200,46 @@ const
     RightToLeft: false;
     EndEllipsis: false
   );
+
+type
+  TGridAccess = class(TCustomGrid);
+
+  TPageInfoKind = (pikTitle, pikTextBefore, pikGrid, pikTextAfter);
+
+  TPageInfo = class
+    Kind: TPageInfoKind;
+    ExtraTextIndex: Integer;
+    GridColStart: Integer;
+    GridRowStart: Integer;
+    GridColEnd: Integer;
+    GridRowEnd: Integer;
+    PageNumber: Integer;
+    constructor Create(AKind: TPageInfoKind; APageNo, AExtraTextIndex: Integer);
+    constructor Create(AKind: TPageInfoKind; APageNo, AGridColStart, AGridRowStart, AGridColEnd, AGridRowEnd: Integer);
+  end;
+
+constructor TPageInfo.Create(AKind: TPageInfoKind;
+  APageNo, AExtraTextIndex: Integer);
+begin
+  Kind := AKind;
+  PageNumber := APageNo;
+  if Kind <> pikGrid then
+    ExtraTextIndex := AExtraTextIndex;
+end;
+
+constructor TPageInfo.Create(AKind: TPageInfoKind;
+  APageNo, AGridColStart, AGridRowStart, AGridColEnd, AGridRowEnd: Integer);
+begin
+  Kind := AKind;
+  PageNumber := APageNo;
+  if Kind = pikGrid then
+  begin
+    GridColStart := AGridColStart;
+    GridRowStart := AGridRowStart;
+    GridColEnd := AGridColEnd;
+    GridRowEnd := AGridRowEnd;
+  end;
+end;
 
 function IfThen(cond: Boolean; a, b: Integer): Integer;
 begin
@@ -271,6 +316,11 @@ begin
   FMargins := TGridPrnMargins.Create;
   FPrintOrder := poRowsFirst;
 
+  FFont := TFont.Create;
+  FTitleFont := TFont.Create;
+  FTitleFont.Size := 14;
+  FTitleFont.Style := [fsBold];
+
   FHeaderFont := TFont.Create;
   FixFontSize(FHeaderFont);
   FHeaderFont.Size := FHeaderFont.Size - 2;
@@ -289,6 +339,8 @@ begin
 
   for extra in TGridPrnExtraText do
     FExtraText[extra] := TStringList.Create;
+
+  FPageInfoList := TFPObjectList.Create;
 end;
 
 destructor TGridPrinter.Destroy;
@@ -296,8 +348,11 @@ var
   extra: TGridPrnExtraText;
 begin
   for extra in TGridPrnExtraText do FExtraText[extra].Free;
+  FPageInfoList.Free;
   FHeaderFont.Free;
   FFooterFont.Free;
+  FTitleFont.Free;
+  FFont.Free;
   FMargins.Free;
   inherited;
 end;
@@ -416,6 +471,96 @@ begin
   Result := FPageCount;
 end;
 
+{ Calculates the layout of extra text placed in the title, or before or after
+  the grid. This is specified by the AIndex parameter.
+  Y, on input, is the Y coordinate on the page where the extra text starts.
+  On Output, it is the Y coordinate where the next element would start.
+  APageNo is the current page number (1-based).
+  The layout is stored in the pageinfo list.
+  A page can contain several pageinfos.
+}
+procedure TGridPrinter.LayoutExtraText(ACanvas: TCanvas;
+  AIndex: TGridPrnExtraText; var Y, APageNo: Integer);
+var
+  pageInfo, prevPageInfo: TPageInfo;
+  pageInfoKind: TPageInfoKind;
+  lineHeight: Integer;
+  paragraphDist: Integer;
+  paragraphStart, charPosStart: Integer;
+  flags: Integer;
+  i: Integer;
+  wrdCount, wrdPos: Integer;
+  s, tmp: String;
+  R: TRect;
+begin
+  if FExtraText[AIndex].Count = 0 then
+    exit;
+
+  SelectFont(ACanvas, FFont);
+  lineHeight := ACanvas.TextHeight('Tg');
+  paragraphDist := lineheight div 2;
+  flags := DT_CALCRECT or DT_WORDBREAK or DT_NOPREFIX;
+
+  case AIndex of
+    etTitle      : pageInfoKind := pikTitle;
+    etBeforeGrid : pageInfoKind := pikTextBefore;
+    etAfterGrid  : pageInfoKind := pikTextAfter;
+  end;
+  pageInfo := TPageInfo.Create(pageInfoKind, APageNo, 0);
+  FPageInfoList.Add(pageInfo);
+
+  i := 0;
+  while i < FExtraText[AIndex].Count do
+  begin
+    // Height of 1st line of current extratext paragraph reaches into next page
+    // --> new page
+    if (Y + lineheight > FPageRect.Bottom) then
+    begin
+      inc(APageNo);
+      pageInfo.PageNumber := APageNo;
+      pageInfo.ExtraTextIndex := i;
+      Y := FPageRect.Top;
+    end;
+
+    // Get text of entire paragraph
+    s := FExtraText[AIndex].Strings[i];  // Text of entire paragraph
+
+    // Measure text paragraph height
+    R := Rect(FPageRect.Left, Y, FPageRect.Right, Y);
+    DrawText(ACanvas.Handle, PChar(s), Length(s), R, flags);
+
+    // If paragraph reaches beyond bottom page limit we must find the
+    // last line which fully is on the current page. Then we split the
+    // paragraph.
+    if R.Bottom > FPageRect.Bottom then
+    begin
+      tmp := s;
+      wrdCount := WordCount(s, StdWordDelims);
+      // Delete word by word at the end of the paragraph until remaining text
+      // fits into the page.
+      while (R.Bottom > FPageRect.Bottom) and (wrdCount > 0) do
+      begin
+        wrdCount := Wordcount(s, StdWordDelims);
+        wrdPos := WordPosition(wrdCount, s, StdWordDelims);
+        Delete(s, wrdPos, MaxInt);
+        R := Rect(FPageRect.Left, Y, FPageRect.Right, Y);
+        DrawText(ACanvas.Handle, PChar(s), Length(s), R, flags);
+      end;
+      // Replace current paragraph by shortened string...
+      FExtraText[AIndex].Strings[i] := s;
+      // ... and add new paragraph with the rest of the old paragraph
+      Delete(tmp, 1, wrdPos);
+      FExtraText[AIndex].Insert(i+1, tmp);
+      // new page
+      inc(APageNo);
+      pageInfo := TPageInfo.Create(pageInfoKind, APageNo, i+1);
+      Y := FPageRect.Top;
+    end else
+      Y := R.Bottom + paragraphDist;
+    inc(i);
+  end;
+end;
+
 { Find the column and row indices before which page breaks are occuring.
   Store them in the arrays FPageBreakCols and FPageBreakRows.
   Note that the indices do not contain the fixed columns/rows. }
@@ -469,6 +614,10 @@ begin
 end;
 
 procedure TGridPrinter.Prepare;
+var
+  bmp: TBitmap;
+  Y: Integer;
+  pageNo: Integer;
 begin
   Printer.Orientation := FOrientation;
 
@@ -489,6 +638,9 @@ begin
       end;
   end;
 
+  if FPixelsPerInchX = 0 then
+    exit;
+
   FFactorX := FPixelsPerInchX / ScreenInfo.PixelsPerInchX;
   FFactorY := FPixelsPerInchY / ScreenInfo.PixelsPerInchY;
 
@@ -498,10 +650,24 @@ begin
   FBottomMarginPx := mm2px(FMargins.Bottom, FPixelsPerInchY);
   FHeaderMarginPx := mm2px(FMargins.Header, FPixelsPerInchY);
   FFooterMarginPx := mm2px(FMargins.Footer, FPixelsPerInchY);
+  FPageRect := Rect(FLeftMarginPx, FTopMarginPx, FPageWidth - FRightMarginPx, FPageHeight - FBottomMarginPx);
   FPadding := ScaleX(varCellPadding);
 
   ScaleColWidths;
   ScaleRowHeights;
+
+  bmp := TBitmap.Create;
+  try
+    bmp.SetSize(1, 1);
+    bmp.Canvas.HandleAllocated;
+    pageNo := 1;
+    Y := FPageRect.Top;
+    LayoutExtraText(bmp.Canvas, etBeforeGrid, Y, pageNo);
+    // ... more...
+  finally
+    bmp.Free;
+  end;
+
   LayoutPageBreaks;
 end;
 
