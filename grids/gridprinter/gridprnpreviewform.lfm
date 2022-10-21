@@ -12,13 +12,14 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
   LCLVersion = '2.3.0.0'
   object ToolBar: TToolBar
     Left = 0
-    Height = 26
+    Height = 24
     Top = 0
     Width = 938
     AutoSize = True
     ButtonHeight = 24
     ButtonWidth = 30
     Caption = 'ToolBar'
+    EdgeBorders = []
     Images = ToolbarImages
     List = True
     ShowCaptions = True
@@ -26,103 +27,134 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
     OnResize = ToolBarResize
     object tbPrint: TToolButton
       Left = 1
-      Top = 2
+      Top = 0
       Action = acPrint
     end
     object tbClose: TToolButton
-      Left = 250
-      Top = 2
+      Left = 438
+      Top = 0
       Action = acClose
     end
     object tbFirst: TToolButton
       Left = 60
-      Top = 2
+      Top = 0
       Action = acFirstPage
       ShowCaption = False
     end
     object tbPrev: TToolButton
       Left = 90
-      Top = 2
+      Top = 0
       Action = acPrevPage
       ShowCaption = False
     end
     object tbNext: TToolButton
-      Left = 120
-      Top = 2
+      Left = 160
+      Top = 0
       Action = acNextPage
       ShowCaption = False
     end
     object tbLast: TToolButton
-      Left = 150
-      Top = 2
+      Left = 190
+      Top = 0
       Action = acLastPage
       ShowCaption = False
     end
-    object ToolButton1: TToolButton
+    object tbDivider1: TToolButton
       Left = 55
       Height = 24
-      Top = 2
-      Caption = 'ToolButton1'
+      Top = 0
+      Caption = 'tbDivider1'
       Style = tbsDivider
     end
-    object ToolButton2: TToolButton
-      Left = 180
+    object tbDivider2: TToolButton
+      Left = 220
       Height = 24
-      Top = 2
-      Caption = 'ToolButton2'
+      Top = 0
+      Caption = 'tbDivider2'
       Style = tbsDivider
     end
-    object ToolButton3: TToolButton
-      Left = 185
-      Top = 2
+    object tbZoomIn: TToolButton
+      Left = 225
+      Top = 0
       Action = acZoomIn
       ShowCaption = False
     end
-    object ToolButton4: TToolButton
-      Left = 245
+    object tbDivider3: TToolButton
+      Left = 433
       Height = 24
-      Top = 2
-      Caption = 'ToolButton4'
+      Top = 0
+      Caption = 'tbDivider3'
       Style = tbsDivider
     end
-    object ToolButton5: TToolButton
-      Left = 215
-      Top = 2
+    object tbZoomOut: TToolButton
+      Left = 255
+      Top = 0
       Action = acZoomOut
       ShowCaption = False
     end
     object InfoPanel: TPanel
-      Left = 308
+      Left = 664
       Height = 24
-      Top = 2
+      Top = 0
       Width = 196
       Align = alRight
       Alignment = taRightJustify
+      BorderSpacing.Top = 2
       BevelOuter = bvNone
+      Color = clRed
       ParentColor = False
       TabOrder = 0
+    end
+    object tbZoomWidth: TToolButton
+      Left = 285
+      Top = 0
+      Action = acZoomToFitWidth
+    end
+    object tbZoomHeight: TToolButton
+      Left = 339
+      Top = 0
+      Action = acZoomToFitHeight
+    end
+    object tbZoom100: TToolButton
+      Left = 397
+      Top = 0
+      Action = acZoom100
+    end
+    object edPageNo: TEdit
+      Left = 120
+      Height = 23
+      Top = 0
+      Width = 40
+      Alignment = taCenter
+      OnEditingDone = edPageNoEditingDone
+      OnMouseWheel = edPageNoMouseWheel
+      TabOrder = 1
+      Text = 'edPageNo'
     end
   end
   object ScrollBox: TScrollBox
     Left = 0
-    Height = 623
-    Top = 26
+    Height = 625
+    Top = 24
     Width = 938
     HorzScrollBar.Page = 98
     VertScrollBar.Page = 98
     VertScrollBar.Tracking = True
     Align = alClient
-    ClientHeight = 619
+    ClientHeight = 621
     ClientWidth = 934
     Color = clAppWorkspace
     ParentColor = False
     TabOrder = 1
+    TabStop = True
+    OnMouseDown = ScrollBoxMouseDown
     OnMouseWheel = PreviewImageMouseWheel
     object PreviewImage: TImage
       Left = 8
       Height = 90
       Top = 8
       Width = 90
+      OnMouseDown = PreviewImageMouseDown
       OnMouseWheel = PreviewImageMouseWheel
       PopupMenu = PreviewPopupMenu
     end
@@ -426,6 +458,21 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       Hint = 'Zoom out'
       ImageIndex = 7
       OnExecute = acZoomOutExecute
+    end
+    object acZoomToFitWidth: TAction
+      Caption = 'Fit width'
+      Hint = 'Zoom to fit width'
+      OnExecute = acZoomToFitWidthExecute
+    end
+    object acZoomToFitHeight: TAction
+      Caption = 'Fit height'
+      Hint = 'Zoom to fit page height'
+      OnExecute = acZoomToFitHeightExecute
+    end
+    object acZoom100: TAction
+      Caption = '100%'
+      Hint = 'Original size'
+      OnExecute = acZoom100Execute
     end
   end
   object PreviewPopupMenu: TPopupMenu

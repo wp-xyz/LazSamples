@@ -20,9 +20,13 @@ type
     acPrevPage: TAction;
     acNextPage: TAction;
     acLastPage: TAction;
+    acZoom100: TAction;
+    acZoomToFitWidth: TAction;
+    acZoomToFitHeight: TAction;
     acZoomOut: TAction;
     acZoomIn: TAction;
     ActionList: TActionList;
+    edPageNo: TEdit;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
@@ -44,11 +48,14 @@ type
     tbPrev: TToolButton;
     tbNext: TToolButton;
     tbLast: TToolButton;
-    ToolButton1: TToolButton;
-    ToolButton2: TToolButton;
-    ToolButton3: TToolButton;
-    ToolButton4: TToolButton;
-    ToolButton5: TToolButton;
+    tbDivider1: TToolButton;
+    tbDivider2: TToolButton;
+    tbDivider3: TToolButton;
+    tbZoomIn: TToolButton;
+    tbZoomOut: TToolButton;
+    tbZoomWidth: TToolButton;
+    tbZoomHeight: TToolButton;
+    tbZoom100: TToolButton;
     procedure acCloseExecute(Sender: TObject);
     procedure acFirstPageExecute(Sender: TObject);
     procedure acLastPageExecute(Sender: TObject);
@@ -56,12 +63,22 @@ type
     procedure acPrevPageExecute(Sender: TObject);
     procedure acPrintExecute(Sender: TObject);
     procedure ActionListUpdate({%H-}AAction: TBasicAction; var {%H-}Handled: Boolean);
+    procedure acZoom100Execute(Sender: TObject);
     procedure acZoomInExecute(Sender: TObject);
     procedure acZoomOutExecute(Sender: TObject);
+    procedure acZoomToFitHeightExecute(Sender: TObject);
+    procedure acZoomToFitWidthExecute(Sender: TObject);
+    procedure edPageNoEditingDone(Sender: TObject);
+    procedure edPageNoMouseWheel(Sender: TObject; Shift: TShiftState;
+      WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; {%H-}MousePos: TPoint; var {%H-}Handled: Boolean);
+    procedure ScrollBoxMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure ToolBarResize(Sender: TObject);
   private
     FGridPrinter: TGridPrinter;
@@ -76,6 +93,8 @@ type
     procedure UpdateInfoPanel;
 
   public
+    procedure ZoomToFitHeight;
+    procedure ZoomToFitWidth;
     property PageNumber: Integer read FPageNumber write SetPageNumber;
 
   published
@@ -90,6 +109,9 @@ implementation
 
 {$R *.lfm}
 
+uses
+  Printers;
+
 const
   ZOOM_MULTIPLIER = 1.05;
 
@@ -101,8 +123,15 @@ begin
     ShowPage(1, FZoom);
 end;
 
+procedure TGridPrintPreviewForm.PreviewImageMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  Scrollbox.SetFocus;
+end;
+
 procedure TGridPrintPreviewForm.FormCreate(Sender: TObject);
 begin
+  InfoPanel.ParentColor := true;
   FPageNumber := 1;
   FZoom := 100;
 end;
@@ -139,6 +168,16 @@ begin
   ModalResult := mrOK;
 end;
 
+procedure TGridPrintPreviewForm.acZoom100Execute(Sender: TObject);
+begin
+  ShowPage(FPageNumber, 100);
+end;
+
+procedure TGridPrintPreviewForm.acZoomToFitHeightExecute(Sender: TObject);
+begin
+  ZoomToFitHeight;
+end;
+
 procedure TGridPrintPreviewForm.ActionListUpdate(AAction: TBasicAction;
   var Handled: Boolean);
 begin
@@ -155,8 +194,43 @@ begin
 end;
 
 procedure TGridPrintPreviewForm.acZoomOutExecute(Sender: TObject);
+var
+  newZoom: Integer;
+  nextNewZoom: Integer;
 begin
-  ShowPage(FPageNumber, round(FZoom / ZOOM_MULTIPLIER));
+  newZoom := round(FZoom / ZOOM_MULTIPLIER);
+  nextNewZoom := round(newZoom / ZOOM_MULTIPLIER);
+  // Prevent reaching a state in which the rounded zoom factor is so small that
+  // it does not change any more.
+  if nextNewZoom <> newZoom then
+    ShowPage(FPageNumber, round(FZoom / ZOOM_MULTIPLIER));
+end;
+
+procedure TGridPrintPreviewForm.acZoomToFitWidthExecute(Sender: TObject);
+begin
+  ZoomToFitWidth;
+end;
+
+procedure TGridPrintPreviewForm.edPageNoEditingDone(Sender: TObject);
+begin
+  if TryStrToInt(edPageNo.Text, FPageNumber) then
+  begin
+    if FPageNumber < 1 then FPageNumber := 1;
+    if FPageNumber > FPageCount then FPageNumber := FPageCount;
+    ShowPage(FPageNumber, FZoom);
+  end;
+end;
+
+procedure TGridPrintPreviewForm.edPageNoMouseWheel(Sender: TObject;
+  Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
+  var Handled: Boolean);
+begin
+  if WheelDelta < 0 then
+  begin
+    if FPageNumber < FPageCount then FPageNumber := FPageNumber + 1 else exit;
+  end else
+    if FPageNumber > 1 then FPageNumber := FPageNumber - 1 else exit;
+  ShowPage(FPageNumber, FZoom);
 end;
 
 procedure TGridPrintPreviewForm.Notification(AComponent: TComponent;
@@ -173,14 +247,30 @@ end;
 procedure TGridPrintPreviewForm.PreviewImageMouseWheel(Sender: TObject;
   Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
   var Handled: Boolean);
+var
+  newZoom: Integer;
+  nextNewZoom: Integer;
 begin
   if (ssCtrl in Shift) then
   begin
     if WheelDelta > 0 then
       ShowPage(FPageNumber, round(FZoom * ZOOM_MULTIPLIER))
     else
-      ShowPage(FPageNumber, round(FZoom / ZOOM_MULTIPLIER));
+    begin
+      // Prevent reaching a state in which the zoom factor is so small that
+      // it does not change any more due to rounding.
+      newZoom := round(FZoom / ZOOM_MULTIPLIER);
+      nextNewZoom := round(newZoom / ZOOM_MULTIPLIER);
+      if nextNewZoom <> newZoom then
+        ShowPage(FPageNumber, newZoom);
+    end;
   end;
+end;
+
+procedure TGridPrintPreviewForm.ScrollBoxMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  Scrollbox.SetFocus;
 end;
 
 procedure TGridPrintPreviewForm.ToolBarResize(Sender: TObject);
@@ -236,6 +326,29 @@ begin
   InfoPanel.Caption := Format('Page %d of %d, Zoom %d %%', [FPageNumber, FPageCount, FZoom]);
   InfoPanel.Width := InfoPanel.Canvas.TextWidth(InfoPanel.Caption);
   InfoPanel.Left := Toolbar.ClientWidth - InfoPanel.Width - 8;
+  edPageNo.Text := IntToStr(FPageNumber);
+end;
+
+procedure TGridPrintPreviewForm.ZoomToFitWidth;
+var
+  w: Integer;
+begin
+  if Printer = nil then
+    exit;
+  w := Scrollbox.ClientWidth - 2*PreviewImage.Left;
+  FZoom := round(w / Printer.PageWidth * Printer.XDPI/ ScreenInfo.PixelsPerInchX * 100);
+  ShowPage(FPageNumber, FZoom);
+end;
+
+procedure TGridPrintPreviewForm.ZoomToFitHeight;
+var
+  h: Integer;
+begin
+  if Printer = nil then
+    exit;
+  h := Scrollbox.ClientHeight - 2*PreviewImage.Top;
+  FZoom := round(h / Printer.PageHeight * Printer.YDPI / ScreenInfo.PixelsPerInchY * 100);
+  ShowPage(FPageNumber, FZoom);
 end;
 
 end.
