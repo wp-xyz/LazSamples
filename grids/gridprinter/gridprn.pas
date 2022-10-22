@@ -462,6 +462,8 @@ begin
       end;
     odPreview:
       begin
+        if FPreviewPercent = 0 then
+          exit;
         FPixelsPerInchX := ScreenInfo.PixelsPerInchX * FPreviewPercent div 100;
         FPixelsPerInchY := ScreenInfo.PixelsPerInchY * FPreviewPercent div 100;
         FPageWidth := round(Printer.PageWidth * FPixelsPerInchX / Printer.XDPI);

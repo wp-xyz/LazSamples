@@ -5,7 +5,7 @@ unit GridPrnPreviewForm;
 interface
 
 uses
-  Classes, SysUtils, Forms, Controls, Graphics, Types,
+  Classes, SysUtils, Forms, Controls, Graphics, Types, LazLoggerBase,
   StdCtrls, ExtCtrls, ComCtrls, Dialogs, Menus, ActnList,
   GridPrn;
 
@@ -70,6 +70,7 @@ type
     procedure edPageNoEditingDone(Sender: TObject);
     procedure edPageNoMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var {%H-}Handled: Boolean);
+    procedure FormActivate(Sender: TObject);
     procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -78,17 +79,17 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure ToolBarResize(Sender: TObject);
   private
+    FActivated: Boolean;
     FGridPrinter: TGridPrinter;
     FPageCount: Integer;
     FPageNumber: Integer;
     FZoom: Integer;
     FZoomMax: Integer;
     FZoomMin: Integer;
-    procedure SetGridPrinter(AValue: TGridPrinter);
     procedure SetPageNumber(AValue: Integer);
   protected
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
-    procedure ShowPage(APageNo, AZoom: Integer);
+    procedure ShowPage(APageNo: Integer; AZoom: Integer = 0);
     procedure UpdateInfoPanel;
 
   public
@@ -98,7 +99,7 @@ type
     property PageNumber: Integer read FPageNumber write SetPageNumber;
 
   published
-    property GridPrinter: TGridPrinter read FGridPrinter write SetGridPrinter;
+    property GridPrinter: TGridPrinter read FGridPrinter write FGridPrinter;
 
   end;
 
@@ -136,7 +137,7 @@ constructor TGridPrintPreviewForm.Create(AOwner: TComponent);
 begin
   inherited;
   InfoPanel.ParentColor := true;
-  FPageNumber := 1;
+  FPageNumber := 0;
   FZoom := 100;
   FZoomMax := 1000;  // To avoid too-large bitmaps
   FZoomMin := 10;
@@ -156,24 +157,24 @@ end;
 
 procedure TGridPrintPreviewForm.acFirstPageExecute(Sender: TObject);
 begin
-  ShowPage(1, FZoom);
+  ShowPage(1);
 end;
 
 procedure TGridPrintPreviewForm.acLastPageExecute(Sender: TObject);
 begin
-  ShowPage(FPageCount, FZoom);
+  ShowPage(FPageCount);
 end;
 
 procedure TGridPrintPreviewForm.acNextPageExecute(Sender: TObject);
 begin
   if FPageNumber < FPageCount then
-    ShowPage(FPageNumber+1, FZoom);
+    ShowPage(FPageNumber+1);
 end;
 
 procedure TGridPrintPreviewForm.acPrevPageExecute(Sender: TObject);
 begin
   if FPageNumber > 1 then
-    ShowPage(FPageNumber-1, FZoom);
+    ShowPage(FPageNumber-1);
 end;
 
 procedure TGridPrintPreviewForm.acPrintExecute(Sender: TObject);
@@ -228,7 +229,7 @@ begin
   begin
     if FPageNumber < 1 then FPageNumber := 1;
     if FPageNumber > FPageCount then FPageNumber := FPageCount;
-    ShowPage(FPageNumber, FZoom);
+    ShowPage(FPageNumber);
   end;
 end;
 
@@ -243,7 +244,15 @@ begin
     if FPageNumber < FPageCount then FPageNumber := FPageNumber + 1 else exit;
   end else
     if FPageNumber > 1 then FPageNumber := FPageNumber - 1 else exit;
-  ShowPage(FPageNumber, FZoom);
+  ShowPage(FPageNumber);
+end;
+
+procedure TGridPrintPreviewForm.FormActivate(Sender: TObject);
+begin
+  if FActivated then
+    exit;
+  ShowPage(1, 100);
+  FActivated := true;
 end;
 
 procedure TGridPrintPreviewForm.Notification(AComponent: TComponent;
@@ -286,35 +295,27 @@ begin
   UpdateInfoPanel;
 end;
 
-procedure TGridPrintPreviewForm.SetGridPrinter(AValue: TGridPrinter);
+procedure TGridPrintPreviewForm.SetPageNumber(AValue: Integer);
 begin
-  if FGridPrinter = AValue then
-    exit;
-  FGridPrinter := AValue;
-  if FGridPrinter <> nil then
-    ShowPage(1, FZoom)
-  else
+  if AValue <> FPageNumber then
+    ShowPage(AValue);
+end;
+
+procedure TGridPrintPreviewForm.ShowPage(APageNo: Integer; AZoom: Integer = 0);
+var
+  bmp: TBitmap;
+begin
+  if FGridPrinter = nil then
   begin
     FPageCount := 0;
     FPageNumber := 0;
     PreviewImage.Picture.Clear;
+    exit;
   end;
-end;
-
-procedure TGridPrintPreviewForm.SetPageNumber(AValue: Integer);
-begin
-  if AValue <> FPageNumber then
-    ShowPage(AValue, FZoom);
-end;
-
-procedure TGridPrintPreviewForm.ShowPage(APageNo, AZoom: Integer);
-var
-  bmp: TBitmap;
-begin
-  Assert(FGridPrinter <> nil, 'GridPrinter must not be nil in ShowPage()');
 
   FPageNumber := APageNo;
-  FZoom := AZoom;
+  if AZoom > 0 then
+    FZoom := AZoom;
 
   // Instruct the GridPrinter to create the preview bitmap of the selected page
   bmp := FGridPrinter.CreatePreviewBitmap(FPageNumber, FZoom);

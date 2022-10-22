@@ -6,6 +6,7 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
   Caption = 'Print Preview'
   ClientHeight = 649
   ClientWidth = 938
+  OnActivate = FormActivate
   Position = poMainFormCenter
   LCLVersion = '2.3.0.0'
   object ToolBar: TToolBar
@@ -136,6 +137,7 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
     Top = 24
     Width = 938
     HorzScrollBar.Page = 98
+    HorzScrollBar.Tracking = True
     VertScrollBar.Page = 98
     VertScrollBar.Tracking = True
     Align = alClient
