@@ -64,15 +64,12 @@ type
     procedure acPrintExecute(Sender: TObject);
     procedure ActionListUpdate({%H-}AAction: TBasicAction; var {%H-}Handled: Boolean);
     procedure acZoom100Execute(Sender: TObject);
-    procedure acZoomInExecute(Sender: TObject);
-    procedure acZoomOutExecute(Sender: TObject);
+    procedure acZoomInZoomOutExecute(Sender: TObject);
     procedure acZoomToFitHeightExecute(Sender: TObject);
     procedure acZoomToFitWidthExecute(Sender: TObject);
     procedure edPageNoEditingDone(Sender: TObject);
     procedure edPageNoMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var {%H-}Handled: Boolean);
-    procedure FormCreate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -85,6 +82,8 @@ type
     FPageCount: Integer;
     FPageNumber: Integer;
     FZoom: Integer;
+    FZoomMax: Integer;
+    FZoomMin: Integer;
     procedure SetGridPrinter(AValue: TGridPrinter);
     procedure SetPageNumber(AValue: Integer);
   protected
@@ -93,12 +92,13 @@ type
     procedure UpdateInfoPanel;
 
   public
+    constructor Create(AOwner: TComponent); override;
     procedure ZoomToFitHeight;
     procedure ZoomToFitWidth;
     property PageNumber: Integer read FPageNumber write SetPageNumber;
 
   published
-    property GridPrinter: TGridPrinter read FGridPrinter write FGridPrinter;
+    property GridPrinter: TGridPrinter read FGridPrinter write SetGridPrinter;
 
   end;
 
@@ -117,23 +117,36 @@ const
 
 { TGridPrintPreviewForm }
 
-procedure TGridPrintPreviewForm.FormShow(Sender: TObject);
+constructor TGridPrintPreviewForm.Create(AOwner: TComponent);
+
+  // Avoid the situation that zoom factor cannot be changed by zoom-out button
+  // or mousewheel due to rounding to integer.
+  procedure VerifyZoomMin;
+  var
+    nextHigherZoom: Integer;
+  begin
+    nextHigherZoom := round(FZoomMin * ZOOM_MULTIPLIER);
+    while nextHigherZoom = FZoomMin do
+    begin
+      FZoomMin := nextHigherZoom + 1;
+      nextHigherZoom := round(FZoomMin * ZOOM_MULTIPLIER);
+    end;
+  end;
+
 begin
-  if FGridPrinter <> nil then
-    ShowPage(1, FZoom);
+  inherited;
+  InfoPanel.ParentColor := true;
+  FPageNumber := 1;
+  FZoom := 100;
+  FZoomMax := 1000;  // To avoid too-large bitmaps
+  FZoomMin := 10;
+  VerifyZoomMin;
 end;
 
 procedure TGridPrintPreviewForm.PreviewImageMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   Scrollbox.SetFocus;
-end;
-
-procedure TGridPrintPreviewForm.FormCreate(Sender: TObject);
-begin
-  InfoPanel.ParentColor := true;
-  FPageNumber := 1;
-  FZoom := 100;
 end;
 
 procedure TGridPrintPreviewForm.acCloseExecute(Sender: TObject);
@@ -188,22 +201,17 @@ begin
   acLastPage.Enabled := acNextPage.Enabled;
 end;
 
-procedure TGridPrintPreviewForm.acZoomInExecute(Sender: TObject);
-begin
-  ShowPage(FPageNumber, round(FZoom * ZOOM_MULTIPLIER));
-end;
-
-procedure TGridPrintPreviewForm.acZoomOutExecute(Sender: TObject);
+procedure TGridPrintPreviewForm.acZoomInZoomOutExecute(Sender: TObject);
 var
   newZoom: Integer;
-  nextNewZoom: Integer;
 begin
-  newZoom := round(FZoom / ZOOM_MULTIPLIER);
-  nextNewZoom := round(newZoom / ZOOM_MULTIPLIER);
-  // Prevent reaching a state in which the rounded zoom factor is so small that
-  // it does not change any more.
-  if nextNewZoom <> newZoom then
-    ShowPage(FPageNumber, round(FZoom / ZOOM_MULTIPLIER));
+  if Sender = acZoomIn then
+    newZoom := round(FZoom * ZOOM_MULTIPLIER)
+  else if Sender = acZoomOut then
+    newZoom := round(FZoom / ZOOM_MULTIPLIER);
+  if newZoom < FZoomMin then
+    newZoom := FZoomMin;
+  ShowPage(FPageNumber, newZoom);
 end;
 
 { Selects a zoom factor such that the preview of the page fills the form. }
@@ -254,21 +262,16 @@ procedure TGridPrintPreviewForm.PreviewImageMouseWheel(Sender: TObject;
   var Handled: Boolean);
 var
   newZoom: Integer;
-  nextNewZoom: Integer;
 begin
   if (ssCtrl in Shift) then
   begin
     if WheelDelta > 0 then
-      ShowPage(FPageNumber, round(FZoom * ZOOM_MULTIPLIER))
+      newZoom := round(FZoom * ZOOM_MULTIPLIER)
     else
-    begin
-      // Prevent reaching a state in which the zoom factor is so small that
-      // it does not change any more due to rounding.
       newZoom := round(FZoom / ZOOM_MULTIPLIER);
-      nextNewZoom := round(newZoom / ZOOM_MULTIPLIER);
-      if nextNewZoom <> newZoom then
-        ShowPage(FPageNumber, newZoom);
-    end;
+    if newZoom < FZoomMin then
+      newZoom := FZoomMin;
+    ShowPage(FPageNumber, newZoom);
   end;
 end;
 
@@ -288,7 +291,14 @@ begin
   if FGridPrinter = AValue then
     exit;
   FGridPrinter := AValue;
-  ShowPage(1, FZoom);
+  if FGridPrinter <> nil then
+    ShowPage(1, FZoom)
+  else
+  begin
+    FPageCount := 0;
+    FPageNumber := 0;
+    PreviewImage.Picture.Clear;
+  end;
 end;
 
 procedure TGridPrintPreviewForm.SetPageNumber(AValue: Integer);
@@ -301,13 +311,7 @@ procedure TGridPrintPreviewForm.ShowPage(APageNo, AZoom: Integer);
 var
   bmp: TBitmap;
 begin
-  if FGridPrinter = nil then
-  begin
-    FPageCount := 0;
-    FPageNumber := 0;
-    PreviewImage.Picture.Clear;
-    exit;
-  end;
+  Assert(FGridPrinter <> nil, 'GridPrinter must not be nil in ShowPage()');
 
   FPageNumber := APageNo;
   FZoom := AZoom;

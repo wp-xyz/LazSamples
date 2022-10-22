@@ -6,8 +6,6 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
   Caption = 'Print Preview'
   ClientHeight = 649
   ClientWidth = 938
-  OnCreate = FormCreate
-  OnShow = FormShow
   Position = poMainFormCenter
   LCLVersion = '2.3.0.0'
   object ToolBar: TToolBar
@@ -451,13 +449,13 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       Caption = 'Zoom in'
       Hint = 'Zoom in'
       ImageIndex = 6
-      OnExecute = acZoomInExecute
+      OnExecute = acZoomInZoomOutExecute
     end
     object acZoomOut: TAction
       Caption = 'Zoom out'
       Hint = 'Zoom out'
       ImageIndex = 7
-      OnExecute = acZoomOutExecute
+      OnExecute = acZoomInZoomOutExecute
     end
     object acZoomToFitWidth: TAction
       Caption = 'Fit width'
