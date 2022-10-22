@@ -343,7 +343,7 @@ end;
 
 function TGridPrnHeaderFooter.GetProcessedText(AIndex: TGridPrnHeaderFooterSection): String;
 const
-  UNKNOWN = '<unknown';
+  UNKNOWN = '<unknown>';
 
   procedure Replace(AParam: String);
   var
@@ -353,8 +353,8 @@ const
       case AParam of
         '$PAGECOUNT': s := IntToStr(FOwner.PageCount);
         '$PAGE': s := IntToStr(FOwner.PageNumber);
-        '$FILENAME_ONLY': s := ExtractFileName(FOwner.FileName);
-        '$FILENAME': s := ExpandFileName(FOwner.FileName);
+        '$FULL_FILENAME': s := ExpandFileName(FOwner.FileName);
+        '$FILENAME': s := ExtractFileName(FOwner.FileName);
         '$PATH': s := ExtractFilePath(ExpandFileName(FOwner.FileName));
       end
     else
@@ -368,7 +368,7 @@ const
   Result := StringReplace(Result, '$TIME', TimeToStr(Now), [rfReplaceAll, rfIgnoreCase]);
   Replace('$PAGECOUNT');
   Replace('$PAGE');
-  Replace('$FILENAME_ONLY');
+  Replace('$FULL_FILENAME');
   Replace('$FILENAME');
   Replace('$PATH');
 end;

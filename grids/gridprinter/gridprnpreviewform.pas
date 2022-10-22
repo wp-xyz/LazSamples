@@ -21,6 +21,7 @@ type
     acNextPage: TAction;
     acLastPage: TAction;
     acPageMargins: TAction;
+    acHeaderFooter: TAction;
     acZoom100: TAction;
     acZoomToFitWidth: TAction;
     acZoomToFitHeight: TAction;
@@ -58,8 +59,11 @@ type
     tbZoomHeight: TToolButton;
     tbZoom100: TToolButton;
     ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
+    ToolButton3: TToolButton;
     procedure acCloseExecute(Sender: TObject);
     procedure acFirstPageExecute(Sender: TObject);
+    procedure acHeaderFooterExecute(Sender: TObject);
     procedure acLastPageExecute(Sender: TObject);
     procedure acNextPageExecute(Sender: TObject);
     procedure acPageMarginsExecute(Sender: TObject);
@@ -123,7 +127,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, LCLType, Printers;
+  LCLIntf, LCLType, Printers, GridPrnHeaderFooterForm;
 
 const
   ZOOM_MULTIPLIER = 1.05;
@@ -170,6 +174,20 @@ end;
 procedure TGridPrintPreviewForm.acFirstPageExecute(Sender: TObject);
 begin
   ShowPage(1);
+end;
+
+procedure TGridPrintPreviewForm.acHeaderFooterExecute(Sender: TObject);
+var
+  F: TGridPrintHeaderFooterForm;
+begin
+  F := TGridPrintHeaderFooterForm.Create(nil);
+  try
+    F.GridPrinter := FGridPrinter;
+    if F.ShowModal = mrOK then
+      ShowPage(FPageNumber, FZoom);
+  finally
+    F.Free;
+  end;
 end;
 
 procedure TGridPrintPreviewForm.acLastPageExecute(Sender: TObject);
