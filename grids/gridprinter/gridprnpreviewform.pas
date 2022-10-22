@@ -76,6 +76,10 @@ type
     procedure FormActivate(Sender: TObject);
     procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure PreviewImageMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure PreviewImageMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; {%H-}MousePos: TPoint; var {%H-}Handled: Boolean);
     procedure PreviewImagePaint(Sender: TObject);
@@ -84,14 +88,18 @@ type
     procedure ToolBarResize(Sender: TObject);
   private
     FActivated: Boolean;
+    FDraggedMargin: Integer;  // 0=left margin, 1=top, 2=right, 3=bottom 4=header 5=footer
+    FDraggedPos: Integer;
     FGridPrinter: TGridPrinter;
     FPageCount: Integer;
     FPageNumber: Integer;
+    FUpdatePreviewHandler: TNotifyEvent;
     FZoom: Integer;
     FZoomMax: Integer;
     FZoomMin: Integer;
     procedure SetPageNumber(AValue: Integer);
   protected
+    function MouseOverMarginLine(X, Y: Integer): Integer;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure ShowPage(APageNo: Integer; AZoom: Integer = 0);
     procedure UpdateInfoPanel;
@@ -120,6 +128,11 @@ uses
 const
   ZOOM_MULTIPLIER = 1.05;
 
+function InRange(X1, X2, Delta: Integer): Boolean; inline;
+begin
+  Result := (X1 >= X2-Delta) and (X1 <= X2+Delta);
+end;
+
 { TGridPrintPreviewForm }
 
 constructor TGridPrintPreviewForm.Create(AOwner: TComponent);
@@ -145,13 +158,8 @@ begin
   FZoom := 100;
   FZoomMax := 1000;  // To avoid too-large bitmaps
   FZoomMin := 10;
+  FDraggedMargin := -1;
   VerifyZoomMin;
-end;
-
-procedure TGridPrintPreviewForm.PreviewImageMouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  Scrollbox.SetFocus;
 end;
 
 procedure TGridPrintPreviewForm.acCloseExecute(Sender: TObject);
@@ -261,8 +269,48 @@ procedure TGridPrintPreviewForm.FormActivate(Sender: TObject);
 begin
   if FActivated then
     exit;
+  FUpdatePreviewHandler := FGridPrinter.OnUpdatePreview;
   ShowPage(1, 100);
   FActivated := true;
+end;
+
+// Result 0=left margin, 1=top margin, 2=right margin, 3=bottom margin, 4=header, 5=footer
+function TGridPrintPreviewForm.MouseOverMarginLine(X, Y: Integer): Integer;
+CONST
+  DELTA = 4;
+var
+  coord: Integer;
+begin
+  if (FGridPrinter = nil) or (not acPageMargins.Checked) then
+    exit(-1);
+
+  if InRange(X, FGridPrinter.PageRect.Left, DELTA) then
+    exit(0);
+
+  if InRange(Y, FGridPrinter.PageRect.Top, DELTA) then
+    exit(1);
+
+  if InRange(X, FGridPrinter.PageRect.Right, DELTA) then
+    exit(2);
+
+  if InRange(Y, FGridPrinter.PageRect.Bottom, DELTA) then
+    exit(3);
+
+  if FGridPrinter.Header.IsShown then
+  begin
+    coord := mm2px(FGridPrinter.Margins.Header, FGridPrinter.PixelsPerInchY);
+    if InRange(y, coord, DELTA) then
+      exit(4);
+  end;
+
+  if FGridPrinter.Footer.IsShown then
+  begin
+    coord := mm2px(FGridPrinter.Margins.Footer, FGridPrinter.PixelsPerInchY);
+    if InRange(y, FGridPrinter.PageHeight - coord, DELTA) then
+      exit(5);
+  end;
+
+  Result := -1;
 end;
 
 procedure TGridPrintPreviewForm.Notification(AComponent: TComponent;
@@ -273,6 +321,128 @@ begin
   begin
     if AComponent = FGridPrinter then
       FGridPrinter := nil;
+  end;
+end;
+
+procedure TGridPrintPreviewForm.PreviewImageMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  Scrollbox.SetFocus;
+  if (ssLeft in Shift) then
+    FDraggedMargin := MouseOverMarginLine(X, Y);
+end;
+
+procedure TGridPrintPreviewForm.PreviewImageMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+var
+  minWidth: Integer;
+  minHeight: Integer;
+  y0: Integer;
+  one_mm: Integer;
+begin
+  if (FGridPrinter = nil) or not (acPageMargins.Checked) then
+    exit;
+
+  if not (ssLeft in Shift) then
+  begin
+    FDraggedMargin := MouseOverMarginLine(X, Y);
+    case FDraggedMargin of
+      -1: Screen.Cursor := crDefault;
+      0,2: Screen.Cursor := crHSplit;
+      1,3,4,5: Screen.Cursor := crVSplit;
+    end;
+  end;
+
+  if (ssLeft in Shift) then
+  begin
+    minWidth := FGridPrinter.PageWidth div 4;
+    minHeight := FGridPrinter.PageHeight div 4;
+    one_mm := mm2px(1.0, FGridPrinter.PixelsPerInchY);
+    case FDraggedMargin of
+      0: begin
+           // Left margin
+           FDraggedPos := X;
+           if (FDraggedPos < 0) then
+             FDraggedPos := 0;
+           if FGridPrinter.PageRect.Right - FDraggedPos < minWidth then
+             FDraggedPos := FGridPrinter.PageRect.Right - minWidth
+         end;
+      1: begin
+           // Top margin
+           FDraggedPos := Y;
+           if FGridPrinter.Header.IsShown then
+           begin
+             y0 := FGridPrinter.HeaderMargin + one_mm;
+             if (FDraggedPos < y0) then
+               FDraggedPos := y0;
+           end;
+           if (FDraggedPos < 0) then
+             FDraggedPos := 0;
+           if FGridPrinter.PageRect.Bottom - FDraggedPos < minHeight then
+             FDraggedPos := FGridPrinter.PageRect.Bottom - minWidth;
+         end;
+      2: begin
+           // Right margin
+           FDraggedPos := X;
+           if FDraggedPos > FGridPrinter.PageWidth then
+             FDraggedPos := FGridPrinter.PageWidth;
+           if FDraggedPos - FGridPrinter.PageRect.Left < minWidth then
+             FDraggedPos := FGridPrinter.PageRect.Left + minWidth;
+         end;
+      3: begin
+           // Bottom margin
+           FDraggedPos := Y;
+           if FGridPrinter.Footer.IsShown then
+           begin
+             y0 := FGridPrinter.PageHeight - FGridPrinter.FooterMargin - one_mm;
+             if FDraggedPos > y0 then
+               FDraggedPos := y0;
+           end;
+           if FDraggedPos > FGridPrinter.PageHeight then
+             FDraggedPos := FGridPrinter.PageHeight;
+           if FDraggedPos - FGridPrinter.PageRect.Top < minHeight then
+             FDraggedPos := FGridPrinter.PageRect.Top + minHeight;
+         end;
+      4: begin
+           // Header
+           FDraggedPos := Y;
+           if FDraggedPos < 0 then
+             FDraggedPos := 0;
+           if FDraggedPos > FGridPrinter.PageRect.Top - one_mm then
+             FDraggedPos := FGridPrinter.PageRect.Top - one_mm;
+         end;
+      5: begin
+           // Footer
+           FDraggedPos := Y;
+           if FDraggedPos > FGridPrinter.PageHeight then
+             FDraggedPos := FGridPrinter.PageHeight;
+           if FDraggedPos < FGridPrinter.PageRect.Bottom + one_mm then
+             FDraggedPos := FGridPrinter.PageRect.Bottom + one_mm;
+         end;
+    end;
+    PreviewImage.Repaint;
+  end;
+end;
+
+procedure TGridPrintPreviewForm.PreviewImageMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  dragged: Integer;
+begin
+  if (FDraggedMargin > -1) then
+  begin
+    dragged := FDraggedMargin;
+    FDraggedMargin := -1;
+    case dragged of
+      0: FGridPrinter.Margins.Left := px2mm(FDraggedPos, FGridPrinter.PixelsPerInchX);
+      1: FGridPrinter.Margins.Top := px2mm(FDraggedPos, FGridPrinter.PixelsPerInchY);
+      2: FGridPrinter.Margins.Right := px2mm(FGridPrinter.PageWidth - FDraggedPos, FGridPrinter.PixelsPerInchX);
+      3: FGridPrinter.Margins.Bottom := px2mm(FGridPrinter.PageHeight - FDraggedPos, FGridPrinter.PixelsPerInchY);
+      4: FGridPrinter.Margins.Header := px2mm(FDraggedPos, FGridPrinter.PixelsPerInchY);
+      5: FGridPrinter.Margins.Footer := px2mm(FGridPrinter.PageHeight - FDraggedPos, FGridPrinter.PixelsPerInchY);
+    end;
+    Screen.Cursor := crDefault;
+    ShowPage(FPageNumber);
   end;
 end;
 
@@ -297,35 +467,61 @@ end;
 procedure TGridPrintPreviewForm.PreviewImagePaint(Sender: TObject);
 var
   x, y: Integer;
+
 begin
+  if FGridPrinter = nil then
+    exit;
+
   if acPageMargins.Checked then
   begin
     PreviewImage.Canvas.Pen.Color := clRed;
     PreviewImage.Canvas.Pen.Style := psDash;
 
-    // Top margin line
-    PreviewImage.Canvas.Line(0, FGridPrinter.PageRect.Top, PreviewImage.Width, FGridPrinter.PageRect.Top);
-
-    // Bottom margin line
-    PreviewImage.Canvas.Line(0, FGridPrinter.PageRect.Bottom, PreviewImage.Width, FGridPrinter.PageRect.Bottom);
-
     // Left margin line
-    PreviewImage.Canvas.Line(FGridPrinter.PageRect.Left, 0, FGridPrinter.PageRect.Left, PreviewImage.Height);
+    if FDraggedMargin = 0 then
+      x := FDraggedPos
+    else
+      x := FGridPrinter.PageRect.Left;
+    PreviewImage.Canvas.Line(x, 0, x, PreviewImage.Height);
+
+    // Top margin line
+    if FDraggedMargin = 1 then
+      y := FDraggedPos
+    else
+      y := FGridPrinter.PageRect.Top;
+    PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
 
     // Right margin line
-    PreviewImage.Canvas.Line(FGridPrinter.PageRect.Right, 0, FGridPrinter.PageRect.Right, PreviewImage.Height);
+    if FDraggedMargin = 2 then
+      x := FDraggedPos
+    else
+      x := FGridPrinter.PageRect.Right;
+    PreviewImage.Canvas.Line(x, 0, x, PreviewImage.Height);
+
+    // Bottom margin line
+    if FDraggedMargin = 3 then
+      y := FDraggedPos
+    else
+      y := FGridPrinter.PageRect.Bottom;
+    PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
 
     // Header line
     if FGridPrinter.Header.IsShown then
     begin
-      y := mm2px(FGridPrinter.Margins.Header, FGridPrinter.PixelsPerInchY);
+      if FDraggedMargin = 4 then
+        y := FDraggedPos
+      else
+        y := mm2px(FGridPrinter.Margins.Header, FGridPrinter.PixelsPerInchY);
       PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
     end;
 
     // Footer line
     if FGridPrinter.Footer.IsShown then
     begin
-      y := FGridPrinter.PageHeight - mm2px(FGridPrinter.Margins.Footer, FGridPrinter.PixelsPerInchY);
+      if FDraggedMargin = 5 then
+        y := FDraggedPos
+      else
+        y := FGridPrinter.PageHeight - mm2px(FGridPrinter.Margins.Footer, FGridPrinter.PixelsPerInchY);
       PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
     end;
   end;

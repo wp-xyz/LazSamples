@@ -176,6 +176,8 @@ type
     function ScaleY(AValue: Integer): Integer; inline;
     procedure UpdatePreview;
     property Canvas: TCanvas read GetCanvas;
+    property FooterMargin: Integer read FFooterMarginPx;
+    property HeaderMargin: Integer read FHeaderMarginPx;
     property PageHeight: Integer read FPageHeight;
     property PageWidth: Integer read FPageWidth;
     property PageRect: TRect read FPageRect;
@@ -956,7 +958,7 @@ begin
   lineHeight := ACanvas.TextHeight('Rg');
   textStyle := DefaultTextStyle;
 
-  y := FPageHeight - FHeaderMarginPx - lineHeight;
+  y := FPageHeight - FFooterMarginPx - lineHeight;
   if FFooter.SectionText[hfsLeft] <> '' then
   begin
     s := FFooter.ProcessedText[hfsLeft];

@@ -162,6 +162,8 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       Top = 8
       Width = 90
       OnMouseDown = PreviewImageMouseDown
+      OnMouseMove = PreviewImageMouseMove
+      OnMouseUp = PreviewImageMouseUp
       OnMouseWheel = PreviewImageMouseWheel
       OnPaint = PreviewImagePaint
       PopupMenu = PreviewPopupMenu
