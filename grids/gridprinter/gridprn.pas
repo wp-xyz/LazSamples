@@ -77,23 +77,24 @@ type
     type
       TOutputDevice = (odPrinter, odPreview);
   protected
-    FFactorX: Double;              // Multiply to convert screen to printer pixels
+    FFactorX: Double;              // Multiply to convert screen to printer/preview pixels
     FFactorY: Double;
-    FLeftMarginPx: Integer;         // Page margins, in printer pixels
+    FLeftMarginPx: Integer;         // Scaled page margins
     FTopMarginPx: Integer;
     FRightMarginPx: Integer;
     FBottomMarginPx: Integer;
     FHeaderMarginPx: Integer;
     FFooterMarginPx: Integer;
-    FColWidths: array of Integer;   // Array of grid column widts, in printer pixels
-    FRowHeights: array of Integer;  // Array of grid row heights, in printer pixels
-    FFixedColPos: Integer;          // Right end of the fixed cols, in printer pixels
-    FFixedRowPos: Integer;          // Bottom end of the fixed rows, in printer pixels
+    FColWidths: array of Integer;      // Array of scaled grid column widts
+    FRowHeights: array of Integer;     // Array of scaled grid row heights
+    FFixedColPos: Integer;             // Scaled right end of the fixed cols
+    FFixedRowPos: Integer;             // Scaled bottom end of the fixed rows
     FOutputDevice: TOutputDevice;
     FPageBreakRows: array of Integer;  // Indices of first row on new page
     FPageBreakCols: array of Integer;  // Indices of first columns on new page
     FPageNumber: Integer;
     FPageCount: Integer;
+    FPageRect: TRect;                  // Bounds of printable rectangle
     FPixelsPerInchX: Integer;
     FPixelsPerInchY: Integer;
     FPreviewBitmap: TBitmap;           // Bitmap to which the preview image is printed
@@ -412,7 +413,7 @@ begin
   for col := FFixedCols to FColCount-1 do
   begin
     totalWidth := totalWidth + FColWidths[col];
-    if totalWidth >= FPageWidth - FRightMarginPx then
+    if totalWidth >= FPageRect.Right then
     begin
       inc(n);
       FPageBreakCols[n] := col;
@@ -429,7 +430,7 @@ begin
   for row := FFixedRows to FRowCount-1 do
   begin
     totalHeight := totalHeight + FRowHeights[row];
-    if totalHeight > FPageHeight - FBottomMarginPx then
+    if totalHeight > FPageRect.Bottom then
     begin
       inc(n);
       FPageBreakRows[n] := row;
@@ -477,6 +478,7 @@ begin
   FBottomMarginPx := mm2px(FMargins.Bottom, FPixelsPerInchY);
   FHeaderMarginPx := mm2px(FMargins.Header, FPixelsPerInchY);
   FFooterMarginPx := mm2px(FMargins.Footer, FPixelsPerInchY);
+  FPageRect := Rect(FLeftMarginPx, FTopMarginPx, FPageWidth - FRightMarginPx, FPageHeight - FBottomMarginPx);
   FPadding := ScaleX(varCellPadding);
 
   ScaleColWidths;
@@ -726,7 +728,7 @@ end;
 procedure TGridPrinter.PrintFooter(ACanvas: TCanvas);
 var
   Width: array[TGridPrnHeaderFooterPart] of Integer = (0, 0, 0);
-  w, h: Integer;
+  printableWidth, lineHeight: Integer;
   x, y: Integer;
   s: String;
   R: TRect;
@@ -736,45 +738,45 @@ begin
     exit;
 
   SelectFont(ACanvas, FFooterFont);
-  w := FPageWidth - FLeftMarginPx - FRightMarginPx;
+  printableWidth := FPageWidth - FLeftMarginPx - FRightMarginPx;
   if (FFooterText[hfpLeft] <> '') and (FFooterText[hfpCenter] = '') and (FFooterText[hfpRight] = '') then
-    Width[hfpLeft] := w
+    Width[hfpLeft] := printableWidth
   else
   if (FFooterText[hfpLeft] = '') and (FFooterText[hfpCenter] <> '') and (FFooterText[hfpRight] = '') then
-    Width[hfpCenter] := w
+    Width[hfpCenter] := printableWidth
   else
   if (FFooterText[hfpLeft] = '') and (FFooterText[hfpCenter] = '') and (FFooterText[hfpRight] <> '') then
-    Width[hfpRight] := w
+    Width[hfpRight] := printableWidth
   else begin
-    Width[hfpLeft] := w div 3;
-    Width[hfpCenter] := w div 3;
-    Width[hfpRight] := w div 3;
+    Width[hfpLeft] := printableWidth div 3;
+    Width[hfpCenter] := printableWidth div 3;
+    Width[hfpRight] := printableWidth div 3;
   end;
 
-  h := ACanvas.TextHeight('Rg');
+  lineHeight := ACanvas.TextHeight('Rg');
   textStyle := DefaultTextStyle;
 
-  y := FPageHeight - FHeaderMarginPx - h;
+  y := FPageHeight - FHeaderMarginPx - lineHeight;
   if FFooterText[hfpLeft] <> '' then
   begin
     s := GetHeaderFooterText(FFooterText[hfpLeft]);
     x := FLeftMarginPx;
-    R := Rect(x, y, x + Width[hfpLeft], y + h);
+    R := Rect(x, y, x + Width[hfpLeft], y + lineHeight);
     ACanvas.TextRect(R, R.Left, R.Top, s);
   end;
   if FFooterText[hfpCenter] <> '' then
   begin
     s := GetHeaderFooterText(FFooterText[hfpCenter]);
-    x := FLeftMarginPx + (FPageWidth - FLeftMarginPx - FRightMarginPx - Width[hfpCenter]) div 2;
-    R := Rect(x, y, x + Width[hfpCenter], y + h);
+    x := (FPageRect.Left + FPageRect.Right - Width[hfpCenter]) div 2;
+    R := Rect(x, y, x + Width[hfpCenter], y + lineHeight);
     textStyle.Alignment := taCenter;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
   if FFooterText[hfpRight] <> '' then
   begin
     s := GetHeaderFooterText(FFooterText[hfpRight]);
-    x := FPageWidth - FRightMarginPx - Width[hfpRight];
-    R := Rect(x, y, x + Width[hfpRight], y + h);
+    x := FPageRect.Right;
+    R := Rect(x, y, x + Width[hfpRight], y + lineHeight);
     textStyle.Alignment := taRightJustify;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
@@ -784,7 +786,7 @@ begin
     ACanvas.Pen.Color := IfThen(FMonochrome or (FFooterLineColor = clDefault), clBlack, FFooterLineColor);
     ACanvas.Pen.Width := IfThen(FFooterLineWidth = 0, ScaleY(1), FFooterlineWidth);
     ACanvas.Pen.Style := psSolid;
-    ACanvas.Line(FLeftMarginPx, y, FPageWidth - FRightMarginPx, y);
+    ACanvas.Line(FPageRect.Left, y, FPageRect.Right, y);
   end;
 
 end;
@@ -901,7 +903,7 @@ end;
 procedure TGridPrinter.PrintHeader(ACanvas: TCanvas);
 var
   Width: array[TGridPrnHeaderFooterPart] of Integer = (0, 0, 0);
-  w, h: Integer;
+  printableWidth, lineHeight: Integer;
   x, y: Integer;
   s: String;
   R: TRect;
@@ -911,22 +913,22 @@ begin
     exit;
 
   SelectFont(ACanvas, FHeaderFont);
-  w := FPageWidth - FLeftMarginPx - FRightMarginPx;
+  printableWidth := FPageWidth - FLeftMarginPx - FRightMarginPx;
   if (FHeaderText[hfpLeft] <> '') and (FHeaderText[hfpCenter] = '') and (FHeaderText[hfpRight] = '') then
-    Width[hfpLeft] := w
+    Width[hfpLeft] := printableWidth
   else
   if (FHeaderText[hfpLeft] = '') and (FHeaderText[hfpCenter] <> '') and (FHeaderText[hfpRight] = '') then
-    Width[hfpCenter] := w
+    Width[hfpCenter] := printableWidth
   else
   if (FHeaderText[hfpLeft] = '') and (FHeaderText[hfpCenter] = '') and (FHeaderText[hfpRight] <> '') then
-    Width[hfpRight] := w
+    Width[hfpRight] := printableWidth
   else begin
-    Width[hfpLeft] := w div 3;
-    Width[hfpCenter] := w div 3;
-    Width[hfpRight] := w div 3;
+    Width[hfpLeft] := printableWidth div 3;
+    Width[hfpCenter] := printableWidth div 3;
+    Width[hfpRight] := printableWidth div 3;
   end;
 
-  h := ACanvas.TextHeight('Rg');
+  lineHeight := ACanvas.TextHeight('Rg');
   textStyle := DefaultTextStyle;
 
   y := FHeaderMarginPx;
@@ -934,22 +936,22 @@ begin
   begin
     s := GetHeaderFooterText(FHeaderText[hfpLeft]);
     x := FLeftMarginPx;
-    R := Rect(x, y, x + Width[hfpLeft], y + h);
+    R := Rect(x, y, x + Width[hfpLeft], y + lineHeight);
     ACanvas.TextRect(R, R.Left, R.Top, s);
   end;
   if FHeaderText[hfpCenter] <> '' then
   begin
     s := GetHeaderFooterText(FHeaderText[hfpCenter]);
-    x := FLeftMarginPx + (FPageWidth - FLeftMarginPx - FRightMarginPx - Width[hfpCenter]) div 2;
-    R := Rect(x, y, x + Width[hfpCenter], y + h);
+    x := (FPageRect.Left + FPageRect.Right - Width[hfpCenter]) div 2;
+    R := Rect(x, y, x + Width[hfpCenter], y + lineHeight);
     textStyle.Alignment := taCenter;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
   if FHeaderText[hfpRight] <> '' then
   begin
     s := GetHeaderFooterText(FHeaderText[hfpRight]);
-    x := FPageWidth - FRightMarginPx - Width[hfpRight];
-    R := Rect(x, y, x + Width[hfpRight], y + h);
+    x := FPageRect.Right - Width[hfpRight];
+    R := Rect(x, y, x + Width[hfpRight], y + lineHeight);
     textStyle.Alignment := taRightJustify;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
@@ -959,7 +961,7 @@ begin
     ACanvas.Pen.Color := IfThen(FMonochrome or (FHeaderLineColor = clDefault), clBlack, FHeaderLineColor);
     ACanvas.Pen.Width := IfThen(FHeaderLineWidth = 0, ScaleY(1), FHeaderlineWidth);
     ACanvas.Pen.Style := psSolid;
-    ACanvas.Line(FLeftMarginPx, y+h, FPageWidth - FRightMarginPx, y+h);
+    ACanvas.Line(FPageRect.Left, y+lineHeight, FPageRect.Right, y+lineHeight);
   end;
 end;
 
