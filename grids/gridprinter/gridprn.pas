@@ -8,21 +8,24 @@ uses
   Classes, SysUtils, Types, Graphics, StdCtrls, Grids, Printers;
 
 type
+  TGridPrinter = class;  // forward declaration
+
   TGridPrnGetCellTextEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
     ACol, ARow: Integer; var AText: String) of object;
 
   TGridPrnOrder = (poRowsFirst, poColsFirst);
 
-  TGridPrnHeaderFooterPart = (hfpLeft, hfpCenter, hfpRight);
-
   TGridPrnMargins = class(TPersistent)
   private
     FMargins: array[0..5] of Double;
+    FOwner: TGridPrinter;
     function GetMargin(AIndex: Integer): Double;
     function IsStoredMargin(AIndex: Integer): Boolean;
     procedure SetMargin(AIndex: Integer; AValue: Double);
+  protected
+    procedure Changed;
   public
-    constructor Create;
+    constructor Create(AOwner: TGridPrinter);
   published
     property Left: Double index 0 read GetMargin write SetMargin stored IsStoredMargin;
     property Top: Double index 1 read GetMargin write SetMargin stored IsStoredMargin;
@@ -32,7 +35,52 @@ type
     property Footer: Double index 5 read GetMargin write SetMargin stored IsStoredMargin;
   end;
 
+  TGridPrnHeaderFooterSection = (hfsLeft, hfsCenter, hfsRight);
+
+  TGridPrnHeaderFooter = class(TPersistent)
+  private
+    FFont: TFont;
+    FLineColor: TColor;
+    FLineWidth: Integer;
+    FShowLine: Boolean;
+    FOwner: TGridPrinter;
+    FSectionSeparator: String;
+    FSectionText: array[TGridPrnHeaderFooterSection] of string;
+    FVisible: Boolean;
+    function GetProcessedText(AIndex: TGridPrnHeaderFooterSection): String;
+    function GetSectionText(AIndex: TGridPrnHeaderFooterSection): String;
+    function GetText: String;
+    procedure SetFont(AValue: TFont);
+    procedure SetLineColor(AValue: TColor);
+    procedure SetLineWidth(AValue: Integer);
+    procedure SetSectionText(AIndex: TGridPrnHeaderFooterSection; AValue: String);
+    procedure SetShowLine(AValue: Boolean);
+    procedure SetText(AValue: String);
+    procedure SetVisible(AValue: Boolean);
+  protected
+    procedure Changed(Sender: TObject);
+  public
+    constructor Create(AOwner: TGridPrinter);
+    destructor Destroy; override;
+    function IsShown: Boolean;
+    function RealLineColor: TColor;
+    function RealLineWidth: Integer;
+    property ProcessedText[AIndex: TGridPrnHeaderFooterSection]: String read GetProcessedText;
+    property SectionText[AIndex: TGridPrnHeaderFooterSection]: String read GetSectionText;
+  published
+    property Font: TFont read FFont write SetFont;
+    property LineColor: TColor read FLineColor write SetLineColor default clDefault;
+    property LineWidth: Integer read FLineWidth write SetLineWidth default -1;
+    property SectionSeparator: String read FSectionSeparator write FSectionSeparator;
+    property ShowLine: Boolean read FShowLine write SetShowLine default true;
+    property Text: String read GetText write SetText;
+    property Visible: Boolean read FVisible write SetVisible default true;
+  end;
+
+
   { TGridPrinter }
+
+  TGridPrnOutputDevice = (odPrinter, odPreview);
 
   TGridPrinter = class(TComponent)
   private
@@ -43,16 +91,9 @@ type
     FGrid: TCustomGrid;
     FGridLineWidth: Integer;
     FGridLineColor: TColor;
-    FHeaderFont: TFont;
-    FHeaderLine: Boolean;
-    FHeaderLineColor: TColor;
-    FHeaderLineWidth: Integer;
-    FHeaderText: array[TGridPrnHeaderFooterPart] of string;
-    FFooterFont: TFont;
-    FFooterLine: Boolean;
-    FFooterLineColor: TColor;
-    FFooterLineWidth: Integer;
-    FFooterText: array[TGridPrnHeaderFooterPart] of string;
+    FHeader: TGridPrnHeaderFooter;
+    FFileName: String;      // to be used by header/footer
+    FFooter: TGridPrnHeaderFooter;
     FMargins: TGridPrnMargins;
     FMonochrome: Boolean;
     FOrientation: TPrinterOrientation;
@@ -60,24 +101,20 @@ type
     FPageHeight: Integer;
     FPageWidth: Integer;
     FPrintOrder: TGridPrnOrder;
-    FShowFooter: Boolean;
-    FShowHeader: Boolean;
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
+    FOnUpdatePreview: TNotifyEvent;
     function GetCanvas: TCanvas;
-    function GetFooter: String;
-    function GetFooterPart(AIndex: TGridPrnHeaderFooterPart): String;
-    function GetHeader: String;
-    function GetHeaderPart(AIndex: TGridPrnHeaderFooterPart): String;
     function GetPageCount: Integer;
-    procedure SetFooter(AValue: String);
-    procedure SetFooterPart(AIndex: TGridPrnHeaderFooterPart; AValue: String);
+    function GetPageNumber: Integer;
+    procedure SetBorderLineColor(AValue: TColor);
+    procedure SetBorderLineWidth(AValue: Integer);
+    procedure SetFileName(AValue: String);
+    procedure SetFixedLineColor(AValue: TColor);
+    procedure SetFixedLineWidth(AValue: Integer);
     procedure SetGrid(AValue: TCustomGrid);
-    procedure SetHeader(AValue: String);
-    procedure SetHeaderPart(AIndex: TGridPrnHeaderFooterPart; AValue: String);
-  protected
-    type
-      TOutputDevice = (odPrinter, odPreview);
+    procedure SetGridLineColor(AValue: TColor);
+    procedure SetGridLineWidth(AValue: Integer);
   protected
     FFactorX: Double;              // Multiply to convert screen to printer/preview pixels
     FFactorY: Double;
@@ -91,7 +128,7 @@ type
     FRowHeights: array of Integer;     // Array of scaled grid row heights
     FFixedColPos: Integer;             // Scaled right end of the fixed cols
     FFixedRowPos: Integer;             // Scaled bottom end of the fixed rows
-    FOutputDevice: TOutputDevice;
+    FOutputDevice: TGridPrnOutputDevice;
     FPageBreakRows: array of Integer;  // Indices of first row on new page
     FPageBreakCols: array of Integer;  // Indices of first columns on new page
     FPageNumber: Integer;
@@ -108,8 +145,8 @@ type
     FFixedRows: Integer;
     FPrinting: Boolean;
     procedure DoPrepareCanvas(ACol, ARow: Integer); virtual;
+    procedure DoUpdatePreview; virtual;
     procedure Execute(ACanvas: TCanvas);
-    function GetHeaderFooterText(AText: String): String;
     procedure LayoutPagebreaks;
     procedure NewPage;
     procedure Prepare;
@@ -128,6 +165,7 @@ type
     procedure ScaleColWidths;
     procedure ScaleRowHeights;
     procedure SelectFont(ACanvas: TCanvas; AFont: TFont);
+    property OutputDevice: TGridPrnOutputDevice read FOutputDevice;
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -136,39 +174,33 @@ type
     procedure Print;
     function ScaleX(AValue: Integer): Integer; inline;
     function ScaleY(AValue: Integer): Integer; inline;
+    procedure UpdatePreview;
     property Canvas: TCanvas read GetCanvas;
+    property PageHeight: Integer read FPageHeight;
+    property PageWidth: Integer read FPageWidth;
     property PageRect: TRect read FPageRect;
     property PixelsPerInchX: Integer read FPixelsPerInchX;
     property PixelsPerInchY: Integer read FPixelsPerInchY;
-    property FooterPart[AIndex: TGridPrnHeaderFooterPart]: string read GetFooterPart write SetFooterPart;
-    property HeaderPart[AIndex: TGridPrnHeaderFooterPart]: string read GetHeaderPart write SetHeaderPart;
     property PageCount: Integer read GetPageCount;
+    property PageNumber: Integer read FPageNumber;
   published
     property Grid: TCustomGrid read FGrid write SetGrid;
-    property BorderLineColor: TColor read FBorderLineColor write FBorderLineColor default clDefault;
-    property BorderLineWidth: Integer read FBorderLineWidth write FBorderLineWidth default 0;
-    property FixedLineColor: TColor read FFixedLineColor write FFixedLineColor default clDefault;
-    property FixedLineWidth: Integer read FFixedLineWidth write FFixedLineWidth default 0;
-    property Footer: string read GetFooter write SetFooter;
-    property FooterFont: TFont read FFooterFont write FFooterFont;
-    property FooterLine: Boolean read FFooterLine write FFooterline default true;
-    property FooterLineColor: TColor read FFooterLineColor write FFooterLineColor default clDefault;
-    property FooterLineWidth: Integer read FFooterLineWidth write FFooterLineWidth default 0;
-    property GridLineColor: TColor read FGridLineColor write FGridLineColor default clDefault;
-    property GridLineWidth: Integer read FGridLineWidth write FGridLineWidth default 0;
-    property Header: string read GetHeader write SetHeader;
-    property HeaderLine: Boolean read FHeaderLine write FHeaderline default true;
-    property HeaderLineColor: TColor read FHeaderLineColor write FHeaderLineColor default clDefault;
-    property HeaderLineWidth: Integer read FHeaderLineWidth write FHeaderLineWidth default 0;
-    property HeaderFont: TFont read FHeaderFont write FHeaderFont;
+    property BorderLineColor: TColor read FBorderLineColor write SetBorderLineColor default clDefault;
+    property BorderLineWidth: Integer read FBorderLineWidth write SetBorderLineWidth default 0;
+    property FileName: String read FFileName write SetFileName;
+    property FixedLineColor: TColor read FFixedLineColor write SetFixedLineColor default clDefault;
+    property FixedLineWidth: Integer read FFixedLineWidth write SetFixedLineWidth default 0;
+    property Footer: TGridPrnHeaderFooter read FFooter write FFooter;
+    property GridLineColor: TColor read FGridLineColor write SetGridLineColor default clDefault;
+    property GridLineWidth: Integer read FGridLineWidth write SetGridLineWidth default 0;
+    property Header: TGridPrnHeaderFooter read FHeader write FHeader;
     property Margins: TGridPrnMargins read FMargins write FMargins;
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
     property Orientation: TPrinterOrientation read FOrientation write FOrientation default poPortrait;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
-    property ShowHeader: Boolean read FShowHeader write FShowHeader default true;
-    property ShowFooter: Boolean read FShowFooter write FShowFooter default true;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
+    property OnUpdatePreview: TNotifyEvent read FOnUpdatePreview write FOnUpdatePreview;
   end;
 
 function mm2px(mm: Double; dpi: Integer): Integer;
@@ -236,13 +268,20 @@ end;
 
 { TGridPrnMargins }
 
-constructor TGridPrnMargins.Create;
+constructor TGridPrnMargins.Create(AOwner: TGridPrinter);
 var
   i: Integer;
 begin
   inherited Create;
+  FOwner := AOwner;
   for i := 0 to 3 do FMargins[i] := 20.0;
   for i := 4 to 5 do FMargins[i] := 10.0;
+end;
+
+procedure TGridPrnMargins.Changed;
+begin
+  if (FOwner <> nil) then
+    FOwner.UpdatePreview;
 end;
 
 function TGridPrnMargins.GetMargin(AIndex: Integer): Double;
@@ -260,8 +299,182 @@ end;
 
 procedure TGridPrnMargins.SetMargin(AIndex: Integer; AValue: Double);
 begin
-  FMargins[AIndex] := AValue;
+  if FMargins[AIndex] <> AValue then
+  begin
+    FMargins[AIndex] := AValue;
+    Changed;
+  end;
 end;
+
+
+{ TGridPrnHeaderFooter }
+
+constructor TGridPrnHeaderFooter.Create(AOwner: TGridPrinter);
+begin
+  inherited Create;
+  FOwner := AOwner;
+
+  FSectionSeparator := '|';
+
+  FFont := TFont.Create;
+  FixFontSize(FFont);
+  FFont.Size := FFont.Size - 1;
+  FFont.OnChange := @Changed;
+
+  FLineColor := clDefault;
+  FLineWidth := 0;
+  FShowLine := true;
+  FVisible := true;
+end;
+
+destructor TGridPrnHeaderFooter.Destroy;
+begin
+  FFont.Free;
+  inherited;
+end;
+
+procedure TGridPrnHeaderFooter.Changed(Sender: TObject);
+begin
+  if (FOwner <> nil) then
+    FOwner.UpdatePreview;
+end;
+
+function TGridPrnHeaderFooter.GetProcessedText(AIndex: TGridPrnHeaderFooterSection): String;
+const
+  UNKNOWN = '<unknown';
+
+  procedure Replace(AParam: String);
+  var
+    s: String;
+  begin
+    if FOwner <> nil then
+      case AParam of
+        '$PAGECOUNT': s := IntToStr(FOwner.PageCount);
+        '$PAGE': s := IntToStr(FOwner.PageNumber);
+        '$FILENAME_ONLY': s := ExtractFileName(FOwner.FileName);
+        '$FILENAME': s := ExpandFileName(FOwner.FileName);
+        '$PATH': s := ExtractFilePath(ExpandFileName(FOwner.FileName));
+      end
+    else
+      s := UNKNOWN;
+    Result := StringReplace(Result, AParam, s, [rfReplaceAll, rfIgnoreCase]);
+  end;
+
+  begin
+  Result := FSectionText[AIndex];
+  Result := StringReplace(Result, '$DATE', DateToStr(Now), [rfReplaceAll, rfIgnoreCase]);
+  Result := StringReplace(Result, '$TIME', TimeToStr(Now), [rfReplaceAll, rfIgnoreCase]);
+  Replace('$PAGECOUNT');
+  Replace('$PAGE');
+  Replace('$FILENAME_ONLY');
+  Replace('$FILENAME');
+  Replace('$PATH');
+end;
+
+function TGridPrnHeaderFooter.GetSectionText(AIndex: TGridPrnHeaderFooterSection): String;
+begin
+  Result := FSectionText[AIndex];
+end;
+
+function TGridPrnHeaderFooter.GetText: String;
+begin
+  Result :=
+    FSectionText[hfsLeft] + FSectionSeparator +
+    FSectionText[hfsCenter] + FSectionSeparator +
+    FSectionText[hfsRight];
+end;
+
+function TGridPrnHeaderFooter.IsShown: Boolean;
+begin
+  Result := FVisible and (
+    (FSectionText[hfsLeft] <> '') or
+    (FSectionText[hfsCenter] <> '') or
+    (FSectionText[hfsRight] <> '')
+  );
+end;
+
+function TGridPrnHeaderFooter.RealLineColor: TColor;
+begin
+  if ((FOwner <> nil) and FOwner.Monochrome) or (FLineColor = clDefault) then
+    Result := clBlack
+  else
+    Result := FLineColor;
+end;
+
+function TGridPrnHeaderFooter.RealLineWidth: Integer;
+begin
+  if ((FOwner <> nil) and FOwner.Monochrome) or (FLineWidth = 0) then
+  begin
+    if (FOwner <> nil) then Result := FOwner.ScaleY(1) else Result := 1;
+  end else
+    Result := FLineWidth;
+end;
+
+procedure TGridPrnHeaderFooter.SetFont(AValue: TFont);
+begin
+  FFont.Assign(AValue);
+  Changed(nil);
+end;
+
+procedure TGridPrnHeaderFooter.SetLineColor(AValue: TColor);
+begin
+  if FLineColor <> AValue then
+  begin
+    FLineColor := AValue;
+    Changed(nil);
+  end;
+end;
+
+procedure TGridPrnHeaderFooter.SetLineWidth(AValue: Integer);
+begin
+  if FLineWidth <> AValue then
+  begin
+    FLineWidth := AValue;
+    Changed(nil);
+  end;
+end;
+
+procedure TGridPrnHeaderFooter.SetSectionText(AIndex: TGridPrnHeaderFooterSection;
+  AValue: String);
+begin
+  if FSectionText[AIndex] <> AValue then
+  begin
+    FSectionText[AIndex] := AValue;
+    Changed(nil);
+  end;
+end;
+
+procedure TGridPrnHeaderFooter.SetShowLine(AValue: Boolean);
+begin
+  if FShowLine <> AValue then
+  begin
+    FShowLine := AValue;
+    Changed(nil);
+  end;
+end;
+
+procedure TGridPrnHeaderFooter.SetText(AValue: String);
+var
+  sa: TStringArray;
+begin
+  if GetText = AValue then
+    exit;
+  sa := AValue.Split([FSectionSeparator]);
+  if Length(sa) > 0 then FSectionText[hfsLeft] := sa[0] else FSectionText[hfsLeft] := '';
+  if Length(sa) > 1 then FSectionText[hfsCenter] := sa[1] else FSectionText[hfsCenter] := '';
+  if Length(sa) > 2 then FSectionText[hfsRight] := sa[2] else FSectionText[hfsRight] := '';
+  Changed(self);
+end;
+
+procedure TGridPrnHeaderFooter.SetVisible(AValue: Boolean);
+begin
+  if FVisible <> AValue then
+  begin
+    FVisible := AValue;
+    Changed(self);
+  end;
+end;
+
 
 { TGridPrinter }
 
@@ -269,23 +482,11 @@ constructor TGridPrinter.Create(AOwner: TComponent);
 begin
   inherited;
 
-  FMargins := TGridPrnMargins.Create;
+  FMargins := TGridPrnMargins.Create(Self);
+  FHeader := TGridPrnHeaderFooter.Create(Self);
+  FFooter := TGridPrnHeaderFooter.Create(Self);
+
   FPrintOrder := poRowsFirst;
-
-  FHeaderFont := TFont.Create;
-  FixFontSize(FHeaderFont);
-  FHeaderFont.Size := FHeaderFont.Size - 2;
-  FHeaderLine := true;
-  FHeaderLineColor := clDefault;
-  FShowHeader := true;
-
-  FFooterFont := TFont.Create;
-  FixFontSize(FFooterFont);
-  FFooterFont.Size := FFooterFont.Size - 2;
-  FFooterLine := true;
-  FFooterLineColor := clDefault;
-  FShowFooter := true;
-
   FBorderLineColor := clDefault;
   FFixedLineColor := clDefault;
   FGridLineColor := clDefault;
@@ -293,8 +494,8 @@ end;
 
 destructor TGridPrinter.Destroy;
 begin
-  FHeaderFont.Free;
-  FFooterFont.Free;
+  FHeader.Free;
+  FFooter.Free;
   FMargins.Free;
   inherited;
 end;
@@ -327,6 +528,12 @@ procedure TGridPrinter.DoPrepareCanvas(ACol, ARow: Integer);
 begin
   if Assigned(FOnPrepareCanvas) then
     FOnPrepareCanvas(Self, ACol, ARow, []);
+end;
+
+procedure TGridPrinter.DoUpdatePreview;
+begin
+  if Assigned(FOnUpdatePreview) and (FOutputDevice = odPreview) then
+    FOnUpdatePreview(Self);
 end;
 
 procedure TGridPrinter.Execute(ACanvas: TCanvas);
@@ -373,39 +580,18 @@ begin
     Result := lGrid.GetCells(Acol, ARow);
 end;
 
-function TGridPrinter.GetFooter: String;
-begin
-  Result := FFooterText[hfpLeft] + '|' + FFooterText[hfpCenter] + '|' + FFooterText[hfpRight];
-end;
-
-function TGridPrinter.GetFooterPart(AIndex: TGridPrnHeaderFooterPart): String;
-begin
-  Result := FFooterText[AIndex];
-end;
-
-function TGridPrinter.GetHeader: String;
-begin
-  Result := FHeaderText[hfpLeft] + '|' + FHeaderText[hfpCenter] + '|' + FHeaderText[hfpRight];
-end;
-
-function TGridPrinter.GetHeaderFooterText(AText: String): String;
-begin
-  Result := StringReplace(AText, '$DATE', DateToStr(Now), [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '$TIME', TimeToStr(Now), [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '$PAGECOUNT', IntToStr(FPageCount), [rfReplaceAll, rfIgnoreCase]);
-  Result := StringReplace(Result, '$PAGE', IntToStr(FPageNumber), [rfReplaceAll, rfIgnoreCase]);
-end;
-
-function TGridPrinter.GetHeaderPart(AIndex: TGridPrnHeaderFooterPart): String;
-begin
-  Result := FHeaderText[AIndex];
-end;
-
 function TGridPrinter.GetPageCount: Integer;
 begin
   if FPageCount = 0 then
     Prepare;
   Result := FPageCount;
+end;
+
+function TGridPrinter.GetPageNumber: Integer;
+begin
+  if FPageNumber <= 0 then
+    Prepare;
+  Result := FPageNumber;
 end;
 
 { Find the column and row indices before which page breaks are occuring.
@@ -741,70 +927,67 @@ end;
 
 procedure TGridPrinter.PrintFooter(ACanvas: TCanvas);
 var
-  Width: array[TGridPrnHeaderFooterPart] of Integer = (0, 0, 0);
+  Width: array[TGridPrnHeaderFooterSection] of Integer = (0, 0, 0);
   printableWidth, lineHeight: Integer;
   x, y: Integer;
   s: String;
   R: TRect;
   textStyle: TTextStyle;
 begin
-  if not FShowFooter then
-    exit;
-  if (FFooterText[hfpLeft] = '') and (FFooterText[hfpCenter] = '') and (FFooterText[hfpRight] = '') then
+  if not FFooter.IsShown then
     exit;
 
-  SelectFont(ACanvas, FFooterFont);
+  SelectFont(ACanvas, FFooter.Font);
   printableWidth := FPageWidth - FLeftMarginPx - FRightMarginPx;
-  if (FFooterText[hfpLeft] <> '') and (FFooterText[hfpCenter] = '') and (FFooterText[hfpRight] = '') then
-    Width[hfpLeft] := printableWidth
+  if (FFooter.SectionText[hfsLeft] <> '') and (FFooter.SectionText[hfsCenter] = '') and (FFooter.SectionText[hfsRight] = '') then
+    Width[hfsLeft] := printableWidth
   else
-  if (FFooterText[hfpLeft] = '') and (FFooterText[hfpCenter] <> '') and (FFooterText[hfpRight] = '') then
-    Width[hfpCenter] := printableWidth
+  if (FFooter.SectionText[hfsLeft] = '') and (FFooter.SectionText[hfsCenter] <> '') and (FFooter.SectionText[hfsRight] = '') then
+    Width[hfsCenter] := printableWidth
   else
-  if (FFooterText[hfpLeft] = '') and (FFooterText[hfpCenter] = '') and (FFooterText[hfpRight] <> '') then
-    Width[hfpRight] := printableWidth
+  if (FFooter.SectionText[hfsLeft] = '') and (FFooter.SectionText[hfsCenter] = '') and (FFooter.SectionText[hfsRight] <> '') then
+    Width[hfsRight] := printableWidth
   else begin
-    Width[hfpLeft] := printableWidth div 3;
-    Width[hfpCenter] := printableWidth div 3;
-    Width[hfpRight] := printableWidth div 3;
+    Width[hfsLeft] := printableWidth div 3;
+    Width[hfsCenter] := printableWidth div 3;
+    Width[hfsRight] := printableWidth div 3;
   end;
 
   lineHeight := ACanvas.TextHeight('Rg');
   textStyle := DefaultTextStyle;
 
   y := FPageHeight - FHeaderMarginPx - lineHeight;
-  if FFooterText[hfpLeft] <> '' then
+  if FFooter.SectionText[hfsLeft] <> '' then
   begin
-    s := GetHeaderFooterText(FFooterText[hfpLeft]);
+    s := FFooter.ProcessedText[hfsLeft];
     x := FLeftMarginPx;
-    R := Rect(x, y, x + Width[hfpLeft], y + lineHeight);
+    R := Rect(x, y, x + Width[hfsLeft], y + lineHeight);
     ACanvas.TextRect(R, R.Left, R.Top, s);
   end;
-  if FFooterText[hfpCenter] <> '' then
+  if FFooter.SectionText[hfsCenter] <> '' then
   begin
-    s := GetHeaderFooterText(FFooterText[hfpCenter]);
-    x := (FPageRect.Left + FPageRect.Right - Width[hfpCenter]) div 2;
-    R := Rect(x, y, x + Width[hfpCenter], y + lineHeight);
+    s := FFooter.ProcessedText[hfsCenter];
+    x := (FPageRect.Left + FPageRect.Right - Width[hfsCenter]) div 2;
+    R := Rect(x, y, x + Width[hfsCenter], y + lineHeight);
     textStyle.Alignment := taCenter;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
-  if FFooterText[hfpRight] <> '' then
+  if FFooter.SectionText[hfsRight] <> '' then
   begin
-    s := GetHeaderFooterText(FFooterText[hfpRight]);
+    s := Footer.ProcessedText[hfsRight];
     x := FPageRect.Right;
-    R := Rect(x, y, x + Width[hfpRight], y + lineHeight);
+    R := Rect(x, y, x + Width[hfsRight], y + lineHeight);
     textStyle.Alignment := taRightJustify;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
 
-  if FFooterLine then
+  if FFooter.ShowLine then
   begin
-    ACanvas.Pen.Color := IfThen(FMonochrome or (FFooterLineColor = clDefault), clBlack, FFooterLineColor);
-    ACanvas.Pen.Width := IfThen(FFooterLineWidth = 0, ScaleY(1), FFooterlineWidth);
+    ACanvas.Pen.Color := FFooter.RealLineColor;
+    ACanvas.Pen.Width := FFooter.RealLineWidth;
     ACanvas.Pen.Style := psSolid;
     ACanvas.Line(FPageRect.Left, y, FPageRect.Right, y);
   end;
-
 end;
 
 procedure TGridPrinter.PrintGridLines(ACanvas: TCanvas;
@@ -918,66 +1101,64 @@ end;
 
 procedure TGridPrinter.PrintHeader(ACanvas: TCanvas);
 var
-  Width: array[TGridPrnHeaderFooterPart] of Integer = (0, 0, 0);
+  Width: array[TGridPrnHeaderFooterSection] of Integer = (0, 0, 0);
   printableWidth, lineHeight: Integer;
   x, y: Integer;
   s: String;
   R: TRect;
   textStyle: TTextStyle;
 begin
-  if not FShowHeader then
-    exit;
-  if (FHeaderText[hfpLeft] = '') and (FHeaderText[hfpCenter] = '') and (FHeaderText[hfpRight] = '') then
+  if not FHeader.IsShown then
     exit;
 
-  SelectFont(ACanvas, FHeaderFont);
+  SelectFont(ACanvas, FHeader.Font);
   printableWidth := FPageWidth - FLeftMarginPx - FRightMarginPx;
-  if (FHeaderText[hfpLeft] <> '') and (FHeaderText[hfpCenter] = '') and (FHeaderText[hfpRight] = '') then
-    Width[hfpLeft] := printableWidth
+  if (FHeader.SectionText[hfsLeft] <> '') and (FHeader.SectionText[hfsCenter] = '') and (FHeader.SectionText[hfsRight] = '') then
+    Width[hfsLeft] := printableWidth
   else
-  if (FHeaderText[hfpLeft] = '') and (FHeaderText[hfpCenter] <> '') and (FHeaderText[hfpRight] = '') then
-    Width[hfpCenter] := printableWidth
+  if (FHeader.SectionText[hfsLeft] = '') and (FHeader.SectionText[hfsCenter] <> '') and (FHeader.SectionText[hfsRight] = '') then
+    Width[hfsCenter] := printableWidth
   else
-  if (FHeaderText[hfpLeft] = '') and (FHeaderText[hfpCenter] = '') and (FHeaderText[hfpRight] <> '') then
-    Width[hfpRight] := printableWidth
+  if (FHeader.SectionText[hfsLeft] = '') and (FHeader.SectionText[hfsCenter] = '') and (FHeader.SectionText[hfsRight] <> '') then
+    Width[hfsRight] := printableWidth
   else begin
-    Width[hfpLeft] := printableWidth div 3;
-    Width[hfpCenter] := printableWidth div 3;
-    Width[hfpRight] := printableWidth div 3;
+    Width[hfsLeft] := printableWidth div 3;
+    Width[hfsCenter] := printableWidth div 3;
+    Width[hfsRight] := printableWidth div 3;
   end;
 
   lineHeight := ACanvas.TextHeight('Rg');
   textStyle := DefaultTextStyle;
 
   y := FHeaderMarginPx;
-  if FHeaderText[hfpLeft] <> '' then
+  if FHeader.SectionText[hfsLeft] <> '' then
   begin
-    s := GetHeaderFooterText(FHeaderText[hfpLeft]);
+    s := FHeader.ProcessedText[hfsLeft];
     x := FLeftMarginPx;
-    R := Rect(x, y, x + Width[hfpLeft], y + lineHeight);
+    R := Rect(x, y, x + Width[hfsLeft], y + lineHeight);
     ACanvas.TextRect(R, R.Left, R.Top, s);
   end;
-  if FHeaderText[hfpCenter] <> '' then
+  if FHeader.SectionText[hfsCenter] <> '' then
   begin
-    s := GetHeaderFooterText(FHeaderText[hfpCenter]);
-    x := (FPageRect.Left + FPageRect.Right - Width[hfpCenter]) div 2;
-    R := Rect(x, y, x + Width[hfpCenter], y + lineHeight);
+    s := FHeader.ProcessedText[hfsCenter];
+    x := (FPageRect.Left + FPageRect.Right - Width[hfsCenter]) div 2;
+    R := Rect(x, y, x + Width[hfsCenter], y + lineHeight);
     textStyle.Alignment := taCenter;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
-  if FHeaderText[hfpRight] <> '' then
+  if FHeader.SectionText[hfsRight] <> '' then
   begin
-    s := GetHeaderFooterText(FHeaderText[hfpRight]);
-    x := FPageRect.Right - Width[hfpRight];
-    R := Rect(x, y, x + Width[hfpRight], y + lineHeight);
+    s := FHeader.ProcessedText[hfsRight];
+    x := FPageRect.Right - Width[hfsRight];
+    R := Rect(x, y, x + Width[hfsRight], y + lineHeight);
     textStyle.Alignment := taRightJustify;
     ACanvas.TextRect(R, R.Left, R.Top, s, textStyle);
   end;
 
-  if FHeaderLine then
+  if FHeader.ShowLine then
   begin
-    ACanvas.Pen.Color := IfThen(FMonochrome or (FHeaderLineColor = clDefault), clBlack, FHeaderLineColor);
-    ACanvas.Pen.Width := IfThen(FHeaderLineWidth = 0, ScaleY(1), FHeaderlineWidth);
+    ACanvas.Pen.Color := FHeader.RealLineColor;
+    ACanvas.Pen.Width := FHeader.RealLineWidth;
     ACanvas.Pen.Style := psSolid;
     ACanvas.Line(FPageRect.Left, y+lineHeight, FPageRect.Right, y+lineHeight);
   end;
@@ -1096,19 +1277,49 @@ begin
   end;
 end;
 
-procedure TGridPrinter.SetFooter(AValue: String);
-var
-  sa: TStringArray;
+procedure TGridPrinter.SetBorderLineColor(AValue: TColor);
 begin
-  sa := AValue.Split('|');
-  if Length(sa) > 0 then FFooterText[hfpLeft] := sa[0] else FFooterText[hfpLeft] := '';
-  if Length(sa) > 1 then FFooterText[hfpCenter] := sa[1] else FFooterText[hfpCenter] := '';
-  if Length(sa) > 2 then FFooterText[hfpRight] := sa[2] else FFooterText[hfpRight] := '';
+  if FBorderLineColor <> AValue then
+  begin
+    FBorderLineColor := AValue;
+    UpdatePreview;
+  end;
 end;
 
-procedure TGridPrinter.SetFooterPart(AIndex: TGridPrnHeaderFooterPart; AValue: String);
+procedure TGridPrinter.SetBorderLineWidth(AValue: Integer);
 begin
-  FFooterText[AIndex] := AValue;
+  if FBorderLineWidth <> AValue then
+  begin
+    FBorderLineWidth := AValue;
+    UpdatePreview;
+  end;
+end;
+
+procedure TGridPrinter.SetFileName(AValue: String);
+begin
+  if FFileName <> AValue then
+  begin
+    FFileName := AValue;
+    UpdatePreview;
+  end;
+end;
+
+procedure TGridPrinter.SetFixedLineColor(AValue: TColor);
+begin
+  if FFixedLineColor <> AValue then
+  begin
+    FFixedLineColor := AValue;
+    UpdatePreview;
+  end;
+end;
+
+procedure TGridPrinter.SetFixedLineWidth(AValue: Integer);
+begin
+  if FFixedLineWidth <> AValue then
+  begin
+    FFixedLineWidth := AValue;
+    UpdatePreview;
+  end;
 end;
 
 procedure TGridPrinter.SetGrid(AValue: TCustomGrid);
@@ -1122,19 +1333,28 @@ begin
   FPageCount := 0;
 end;
 
-procedure TGridPrinter.SetHeader(AValue: String);
-var
-  sa: TStringArray;
+procedure TGridPrinter.SetGridLineColor(AValue: TColor);
 begin
-  sa := AValue.Split('|');
-  if Length(sa) > 0 then FHeaderText[hfpLeft] := sa[0] else FHeaderText[hfpLeft] := '';
-  if Length(sa) > 1 then FHeaderText[hfpCenter] := sa[1] else FHeaderText[hfpCenter] := '';
-  if Length(sa) > 2 then FHeaderText[hfpRight] := sa[2] else FHeaderText[hfpRight] := '';
+  if FGridLineColor <> AValue then
+  begin
+    FGridLineColor := AValue;
+    UpdatePreview;
+  end;
 end;
 
-procedure TGridPrinter.SetHeaderPart(AIndex: TGridPrnHeaderFooterPart; AValue: String);
+procedure TGridPrinter.SetGridLineWidth(AValue: Integer);
 begin
-  FHeaderText[AIndex] := AValue;
+  if FGridLineWidth <> AValue then
+  begin
+    FGridLineWidth := AValue;
+    UpdatePreview;
+  end;
+end;
+
+procedure TGridPrinter.UpdatePreview;
+begin
+  if FOutputDevice = odPreview then
+    DoUpdatePreview;
 end;
 
 end.

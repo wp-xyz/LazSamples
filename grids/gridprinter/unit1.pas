@@ -114,6 +114,7 @@ type
     procedure PrinterGetCellText(Sender: TObject; AGrid: TCustomGrid; ACol,
       ARow: Integer; var AText: String);
     procedure ShowPreview(APageNo: Integer);
+    procedure UpdatePreviewHandler(Sender: TObject);
 
   public
 
@@ -158,10 +159,14 @@ begin
   cmbPercent.Text := IntToStr(FZoom) + '%';
 end;
 
+procedure TForm1.UpdatePreviewHandler(Sender: TObject);
+begin
+  ShowPreview(FPageNo);
+end;
+
 procedure TForm1.cbFooterLineChange(Sender: TObject);
 begin
-  FGridPrinter.FooterLine := cbFooterLine.Checked;
-  ShowPreview(FPageNo);
+  FGridPrinter.Footer.ShowLine := cbFooterLine.Checked;
 end;
 
 procedure TForm1.cbDefaultFixedCellsDividerLineColorChange(Sender: TObject);
@@ -200,8 +205,7 @@ end;
 
 procedure TForm1.cbHeaderLineChange(Sender: TObject);
 begin
-  FGridPrinter.HeaderLine := cbHeaderLine.Checked;
-  ShowPreview(FPageNo);
+  FGridPrinter.Header.ShowLine := cbHeaderLine.Checked;
 end;
 
 procedure TForm1.cbMonochromeChange(Sender: TObject);
@@ -261,14 +265,12 @@ end;
 
 procedure TForm1.clbHeaderLinecolorColorChanged(Sender: TObject);
 begin
-  FGridPrinter.HeaderLineColor := clbHeaderLineColor.ButtonColor;
-  ShowPreview(FPageNo);
+  FGridPrinter.Header.LineColor := clbHeaderLineColor.ButtonColor;
 end;
 
 procedure TForm1.clbFooterLineColorColorChanged(Sender: TObject);
 begin
-  FGridPrinter.FooterLineColor := clbFooterLineColor.ButtonColor;
-  ShowPreview(FPageNo);
+  FGridPrinter.Footer.LineColor := clbFooterLineColor.ButtonColor;
 end;
 
 procedure TForm1.cmbPercentEditingDone(Sender: TObject);
@@ -284,14 +286,12 @@ end;
 
 procedure TForm1.edFooterTextChange(Sender: TObject);
 begin
-  FGridPrinter.Footer := edFooterText.Text;
-  ShowPreview(FPageNo);
+  FGridPrinter.Footer.Text := edFooterText.Text;
 end;
 
 procedure TForm1.edHeaderTextChange(Sender: TObject);
 begin
-  FGridPrinter.Header := edHeaderText.Text;
-  ShowPreview(FPageNo);
+  FGridPrinter.Header.Text := edHeaderText.Text;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -301,19 +301,20 @@ begin
 
   FGridPrinter := TGridPrinter.Create(self);
   FGridPrinter.Grid := StringGrid1;
-  FGridPrinter.HeaderPart[hfpLeft] := 'This is a print test.';
-  FGridPrinter.FooterPart[hfpCenter] := 'Page $PAGE of $PAGECOUNT';
-  FgridPrinter.FooterLine := false;
+  FGridPrinter.Header.Text := 'This is a print test.';
+  FGridPrinter.Footer.Text := '|Page $PAGE of $PAGECOUNT';
+  FGridPrinter.Footer.ShowLine := false;
 //  FGridPrinter.OnGetCellText := @PrinterGetCellText;
   FGridPrinter.OnPrepareCanvas := @StringGrid1PrepareCanvas;
+  FGridPrinter.OnUpdatePreview := @UpdatePreviewHandler;
 
-  edHeaderText.Text := FGridPrinter.Header;
-  cbHeaderLine.Checked := FGridPrinter.HeaderLine;
-  clbHeaderLineColor.ButtonColor := FGridPrinter.HeaderLineColor;
+  edHeaderText.Text := FGridPrinter.Header.Text;
+  cbHeaderLine.Checked := FGridPrinter.Header.ShowLine;
+  clbHeaderLineColor.ButtonColor := FGridPrinter.Header.RealLineColor;
 
-  edFooterText.Text := FGridPrinter.Footer;
-  cbFooterLine.Checked := FGridPrinter.FooterLine;
-  clbFooterLineColor.ButtonColor := FGridPrinter.FooterLineColor;
+  edFooterText.Text := FGridPrinter.Footer.Text;
+  cbFooterLine.Checked := FGridPrinter.Footer.ShowLine;
+  clbFooterLineColor.ButtonColor := FGridPrinter.Footer.RealLineColor;
 
   cbDefaultBorderLineColor.Checked := FGridPrinter.BorderLineColor = clDefault;
   seBorderLineWidth.Value := FGridPrinter.BorderlineWidth;
@@ -367,20 +368,20 @@ end;
 
 procedure TForm1.sbHeaderFontClick(Sender: TObject);
 begin
-  FontDialog1.Font := FGridPrinter.HeaderFont;
+  FontDialog1.Font := FGridPrinter.Header.Font;
   if FontDialog1.Execute then
   begin
-    FGridPrinter.HeaderFont.Assign(FontDialog1.Font);
+    FGridPrinter.Header.Font.Assign(FontDialog1.Font);
     ShowPreview(FPageNo);
   end;
 end;
 
 procedure TForm1.sbFooterFontClick(Sender: TObject);
 begin
-  FontDialog1.Font := FGridPrinter.FooterFont;
+  FontDialog1.Font := FGridPrinter.Footer.Font;
   if FontDialog1.Execute then
   begin
-    FGridPrinter.FooterFont.Assign(FontDialog1.Font);
+    FGridPrinter.Footer.Font.Assign(FontDialog1.Font);
     ShowPreview(FPageNo);
   end;
 end;

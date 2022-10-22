@@ -316,9 +316,18 @@ begin
     PreviewImage.Canvas.Line(FGridPrinter.PageRect.Right, 0, FGridPrinter.PageRect.Right, PreviewImage.Height);
 
     // Header line
-    y := mm2px(FGridPrinter.Margins.Header, FGridPrinter.PixelsPerInchY);
-    PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
+    if FGridPrinter.Header.IsShown then
+    begin
+      y := mm2px(FGridPrinter.Margins.Header, FGridPrinter.PixelsPerInchY);
+      PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
+    end;
 
+    // Footer line
+    if FGridPrinter.Footer.IsShown then
+    begin
+      y := FGridPrinter.PageHeight - mm2px(FGridPrinter.Margins.Footer, FGridPrinter.PixelsPerInchY);
+      PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
+    end;
   end;
 end;
 
