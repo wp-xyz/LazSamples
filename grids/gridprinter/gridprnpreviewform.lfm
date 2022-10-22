@@ -8,6 +8,7 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
   ClientWidth = 938
   OnActivate = FormActivate
   Position = poMainFormCenter
+  ShowHint = True
   LCLVersion = '2.3.0.0'
   object ToolBar: TToolBar
     Left = 0
@@ -30,7 +31,7 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       Action = acPrint
     end
     object tbClose: TToolButton
-      Left = 438
+      Left = 489
       Top = 0
       Action = acClose
     end
@@ -79,7 +80,7 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       ShowCaption = False
     end
     object tbDivider3: TToolButton
-      Left = 433
+      Left = 484
       Height = 24
       Top = 0
       Caption = 'tbDivider3'
@@ -130,6 +131,12 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       TabOrder = 1
       Text = 'edPageNo'
     end
+    object ToolButton1: TToolButton
+      Left = 433
+      Top = 0
+      Action = acPageMargins
+      Style = tbsCheck
+    end
   end
   object ScrollBox: TScrollBox
     Left = 0
@@ -156,6 +163,7 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       Width = 90
       OnMouseDown = PreviewImageMouseDown
       OnMouseWheel = PreviewImageMouseWheel
+      OnPaint = PreviewImagePaint
       PopupMenu = PreviewPopupMenu
     end
   end
@@ -473,6 +481,11 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       Caption = '100%'
       Hint = 'Original size'
       OnExecute = acZoom100Execute
+    end
+    object acPageMargins: TAction
+      Caption = 'Margins'
+      Hint = 'Page margins'
+      OnExecute = acPageMarginsExecute
     end
   end
   object PreviewPopupMenu: TPopupMenu

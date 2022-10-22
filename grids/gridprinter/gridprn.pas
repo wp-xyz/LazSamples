@@ -60,6 +60,8 @@ type
     FPageHeight: Integer;
     FPageWidth: Integer;
     FPrintOrder: TGridPrnOrder;
+    FShowFooter: Boolean;
+    FShowHeader: Boolean;
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     function GetCanvas: TCanvas;
@@ -135,6 +137,9 @@ type
     function ScaleX(AValue: Integer): Integer; inline;
     function ScaleY(AValue: Integer): Integer; inline;
     property Canvas: TCanvas read GetCanvas;
+    property PageRect: TRect read FPageRect;
+    property PixelsPerInchX: Integer read FPixelsPerInchX;
+    property PixelsPerInchY: Integer read FPixelsPerInchY;
     property FooterPart[AIndex: TGridPrnHeaderFooterPart]: string read GetFooterPart write SetFooterPart;
     property HeaderPart[AIndex: TGridPrnHeaderFooterPart]: string read GetHeaderPart write SetHeaderPart;
     property PageCount: Integer read GetPageCount;
@@ -160,9 +165,14 @@ type
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
     property Orientation: TPrinterOrientation read FOrientation write FOrientation default poPortrait;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
+    property ShowHeader: Boolean read FShowHeader write FShowHeader default true;
+    property ShowFooter: Boolean read FShowFooter write FShowFooter default true;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
   end;
+
+function mm2px(mm: Double; dpi: Integer): Integer;
+function px2mm(px: Integer; dpi: Integer): Double;
 
 implementation
 
@@ -267,12 +277,14 @@ begin
   FHeaderFont.Size := FHeaderFont.Size - 2;
   FHeaderLine := true;
   FHeaderLineColor := clDefault;
+  FShowHeader := true;
 
   FFooterFont := TFont.Create;
   FixFontSize(FFooterFont);
   FFooterFont.Size := FFooterFont.Size - 2;
   FFooterLine := true;
   FFooterLineColor := clDefault;
+  FShowFooter := true;
 
   FBorderLineColor := clDefault;
   FFixedLineColor := clDefault;
@@ -736,6 +748,8 @@ var
   R: TRect;
   textStyle: TTextStyle;
 begin
+  if not FShowFooter then
+    exit;
   if (FFooterText[hfpLeft] = '') and (FFooterText[hfpCenter] = '') and (FFooterText[hfpRight] = '') then
     exit;
 
@@ -911,6 +925,8 @@ var
   R: TRect;
   textStyle: TTextStyle;
 begin
+  if not FShowHeader then
+    exit;
   if (FHeaderText[hfpLeft] = '') and (FHeaderText[hfpCenter] = '') and (FHeaderText[hfpRight] = '') then
     exit;
 

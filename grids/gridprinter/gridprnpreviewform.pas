@@ -20,6 +20,7 @@ type
     acPrevPage: TAction;
     acNextPage: TAction;
     acLastPage: TAction;
+    acPageMargins: TAction;
     acZoom100: TAction;
     acZoomToFitWidth: TAction;
     acZoomToFitHeight: TAction;
@@ -56,10 +57,12 @@ type
     tbZoomWidth: TToolButton;
     tbZoomHeight: TToolButton;
     tbZoom100: TToolButton;
+    ToolButton1: TToolButton;
     procedure acCloseExecute(Sender: TObject);
     procedure acFirstPageExecute(Sender: TObject);
     procedure acLastPageExecute(Sender: TObject);
     procedure acNextPageExecute(Sender: TObject);
+    procedure acPageMarginsExecute(Sender: TObject);
     procedure acPrevPageExecute(Sender: TObject);
     procedure acPrintExecute(Sender: TObject);
     procedure ActionListUpdate({%H-}AAction: TBasicAction; var {%H-}Handled: Boolean);
@@ -75,6 +78,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure PreviewImageMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; {%H-}MousePos: TPoint; var {%H-}Handled: Boolean);
+    procedure PreviewImagePaint(Sender: TObject);
     procedure ScrollBoxMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ToolBarResize(Sender: TObject);
@@ -169,6 +173,12 @@ procedure TGridPrintPreviewForm.acNextPageExecute(Sender: TObject);
 begin
   if FPageNumber < FPageCount then
     ShowPage(FPageNumber+1);
+end;
+
+procedure TGridPrintPreviewForm.acPageMarginsExecute(Sender: TObject);
+begin
+  acPageMargins.Checked := not acPageMargins.Checked;
+  PreviewImage.Invalidate;
 end;
 
 procedure TGridPrintPreviewForm.acPrevPageExecute(Sender: TObject);
@@ -281,6 +291,34 @@ begin
     if newZoom < FZoomMin then
       newZoom := FZoomMin;
     ShowPage(FPageNumber, newZoom);
+  end;
+end;
+
+procedure TGridPrintPreviewForm.PreviewImagePaint(Sender: TObject);
+var
+  x, y: Integer;
+begin
+  if acPageMargins.Checked then
+  begin
+    PreviewImage.Canvas.Pen.Color := clRed;
+    PreviewImage.Canvas.Pen.Style := psDash;
+
+    // Top margin line
+    PreviewImage.Canvas.Line(0, FGridPrinter.PageRect.Top, PreviewImage.Width, FGridPrinter.PageRect.Top);
+
+    // Bottom margin line
+    PreviewImage.Canvas.Line(0, FGridPrinter.PageRect.Bottom, PreviewImage.Width, FGridPrinter.PageRect.Bottom);
+
+    // Left margin line
+    PreviewImage.Canvas.Line(FGridPrinter.PageRect.Left, 0, FGridPrinter.PageRect.Left, PreviewImage.Height);
+
+    // Right margin line
+    PreviewImage.Canvas.Line(FGridPrinter.PageRect.Right, 0, FGridPrinter.PageRect.Right, PreviewImage.Height);
+
+    // Header line
+    y := mm2px(FGridPrinter.Margins.Header, FGridPrinter.PixelsPerInchY);
+    PreviewImage.Canvas.Line(0, y, PreviewImage.Width, y);
+
   end;
 end;
 
