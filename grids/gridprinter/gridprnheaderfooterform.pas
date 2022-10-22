@@ -162,7 +162,7 @@ begin
     HF.Font.Assign(Font);
     HF.ShowLine := ShowLine;
     HF.Linecolor := LineColor;
-    HF.LineWidth := mm2px(LineWidth, ScreenInfo.PixelsPerInchY);
+    HF.LineWidth := LineWidth;
   end;
 end;
 
@@ -183,8 +183,8 @@ begin
     RightText := HF.SectionText[hfsRight];
     Font.Assign(HF.Font);
     ShowLine := HF.ShowLine;
-    Linecolor := HF.LineColor;
-    LineWidth := px2mm(HF.LineWidth, ScreenInfo.PixelsPerInchY);
+    LineColor := HF.RealLineColor;
+    LineWidth := HF.LineWidth;
   end;
 end;
 

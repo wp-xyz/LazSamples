@@ -41,7 +41,7 @@ type
   private
     FFont: TFont;
     FLineColor: TColor;
-    FLineWidth: Integer;
+    FLineWidth: Double;
     FShowLine: Boolean;
     FOwner: TGridPrinter;
     FSectionSeparator: String;
@@ -50,9 +50,10 @@ type
     function GetProcessedText(AIndex: TGridPrnHeaderFooterSection): String;
     function GetSectionText(AIndex: TGridPrnHeaderFooterSection): String;
     function GetText: String;
+    function IsLineWidthStored: Boolean;
     procedure SetFont(AValue: TFont);
     procedure SetLineColor(AValue: TColor);
-    procedure SetLineWidth(AValue: Integer);
+    procedure SetLineWidth(AValue: Double);
     procedure SetSectionText(AIndex: TGridPrnHeaderFooterSection; AValue: String);
     procedure SetShowLine(AValue: Boolean);
     procedure SetText(AValue: String);
@@ -70,7 +71,7 @@ type
   published
     property Font: TFont read FFont write SetFont;
     property LineColor: TColor read FLineColor write SetLineColor default clDefault;
-    property LineWidth: Integer read FLineWidth write SetLineWidth default -1;
+    property LineWidth: Double read FLineWidth write SetLineWidth stored IsLineWidthStored;
     property SectionSeparator: String read FSectionSeparator write FSectionSeparator;
     property ShowLine: Boolean read FShowLine write SetShowLine default true;
     property Text: String read GetText write SetText;
@@ -85,12 +86,12 @@ type
   TGridPrinter = class(TComponent)
   private
     FBorderLineColor: Integer;
-    FBorderLineWidth: Integer;
+    FBorderLineWidth: Double;
     FFixedLineColor: TColor;
-    FFixedLineWidth: Integer;
+    FFixedLineWidth: Double;
     FGrid: TCustomGrid;
-    FGridLineWidth: Integer;
     FGridLineColor: TColor;
+    FGridLineWidth: Double;
     FHeader: TGridPrnHeaderFooter;
     FFileName: String;      // to be used by header/footer
     FFooter: TGridPrnHeaderFooter;
@@ -104,26 +105,35 @@ type
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     FOnUpdatePreview: TNotifyEvent;
+    function GetBorderLineWidthHor: Integer;
+    function GetBorderLineWidthVert: Integer;
     function GetCanvas: TCanvas;
+    function GetFixedLineWidthHor: Integer;
+    function GetFixedLineWidthVert: Integer;
+    function GetGridLineWidthHor: Integer;
+    function GetGridLineWidthVert: Integer;
     function GetPageCount: Integer;
     function GetPageNumber: Integer;
+    function IsBorderLineWidthStored: Boolean;
+    function IsFixedLineWidthStored: Boolean;
+    function IsGridLineWidthStored: Boolean;
     procedure SetBorderLineColor(AValue: TColor);
-    procedure SetBorderLineWidth(AValue: Integer);
+    procedure SetBorderLineWidth(AValue: Double);
     procedure SetFileName(AValue: String);
     procedure SetFixedLineColor(AValue: TColor);
-    procedure SetFixedLineWidth(AValue: Integer);
+    procedure SetFixedLineWidth(AValue: Double);
     procedure SetGrid(AValue: TCustomGrid);
     procedure SetGridLineColor(AValue: TColor);
-    procedure SetGridLineWidth(AValue: Integer);
+    procedure SetGridLineWidth(AValue: Double);
   protected
     FFactorX: Double;              // Multiply to convert screen to printer/preview pixels
     FFactorY: Double;
-    FLeftMarginPx: Integer;         // Scaled page margins
-    FTopMarginPx: Integer;
-    FRightMarginPx: Integer;
-    FBottomMarginPx: Integer;
-    FHeaderMarginPx: Integer;
-    FFooterMarginPx: Integer;
+    FLeftMargin: Integer;         // Scaled page margins
+    FTopMargin: Integer;
+    FRightMargin: Integer;
+    FBottomMargin: Integer;
+    FHeaderMargin: Integer;
+    FFooterMargin: Integer;
     FColWidths: array of Integer;      // Array of scaled grid column widts
     FRowHeights: array of Integer;     // Array of scaled grid row heights
     FFixedColPos: Integer;             // Scaled right end of the fixed cols
@@ -176,8 +186,8 @@ type
     function ScaleY(AValue: Integer): Integer; inline;
     procedure UpdatePreview;
     property Canvas: TCanvas read GetCanvas;
-    property FooterMargin: Integer read FFooterMarginPx;
-    property HeaderMargin: Integer read FHeaderMarginPx;
+    property FooterMargin: Integer read FFooterMargin;
+    property HeaderMargin: Integer read FHeaderMargin;
     property PageHeight: Integer read FPageHeight;
     property PageWidth: Integer read FPageWidth;
     property PageRect: TRect read FPageRect;
@@ -188,13 +198,13 @@ type
   published
     property Grid: TCustomGrid read FGrid write SetGrid;
     property BorderLineColor: TColor read FBorderLineColor write SetBorderLineColor default clDefault;
-    property BorderLineWidth: Integer read FBorderLineWidth write SetBorderLineWidth default 0;
+    property BorderLineWidth: Double read FBorderLineWidth write SetBorderLineWidth stored IsBorderLineWidthStored;
     property FileName: String read FFileName write SetFileName;
     property FixedLineColor: TColor read FFixedLineColor write SetFixedLineColor default clDefault;
-    property FixedLineWidth: Integer read FFixedLineWidth write SetFixedLineWidth default 0;
+    property FixedLineWidth: Double read FFixedLineWidth write SetFixedLineWidth stored IsFixedLineWidthStored;
     property Footer: TGridPrnHeaderFooter read FFooter write FFooter;
     property GridLineColor: TColor read FGridLineColor write SetGridLineColor default clDefault;
-    property GridLineWidth: Integer read FGridLineWidth write SetGridLineWidth default 0;
+    property GridLineWidth: Double read FGridLineWidth write SetGridLineWidth stored IsGridLineWidthStored;
     property Header: TGridPrnHeaderFooter read FHeader write FHeader;
     property Margins: TGridPrnMargins read FMargins write FMargins;
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
@@ -386,6 +396,11 @@ begin
     FSectionText[hfsRight];
 end;
 
+function TGridPrnHeaderFooter.IsLineWidthStored: Boolean;
+begin
+  Result := FLineWidth > 0;
+end;
+
 function TGridPrnHeaderFooter.IsShown: Boolean;
 begin
   Result := FVisible and (
@@ -405,11 +420,10 @@ end;
 
 function TGridPrnHeaderFooter.RealLineWidth: Integer;
 begin
-  if ((FOwner <> nil) and FOwner.Monochrome) or (FLineWidth = 0) then
-  begin
-    if (FOwner <> nil) then Result := FOwner.ScaleY(1) else Result := 1;
-  end else
-    Result := FLineWidth;
+  if FLineWidth = 0 then
+    Result := FOwner.ScaleY(1)
+  else
+    Result := mm2px(FLineWidth, FOwner.PixelsPerInchY);
 end;
 
 procedure TGridPrnHeaderFooter.SetFont(AValue: TFont);
@@ -427,7 +441,7 @@ begin
   end;
 end;
 
-procedure TGridPrnHeaderFooter.SetLineWidth(AValue: Integer);
+procedure TGridPrnHeaderFooter.SetLineWidth(AValue: Double);
 begin
   if FLineWidth <> AValue then
   begin
@@ -548,6 +562,23 @@ begin
   FPrinting := false;
 end;
 
+function TGridPrinter.GetBorderLineWidthHor: Integer;
+begin
+  if FBorderLineWidth = 0 then
+    Result := ScaleY(2)
+  else
+    Result := mm2px(FBorderLineWidth, FPixelsPerInchY);
+end;
+
+function TGridPrinter.GetBorderLineWidthVert: Integer;
+begin
+  if FBorderLineWidth = 0 then
+    Result := ScaleX(2)
+  else
+    Result := mm2px(FBorderLineWidth, FPixelsPerInchX);
+end;
+
+
 function TGridPrinter.GetCanvas: TCanvas;
 begin
   if FPrinting then
@@ -582,6 +613,38 @@ begin
     Result := lGrid.GetCells(Acol, ARow);
 end;
 
+function TGridPrinter.GetFixedLineWidthHor: Integer;
+begin
+  if FFixedLineWidth = 0 then
+    Result := ScaleY(TGridAccess(FGrid).GridLineWidth)
+  else
+    Result := mm2px(FFixedLineWidth, FPixelsPerInchY);
+end;
+
+function TGridPrinter.GetFixedLineWidthVert: Integer;
+begin
+  if FFixedLineWidth = 0 then
+    Result := ScaleX(TGridAccess(FGrid).GridLineWidth)
+  else
+    Result := mm2px(FFixedLineWidth, FPixelsPerInchX);
+end;
+
+function TGridPrinter.GetGridLineWidthHor: Integer;
+begin
+  if FGridLineWidth = 0 then
+    Result := ScaleY(TGridAccess(FGrid).GridLineWidth)
+  else
+    Result := mm2px(FGridLineWidth, FPixelsPerInchY);
+end;
+
+function TGridPrinter.GetGridLineWidthVert: Integer;
+begin
+  if FGridLineWidth = 0 then
+    Result := ScaleX(TGridAccess(FGrid).GridLineWidth)
+  else
+    Result := mm2px(FGridLineWidth, FPixelsPerInchX);
+end;
+
 function TGridPrinter.GetPageCount: Integer;
 begin
   if FPageCount = 0 then
@@ -594,6 +657,21 @@ begin
   if FPageNumber <= 0 then
     Prepare;
   Result := FPageNumber;
+end;
+
+function TGridPrinter.IsBorderLineWidthStored: Boolean;
+begin
+  Result := FBorderLineWidth <> 0;
+end;
+
+function TGridPrinter.IsFixedLineWidthStored: Boolean;
+begin
+  Result := FFixedLineWidth <> 0.0;
+end;
+
+function TGridPrinter.IsGridLineWidthStored: Boolean;
+begin
+  Result := FGridLineWidth <> 0.0;
 end;
 
 { Find the column and row indices before which page breaks are occuring.
@@ -674,13 +752,13 @@ begin
   FFactorX := FPixelsPerInchX / ScreenInfo.PixelsPerInchX;
   FFactorY := FPixelsPerInchY / ScreenInfo.PixelsPerInchY;
 
-  FLeftMarginPx := mm2px(FMargins.Left, FPixelsPerInchX);
-  FTopMarginPx := mm2px(FMargins.Top, FPixelsPerInchY);
-  FRightMarginPx := mm2px(FMargins.Right, FPixelsPerInchX);
-  FBottomMarginPx := mm2px(FMargins.Bottom, FPixelsPerInchY);
-  FHeaderMarginPx := mm2px(FMargins.Header, FPixelsPerInchY);
-  FFooterMarginPx := mm2px(FMargins.Footer, FPixelsPerInchY);
-  FPageRect := Rect(FLeftMarginPx, FTopMarginPx, FPageWidth - FRightMarginPx, FPageHeight - FBottomMarginPx);
+  FLeftMargin := mm2px(FMargins.Left, FPixelsPerInchX);
+  FTopMargin := mm2px(FMargins.Top, FPixelsPerInchY);
+  FRightMargin := mm2px(FMargins.Right, FPixelsPerInchX);
+  FBottomMargin := mm2px(FMargins.Bottom, FPixelsPerInchY);
+  FHeaderMargin := mm2px(FMargins.Header, FPixelsPerInchY);
+  FFooterMargin := mm2px(FMargins.Footer, FPixelsPerInchY);
+  FPageRect := Rect(FLeftMargin, FTopMargin, FPageWidth - FRightMargin, FPageHeight - FBottomMargin);
   FPadding := ScaleX(varCellPadding);
 
   ScaleColWidths;
@@ -904,11 +982,11 @@ var
   col, row: Integer;
   x, y, x2, y2: Integer;
 begin
-  x := FLeftMarginPx;
-  y := FTopMarginPx;
+  x := FLeftMargin;
+  y := FTopMargin;
   for row := 0 to FFixedRows-1 do
   begin
-    y2 := FTopMarginPx + FRowHeights[row];
+    y2 := FTopMargin + FRowHeights[row];
     for col := 0 to FFixedCols-1 do
     begin
       x2 := x + FColWidths[col];
@@ -940,7 +1018,7 @@ begin
     exit;
 
   SelectFont(ACanvas, FFooter.Font);
-  printableWidth := FPageWidth - FLeftMarginPx - FRightMarginPx;
+  printableWidth := FPageRect.Width;
   if (FFooter.SectionText[hfsLeft] <> '') and (FFooter.SectionText[hfsCenter] = '') and (FFooter.SectionText[hfsRight] = '') then
     Width[hfsLeft] := printableWidth
   else
@@ -958,11 +1036,11 @@ begin
   lineHeight := ACanvas.TextHeight('Rg');
   textStyle := DefaultTextStyle;
 
-  y := FPageHeight - FFooterMarginPx - lineHeight;
+  y := FPageHeight - FFooterMargin - lineHeight;
   if FFooter.SectionText[hfsLeft] <> '' then
   begin
     s := FFooter.ProcessedText[hfsLeft];
-    x := FLeftMarginPx;
+    x := FLeftMargin;
     R := Rect(x, y, x + Width[hfsLeft], y + lineHeight);
     ACanvas.TextRect(R, R.Left, R.Top, s);
   end;
@@ -988,6 +1066,7 @@ begin
     ACanvas.Pen.Color := FFooter.RealLineColor;
     ACanvas.Pen.Width := FFooter.RealLineWidth;
     ACanvas.Pen.Style := psSolid;
+    dec(y, (ACanvas.Pen.Width+1) div 2);
     ACanvas.Line(FPageRect.Left, y, FPageRect.Right, y);
   end;
 end;
@@ -1011,13 +1090,13 @@ begin
   // ... vertical fixed cell lines
   if (goFixedVertLine in lGrid.Options) then
   begin
-    ACanvas.Pen.Width := ScaleX(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
+    ACanvas.Pen.Width := GetGridLineWidthVert;
     col := 1;
-    x := FLeftMarginPx;
+    x := FLeftMargin;
     while col < lGrid.FixedCols do
     begin
       x := x + FColWidths[col-1];
-      ACanvas.Line(x, FTopMarginPx, x, YEnd);
+      ACanvas.Line(x, FTopMargin, x, YEnd);
       inc(col);
     end;
     col := AFirstCol;
@@ -1025,14 +1104,14 @@ begin
     while (x < XEnd) and (col < lGrid.ColCount) do
     begin
       x := x + FColWidths[col];
-      ACanvas.Line(x, FTopMarginPx, x, FFixedRowPos);
+      ACanvas.Line(x, FTopMargin, x, FFixedRowPos);
       inc(col);
     end;
   end;
   // ... vertical grid lines
   if (goVertLine in lGrid.Options) then
   begin
-    ACanvas.Pen.Width := ScaleX(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
+    ACanvas.Pen.Width := GetGridLineWidthVert;
     col := AFirstCol;
     x := FFixedColPos;
     while (x < XEnd) and (col < lGrid.ColCount) do
@@ -1045,13 +1124,13 @@ begin
   // ... horizontal fixed cell lines
   if (goFixedHorzLine in lGrid.Options) then
   begin
-    ACanvas.Pen.Width := ScaleY(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
+    ACanvas.Pen.Width := GetGridLineWidthHor;
     row := 1;
-    y := FTopMarginPx;
+    y := FTopMargin;
     while row < lGrid.FixedRows do
     begin
       y := y + FRowHeights[row];
-      ACanvas.Line(FLeftMarginPx, y, XEnd, y);
+      ACanvas.Line(FLeftMargin, y, XEnd, y);
       inc(row);
     end;
     row := AFirstRow;
@@ -1059,14 +1138,14 @@ begin
     while (y < YEnd) and (row < lGrid.RowCount) do
     begin
       y := y + FRowHeights[row];
-      ACanvas.Line(FLeftMarginPx, y, FFixedColPos, y);
+      ACanvas.Line(FLeftMargin, y, FFixedColPos, y);
       inc(row);
     end;
   end;
   // ... horizontal grid lines
   if (goHorzLine in lGrid.Options) then
   begin
-    ACanvas.Pen.Width := ScaleY(IfThen(FGridLineWidth = 0, lGrid.GridLineWidth, FGridLineWidth));
+    ACanvas.Pen.Width := GetGridLineWidthHor;
     row := AFirstRow;
     y := FFixedRowPos;
     while (y < YEnd) and (row < lGrid.RowCount) do
@@ -1081,24 +1160,24 @@ begin
   // ... horizontal
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := IfThen(FMonochrome or (FFixedLineColor = clDefault), clBlack, FFixedLineColor);
-  ACanvas.Pen.Width := ScaleY(IfThen(FFixedLineWidth = 0, HEADERBORDER_LINEWIDTH, FFixedLineWidth));
-  ACanvas.Line(FLeftMarginPx, FFixedRowPos, XEnd, FFixedRowPos);
+  ACanvas.Pen.Width := GetFixedLineWidthHor;
+  ACanvas.Line(FLeftMargin, FFixedRowPos, XEnd, FFixedRowPos);
   // ... vertical
-  ACanvas.Pen.Width := ScaleX(IfThen(FFixedLineWidth = 0, HEADERBORDER_LINEWIDTH, FFixedLineWidth));
-  ACanvas.Line(FFixedColPos, FTopMarginPx, FFixedColPos, YEnd);
+  ACanvas.Pen.Width := GetFixedLineWidthVert;
+  ACanvas.Line(FFixedColPos, FTopMargin, FFixedColPos, YEnd);
 
   // Print outer border lines
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := IfThen(FMonochrome, clBlack,
     IfThen(FBorderLineColor = clDefault, clBlack, ColorToRGB(FBorderLineColor)));
   // ... horizontal
-  ACanvas.Pen.Width := ScaleY(IfThen(FBorderLineWidth = 0, OUTERBORDER_LINEWIDTH, FBorderLineWidth));
-  ACanvas.Line(FLeftMarginPx, FTopMarginPx, XEnd, FTopMarginPx);
-  ACanvas.Line(FLeftMarginPx, YEnd, XEnd, YEnd);
+  ACanvas.Pen.Width := GetBorderLineWidthHor;
+  ACanvas.Line(FLeftMargin, FTopMargin, XEnd, FTopMargin);
+  ACanvas.Line(FLeftMargin, YEnd, XEnd, YEnd);
   // ... vertical
-  ACanvas.Pen.Width := ScaleX(IfThen(FBorderLineWidth = 0, OUTERBORDER_LINEWIDTH, FBorderLineWidth));
-  ACanvas.Line(FLeftMarginPx, FTopMarginPx, FLeftMarginPx, YEnd);
-  ACanvas.Line(XEnd, FTopMarginPx, XEnd, YEnd);
+  ACanvas.Pen.Width := GetBorderLineWidthVert;
+  ACanvas.Line(FLeftMargin, FTopMargin, FLeftMargin, YEnd);
+  ACanvas.Line(XEnd, FTopMargin, XEnd, YEnd);
 end;
 
 procedure TGridPrinter.PrintHeader(ACanvas: TCanvas);
@@ -1114,7 +1193,7 @@ begin
     exit;
 
   SelectFont(ACanvas, FHeader.Font);
-  printableWidth := FPageWidth - FLeftMarginPx - FRightMarginPx;
+  printableWidth := FPageRect.Width;
   if (FHeader.SectionText[hfsLeft] <> '') and (FHeader.SectionText[hfsCenter] = '') and (FHeader.SectionText[hfsRight] = '') then
     Width[hfsLeft] := printableWidth
   else
@@ -1132,11 +1211,11 @@ begin
   lineHeight := ACanvas.TextHeight('Rg');
   textStyle := DefaultTextStyle;
 
-  y := FHeaderMarginPx;
+  y := FHeaderMargin;
   if FHeader.SectionText[hfsLeft] <> '' then
   begin
     s := FHeader.ProcessedText[hfsLeft];
-    x := FLeftMarginPx;
+    x := FLeftMargin;
     R := Rect(x, y, x + Width[hfsLeft], y + lineHeight);
     ACanvas.TextRect(R, R.Left, R.Top, s);
   end;
@@ -1162,7 +1241,8 @@ begin
     ACanvas.Pen.Color := FHeader.RealLineColor;
     ACanvas.Pen.Width := FHeader.RealLineWidth;
     ACanvas.Pen.Style := psSolid;
-    ACanvas.Line(FPageRect.Left, y+lineHeight, FPageRect.Right, y+lineHeight);
+    inc(y, lineHeight + (ACanvas.Pen.Width+1) div 2);
+    ACanvas.Line(FPageRect.Left, y, FPageRect.Right, y);
   end;
 end;
 
@@ -1215,7 +1295,7 @@ var
   col: Integer;
   x, x2, y2: Integer;
 begin
-  x := FLeftMarginPx;            // left side of the row
+  x := FLeftMargin;              // left side of the row
   y2 := Y + FRowHeights[ARow];   // lower end of the row
   for col := 0 to FFixedCols-1 do
   begin
@@ -1230,7 +1310,7 @@ procedure TGridPrinter.ScaleColWidths;
 var
   i, w: Integer;
 begin
-  FFixedColPos := FLeftMarginPx;
+  FFixedColPos := FLeftMargin;
   SetLength(FColWidths, FColCount);
   for i := 0 to FColCount-1 do
   begin
@@ -1245,7 +1325,7 @@ procedure TGridPrinter.ScaleRowHeights;
 var
   i, h: Integer;
 begin
-  FFixedRowPos := FTopMarginPx;
+  FFixedRowPos := FTopMargin;
   SetLength(FRowHeights, FRowCount);
   for i := 0 to FRowCount-1 do
   begin
@@ -1288,7 +1368,7 @@ begin
   end;
 end;
 
-procedure TGridPrinter.SetBorderLineWidth(AValue: Integer);
+procedure TGridPrinter.SetBorderLineWidth(AValue: Double);
 begin
   if FBorderLineWidth <> AValue then
   begin
@@ -1315,7 +1395,7 @@ begin
   end;
 end;
 
-procedure TGridPrinter.SetFixedLineWidth(AValue: Integer);
+procedure TGridPrinter.SetFixedLineWidth(AValue: Double);
 begin
   if FFixedLineWidth <> AValue then
   begin
@@ -1344,7 +1424,7 @@ begin
   end;
 end;
 
-procedure TGridPrinter.SetGridLineWidth(AValue: Integer);
+procedure TGridPrinter.SetGridLineWidth(AValue: Double);
 begin
   if FGridLineWidth <> AValue then
   begin
