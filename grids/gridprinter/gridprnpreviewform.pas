@@ -104,9 +104,11 @@ type
     procedure SetPageNumber(AValue: Integer);
   protected
     function CalcDraggedMargin(AMargin: Integer; APosition: Integer): Double;
+    procedure HideDraggedMarginHint;
     function MouseOverMarginLine(X, Y: Integer): Integer;
     function NextZoomFactor(AZoomIn: Boolean): Integer;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
+    procedure ShowDraggedMarginHint(AMarginIndex, ADraggedPos: Integer; AMarginName: String);
     procedure ShowPage(APageNo: Integer; AZoom: Integer = 0);
     procedure UpdateInfoPanel;
     procedure VerifyZoomMin;
@@ -320,6 +322,11 @@ begin
   FActivated := true;
 end;
 
+procedure TGridPrintPreviewForm.HideDraggedMarginHint;
+begin
+  Application.CancelHint;
+end;
+
 // Result 0=left margin, 1=top margin, 2=right margin, 3=bottom margin, 4=header, 5=footer
 function TGridPrintPreviewForm.MouseOverMarginLine(X, Y: Integer): Integer;
 CONST
@@ -394,6 +401,7 @@ var
   minHeight: Integer;
   y0: Integer;
   one_mm: Integer;
+  marginName: String;
 begin
   if (FGridPrinter = nil) or not (acPageMargins.Checked) then
     exit;
@@ -416,6 +424,7 @@ begin
     case FDraggedMargin of
       0: begin
            // Left margin
+           marginName := 'Left margin';
            FDraggedPos := X;
            if (FDraggedPos < 0) then
              FDraggedPos := 0;
@@ -424,6 +433,7 @@ begin
          end;
       1: begin
            // Top margin
+           marginName := 'Top margin';
            FDraggedPos := Y;
            if FGridPrinter.Header.IsShown then
            begin
@@ -438,6 +448,7 @@ begin
          end;
       2: begin
            // Right margin
+           marginName := 'Right margin';
            FDraggedPos := X;
            if FDraggedPos > FGridPrinter.PageWidth then
              FDraggedPos := FGridPrinter.PageWidth;
@@ -446,6 +457,7 @@ begin
          end;
       3: begin
            // Bottom margin
+           marginName := 'Bottom margin';
            FDraggedPos := Y;
            if FGridPrinter.Footer.IsShown then
            begin
@@ -460,6 +472,7 @@ begin
          end;
       4: begin
            // Header
+           marginName := 'Header margin';
            FDraggedPos := Y;
            if FDraggedPos < 0 then
              FDraggedPos := 0;
@@ -468,6 +481,7 @@ begin
          end;
       5: begin
            // Footer
+           marginName := 'Footer margin';
            FDraggedPos := Y;
            if FDraggedPos > FGridPrinter.PageHeight then
              FDraggedPos := FGridPrinter.PageHeight;
@@ -477,7 +491,12 @@ begin
       else
         raise Exception.Create('[PreviewImageMouseMove] Unexpected value of FDraggedMargin');
     end;
+
+
+    // Redraw the preview to update the dragged red margin line
     PreviewImage.Repaint;
+
+    ShowDraggedMarginHint(FDraggedMargin, FDraggedPos, marginName);
   end;
 end;
 
@@ -500,6 +519,7 @@ begin
       4: FGridPrinter.Margins.Header := newMargin;
       5: FGridPrinter.Margins.Footer := newMargin;
     end;
+    HideDraggedMarginHint;
     Screen.Cursor := crDefault;
     ShowPage(FPageNumber);
   end;
@@ -643,6 +663,20 @@ procedure TGridPrintPreviewForm.SetPageNumber(AValue: Integer);
 begin
   if AValue <> FPageNumber then
     ShowPage(AValue);
+end;
+
+procedure TGridPrintPreviewForm.ShowDraggedMarginHint(
+  AMarginIndex, ADraggedPos: Integer; AMarginName: String);
+var
+  hintStr: String;
+  P: TPoint;
+begin
+  P := Mouse.CursorPos;
+  hintStr := Format('%s: %.1f mm', [AMarginName, CalcDraggedMargin(AMarginIndex, ADraggedPos)]);
+  PreviewImage.Hint := hintStr;
+  Application.HintPause := 0;
+  Application.CancelHint;
+  Application.ActivateHint(P, true);
 end;
 
 procedure TGridPrintPreviewForm.ShowPage(APageNo: Integer; AZoom: Integer = 0);
