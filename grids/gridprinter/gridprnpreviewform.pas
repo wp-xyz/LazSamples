@@ -103,6 +103,7 @@ type
     FZoomMin: Integer;
     procedure SetPageNumber(AValue: Integer);
   protected
+    function CalcDraggedMargin(AMargin: Integer; APosition: Integer): Double;
     function MouseOverMarginLine(X, Y: Integer): Integer;
     function NextZoomFactor(AZoomIn: Boolean): Integer;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
@@ -253,6 +254,20 @@ end;
 procedure TGridPrintPreviewForm.acZoomToFitWidthExecute(Sender: TObject);
 begin
   ZoomToFitWidth;
+end;
+
+{ Converts the position of the dragged margin to millimeters. }
+function TGridPrintPreviewForm.CalcDraggedMargin(AMargin: Integer;
+  APosition: Integer): Double;
+begin
+  case AMargin of
+    0: Result := px2mm(APosition, FGridPrinter.PixelsPerInchX);
+    1: Result := px2mm(APosition, FGridPrinter.PixelsPerInchY);
+    2: Result := px2mm(FGridPrinter.PageWidth - APosition, FGridPrinter.PixelsPerInchX);
+    3: Result := px2mm(FGridPrinter.PageHeight - APosition, FGridPrinter.PixelsPerInchY);
+    4: Result := px2mm(APosition, FGridPrinter.PixelsPerInchY);
+    5: Result := px2mm(FGridPrinter.PageHeight - APosition, FGridPrinter.PixelsPerInchY);
+  end;
 end;
 
 { Allows to select a page by entering its number in the PageNo edit and
@@ -468,18 +483,20 @@ procedure TGridPrintPreviewForm.PreviewImageMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   dragged: Integer;
+  newMargin: Double;
 begin
   if (FDraggedMargin > -1) then
   begin
+    newMargin := CalcDraggedMargin(FDraggedMargin, FDraggedPos);
     dragged := FDraggedMargin;
     FDraggedMargin := -1;
     case dragged of
-      0: FGridPrinter.Margins.Left := px2mm(FDraggedPos, FGridPrinter.PixelsPerInchX);
-      1: FGridPrinter.Margins.Top := px2mm(FDraggedPos, FGridPrinter.PixelsPerInchY);
-      2: FGridPrinter.Margins.Right := px2mm(FGridPrinter.PageWidth - FDraggedPos, FGridPrinter.PixelsPerInchX);
-      3: FGridPrinter.Margins.Bottom := px2mm(FGridPrinter.PageHeight - FDraggedPos, FGridPrinter.PixelsPerInchY);
-      4: FGridPrinter.Margins.Header := px2mm(FDraggedPos, FGridPrinter.PixelsPerInchY);
-      5: FGridPrinter.Margins.Footer := px2mm(FGridPrinter.PageHeight - FDraggedPos, FGridPrinter.PixelsPerInchY);
+      0: FGridPrinter.Margins.Left := newMargin;
+      1: FGridPrinter.Margins.Top := newMargin;
+      2: FGridPrinter.Margins.Right := newMargin;
+      3: FGridPrinter.Margins.Bottom := newMargin;
+      4: FGridPrinter.Margins.Header := newMargin;
+      5: FGridPrinter.Margins.Footer := newMargin;
     end;
     Screen.Cursor := crDefault;
     ShowPage(FPageNumber);
