@@ -10,7 +10,6 @@ uses
   GridPrn;
 
 type
-
   { TGridPrintPreviewForm }
 
   TGridPrintPreviewForm = class(TForm)
@@ -28,7 +27,7 @@ type
     acZoomOut: TAction;
     acZoomIn: TAction;
     ActionList: TActionList;
-    edPageNo: TEdit;
+    edPageNumber: TEdit;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
@@ -74,21 +73,22 @@ type
     procedure acZoomInZoomOutExecute(Sender: TObject);
     procedure acZoomToFitHeightExecute(Sender: TObject);
     procedure acZoomToFitWidthExecute(Sender: TObject);
-    procedure edPageNoEditingDone(Sender: TObject);
-    procedure edPageNoMouseWheel(Sender: TObject; Shift: TShiftState;
-      WheelDelta: Integer; MousePos: TPoint; var {%H-}Handled: Boolean);
+    procedure edPageNumberEditingDone(Sender: TObject);
+    procedure edPageNumberKeyDown(Sender: TObject; var Key: Word; {%H-}Shift: TShiftState);
+    procedure edPageNumberMouseWheel(Sender: TObject; {%H-}Shift: TShiftState;
+      WheelDelta: Integer; {%H-}MousePos: TPoint; var {%H-}Handled: Boolean);
     procedure FormActivate(Sender: TObject);
-    procedure PreviewImageMouseDown(Sender: TObject; Button: TMouseButton;
+    procedure PreviewImageMouseDown(Sender: TObject; {%H-}Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure PreviewImageMouseMove(Sender: TObject; Shift: TShiftState; X,
-      Y: Integer);
-    procedure PreviewImageMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure PreviewImageMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure PreviewImageMouseUp(Sender: TObject; {%H-}Button: TMouseButton;
+      {%H-}Shift: TShiftState; {%H-}X, {%H-}Y: Integer);
     procedure PreviewImageMouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; {%H-}MousePos: TPoint; var {%H-}Handled: Boolean);
     procedure PreviewImagePaint(Sender: TObject);
-    procedure ScrollBoxMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
+    procedure ScrollBoxKeyDown(Sender: TObject; var Key: Word; {%H-}Shift: TShiftState);
+    procedure ScrollBoxMouseDown(Sender: TObject; {%H-}Button: TMouseButton;
+      {%H-}Shift: TShiftState; {%H-}X, {%H-}Y: Integer);
     procedure ToolBarResize(Sender: TObject);
   private
     FActivated: Boolean;
@@ -104,9 +104,11 @@ type
     procedure SetPageNumber(AValue: Integer);
   protected
     function MouseOverMarginLine(X, Y: Integer): Integer;
+    function NextZoomFactor(AZoomIn: Boolean): Integer;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure ShowPage(APageNo: Integer; AZoom: Integer = 0);
     procedure UpdateInfoPanel;
+    procedure VerifyZoomMin;
 
   public
     constructor Create(AOwner: TComponent); override;
@@ -132,31 +134,31 @@ uses
 const
   ZOOM_MULTIPLIER = 1.05;
 
+{ Returns true when X1 is in range between X2-Delta and X2+Delta. }
 function InRange(X1, X2, Delta: Integer): Boolean; inline;
 begin
   Result := (X1 >= X2-Delta) and (X1 <= X2+Delta);
 end;
 
+{ Returns X if it is in the range between X1 and X2, otherwise either X1 or X2,
+  depending on wheter X is <X1 or >X2. }
+function EnsureRange(X, X1, X2: Integer): Integer;
+begin
+  if X < X1 then
+    Result := X1
+  else
+  if X > X2 then
+    Result := X2
+  else
+    Result := X;
+end;
+
 { TGridPrintPreviewForm }
 
 constructor TGridPrintPreviewForm.Create(AOwner: TComponent);
-
-  // Avoid the situation that zoom factor cannot be changed by zoom-out button
-  // or mousewheel due to rounding to integer.
-  procedure VerifyZoomMin;
-  var
-    nextHigherZoom: Integer;
-  begin
-    nextHigherZoom := round(FZoomMin * ZOOM_MULTIPLIER);
-    while nextHigherZoom = FZoomMin do
-    begin
-      FZoomMin := nextHigherZoom + 1;
-      nextHigherZoom := round(FZoomMin * ZOOM_MULTIPLIER);
-    end;
-  end;
-
 begin
   inherited;
+  Scrollbox.OnKeyDown := @ScrollBoxKeyDown;
   InfoPanel.ParentColor := true;
   FPageNumber := 0;
   FZoom := 100;
@@ -164,6 +166,7 @@ begin
   FZoomMin := 10;
   FDraggedMargin := -1;
   VerifyZoomMin;
+  ActiveControl := Scrollbox;
 end;
 
 procedure TGridPrintPreviewForm.acCloseExecute(Sender: TObject);
@@ -242,12 +245,7 @@ procedure TGridPrintPreviewForm.acZoomInZoomOutExecute(Sender: TObject);
 var
   newZoom: Integer;
 begin
-  if Sender = acZoomIn then
-    newZoom := round(FZoom * ZOOM_MULTIPLIER)
-  else if Sender = acZoomOut then
-    newZoom := round(FZoom / ZOOM_MULTIPLIER);
-  if newZoom < FZoomMin then
-    newZoom := FZoomMin;
+  newZoom := NextZoomFactor(Sender = acZoomIn);
   ShowPage(FPageNumber, newZoom);
 end;
 
@@ -259,9 +257,9 @@ end;
 
 { Allows to select a page by entering its number in the PageNo edit and
   pressing ENTER: }
-procedure TGridPrintPreviewForm.edPageNoEditingDone(Sender: TObject);
+procedure TGridPrintPreviewForm.edPageNumberEditingDone(Sender: TObject);
 begin
-  if TryStrToInt(edPageNo.Text, FPageNumber) then
+  if TryStrToInt(edPageNumber.Text, FPageNumber) then
   begin
     if FPageNumber < 1 then FPageNumber := 1;
     if FPageNumber > FPageCount then FPageNumber := FPageCount;
@@ -269,9 +267,24 @@ begin
   end;
 end;
 
+procedure TGridPrintPreviewForm.edPageNumberKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  case Key of
+    VK_LEFT:
+      if FPageNumber > 1 then ShowPage(FPageNumber-1);
+    VK_RIGHT:
+      if FPageNumber < FPageCount then ShowPage(FPageNumber+1);
+    VK_HOME:
+      ShowPage(1);
+    VK_END:
+      ShowPage(FPageCount);
+  end;
+end;
+
 { Activates scrolling of pages by means of rotating mouse wheel over the
   PageNo edit. }
-procedure TGridPrintPreviewForm.edPageNoMouseWheel(Sender: TObject;
+procedure TGridPrintPreviewForm.edPageNumberMouseWheel(Sender: TObject;
   Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
   var Handled: Boolean);
 begin
@@ -329,6 +342,15 @@ begin
   end;
 
   Result := -1;
+end;
+
+function TGridPrintPreviewForm.NextZoomFactor(AZoomIn: Boolean): Integer;
+begin
+  if AZoomIn then
+    Result := round(FZoom * ZOOM_MULTIPLIER)
+  else
+    Result := round(FZoom / ZOOM_MULTIPLIER);
+  Result := EnsureRange(Result, FZoomMin, FZoomMax);
 end;
 
 procedure TGridPrintPreviewForm.Notification(AComponent: TComponent;
@@ -472,12 +494,7 @@ var
 begin
   if (ssCtrl in Shift) then
   begin
-    if WheelDelta > 0 then
-      newZoom := round(FZoom * ZOOM_MULTIPLIER)
-    else
-      newZoom := round(FZoom / ZOOM_MULTIPLIER);
-    if newZoom < FZoomMin then
-      newZoom := FZoomMin;
+    newZoom := NextZoomFactor(WheelDelta > 0);
     ShowPage(FPageNumber, newZoom);
   end;
 end;
@@ -545,6 +562,53 @@ begin
   end;
 end;
 
+procedure TGridPrintPreviewForm.ScrollBoxKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  case Key of
+    VK_DOWN, VK_Next:
+      with Scrollbox.VertScrollbar do
+      begin
+        if (Position = Range-Page) and (FPageNumber < FPageCount) then
+        begin
+          ShowPage(FPageNumber+1);
+          Position := 0;
+        end
+        else
+          case Key of
+            VK_DOWN: Position := Position + Increment;
+            VK_NEXT: Position := Position + Page;
+          end;
+      end;
+    VK_UP, VK_PRIOR:
+      with Scrollbox.VertScrollbar do
+      begin
+        if (Position = 0) and (FPageNumber > 1) then
+        begin
+          ShowPage(FPageNumber-1);
+          Position := Range-Page;
+        end
+        else
+          case Key of
+            VK_UP: Position := Position - Increment;
+            VK_PRIOR: Position := Position - Page;
+          end;
+      end;
+    VK_LEFT:
+      with Scrollbox.HorzScrollbar do
+        Position := Position - Increment;
+    VK_RIGHT:
+      with Scrollbox.HorzScrollbar do
+        Position := Position + Increment;
+    VK_HOME:
+      with Scrollbox.HorzScrollbar do
+        Position := Position - Page;
+    VK_END:
+      with Scrollbox.HorzScrollbar do
+        Position := Position + Page;
+  end;
+end;
+
 procedure TGridPrintPreviewForm.ScrollBoxMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
@@ -597,7 +661,22 @@ begin
   InfoPanel.Caption := Format('Page %d of %d, Zoom %d %%', [FPageNumber, FPageCount, FZoom]);
   InfoPanel.Width := InfoPanel.Canvas.TextWidth(InfoPanel.Caption);
   InfoPanel.Left := Toolbar.ClientWidth - InfoPanel.Width - 8;
-  edPageNo.Text := IntToStr(FPageNumber);
+  edPageNumber.Text := IntToStr(FPageNumber);
+end;
+
+{ Adjusts FZoomMin to avoid the situation that, due to integer rounding,
+  the zoom factor cannot be changed any more by clicking a zoom button or
+  by mousewheel. }
+procedure TGridPrintPreviewForm.VerifyZoomMin;
+var
+  nextHigherZoom: Integer;
+begin
+  nextHigherZoom := round(FZoomMin * ZOOM_MULTIPLIER);
+  while nextHigherZoom = FZoomMin do
+  begin
+    FZoomMin := nextHigherZoom + 1;
+    nextHigherZoom := round(FZoomMin * ZOOM_MULTIPLIER);
+  end;
 end;
 
 procedure TGridPrintPreviewForm.ZoomToFitWidth;

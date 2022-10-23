@@ -120,16 +120,17 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       Top = 0
       Action = acZoom100
     end
-    object edPageNo: TEdit
+    object edPageNumber: TEdit
       Left = 120
       Height = 23
       Top = 0
       Width = 40
       Alignment = taCenter
-      OnEditingDone = edPageNoEditingDone
-      OnMouseWheel = edPageNoMouseWheel
+      OnEditingDone = edPageNumberEditingDone
+      OnKeyDown = edPageNumberKeyDown
+      OnMouseWheel = edPageNumberMouseWheel
       TabOrder = 1
-      Text = 'edPageNo'
+      Text = 'edPageNumber'
     end
     object ToolButton1: TToolButton
       Left = 438
