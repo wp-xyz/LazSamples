@@ -474,6 +474,8 @@ begin
            if FDraggedPos < FGridPrinter.PageRect.Bottom + one_mm then
              FDraggedPos := FGridPrinter.PageRect.Bottom + one_mm;
          end;
+      else
+        raise Exception.Create('[PreviewImageMouseMove] Unexpected value of FDraggedMargin');
     end;
     PreviewImage.Repaint;
   end;
