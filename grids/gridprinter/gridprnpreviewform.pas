@@ -10,6 +10,8 @@ uses
   GridPrn;
 
 type
+  TGridPrintPreviewZoomMode = (zmCustom, zmFitWidth, zmFitHeight);
+
   { TGridPrintPreviewForm }
 
   TGridPrintPreviewForm = class(TForm)
@@ -101,15 +103,18 @@ type
     FZoom: Integer;
     FZoomMax: Integer;
     FZoomMin: Integer;
+    FZoomMode: TGridPrintPreviewZoomMode;
     procedure SetPageNumber(AValue: Integer);
   protected
     function CalcDraggedMargin(AMargin: Integer; APosition: Integer): Double;
+    procedure DoOnResize; override;
     procedure HideDraggedMarginHint;
     function MouseOverMarginLine(X, Y: Integer): Integer;
     function NextZoomFactor(AZoomIn: Boolean): Integer;
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure ShowDraggedMarginHint(AMarginIndex, ADraggedPos: Integer; AMarginName: String);
-    procedure ShowPage(APageNo: Integer; AZoom: Integer = 0);
+    procedure ShowPage(APageNo: Integer; AZoom: Integer = 0;
+      AZoomMode: TGridPrintPreviewZoomMode = zmCustom);
     procedure UpdateInfoPanel;
     procedure VerifyZoomMin;
 
@@ -270,6 +275,16 @@ begin
     4: Result := px2mm(APosition, FGridPrinter.PixelsPerInchY);
     5: Result := px2mm(FGridPrinter.PageHeight - APosition, FGridPrinter.PixelsPerInchY);
   end;
+end;
+
+procedure TGridPrintPreviewForm.DoOnResize;
+begin
+  case FZoomMode of
+    zmFitWidth: ZoomToFitWidth;
+    zmFitHeight: ZoomToFitHeight;
+    zmCustom: ;
+  end;
+  inherited;
 end;
 
 { Allows to select a page by entering its number in the PageNo edit and
@@ -679,7 +694,8 @@ begin
   Application.ActivateHint(P, true);
 end;
 
-procedure TGridPrintPreviewForm.ShowPage(APageNo: Integer; AZoom: Integer = 0);
+procedure TGridPrintPreviewForm.ShowPage(APageNo: Integer; AZoom: Integer = 0;
+  AZoomMode: TGridPrintPreviewZoomMode = zmCustom);
 var
   bmp: TBitmap;
 begin
@@ -694,6 +710,8 @@ begin
   FPageNumber := APageNo;
   if AZoom > 0 then
     FZoom := AZoom;
+
+  FZoomMode := AZoomMode;
 
   // Instruct the GridPrinter to create the preview bitmap of the selected page
   bmp := FGridPrinter.CreatePreviewBitmap(FPageNumber, FZoom);
@@ -732,26 +750,6 @@ begin
   end;
 end;
 
-procedure TGridPrintPreviewForm.ZoomToFitWidth;
-var
-  w: Integer;
-begin
-  if Printer = nil then
-    exit;
-
-  // Correct for scrollbar width when the vert scrollbar is currently hidden,
-  // but will be shown after displaying the preview page.
-  if (not Scrollbox.VertScrollbar.IsScrollbarVisible) and
-     (Printer.PageHeight/Printer.PageWidth > Scrollbox.ClientHeight/Scrollbox.ClientWidth)
-  then
-    w := Scrollbox.VertScrollbar.ClientSizeWithBar
-  else
-    w := Scrollbox.ClientWidth;
-  w := w - 2*PreviewImage.Left;
-  FZoom := round(w / Printer.PageWidth * Printer.XDPI/ ScreenInfo.PixelsPerInchX * 100);
-  ShowPage(FPageNumber, FZoom);
-end;
-
 procedure TGridPrintPreviewForm.ZoomToFitHeight;
 var
   h: Integer;
@@ -769,7 +767,27 @@ begin
     h := Scrollbox.ClientHeight;
   h := h - 2*PreviewImage.Top;
   FZoom := round(h / Printer.PageHeight * Printer.YDPI / ScreenInfo.PixelsPerInchY * 100);
-  ShowPage(FPageNumber, FZoom);
+  ShowPage(FPageNumber, FZoom, zmFitHeight);
+end;
+
+procedure TGridPrintPreviewForm.ZoomToFitWidth;
+var
+  w: Integer;
+begin
+  if Printer = nil then
+    exit;
+
+  // Correct for scrollbar width when the vert scrollbar is currently hidden,
+  // but will be shown after displaying the preview page.
+  if (not Scrollbox.VertScrollbar.IsScrollbarVisible) and
+     (Printer.PageHeight/Printer.PageWidth > Scrollbox.ClientHeight/Scrollbox.ClientWidth)
+  then
+    w := Scrollbox.VertScrollbar.ClientSizeWithBar
+  else
+    w := Scrollbox.ClientWidth;
+  w := w - 2*PreviewImage.Left;
+  FZoom := round(w / Printer.PageWidth * Printer.XDPI/ ScreenInfo.PixelsPerInchX * 100);
+  ShowPage(FPageNumber, FZoom, zmFitWidth);
 end;
 
 end.
