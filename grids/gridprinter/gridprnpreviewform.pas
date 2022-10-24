@@ -97,6 +97,7 @@ type
     FDraggedMargin: Integer;  // 0=left margin, 1=top, 2=right, 3=bottom 4=header 5=footer
     FDraggedPos: Integer;
     FGridPrinter: TGridPrinter;
+    FHintWindow: THintWindow;
     FPageCount: Integer;
     FPageNumber: Integer;
     FUpdatePreviewHandler: TNotifyEvent;
@@ -339,7 +340,7 @@ end;
 
 procedure TGridPrintPreviewForm.HideDraggedMarginHint;
 begin
-  Application.CancelHint;
+  FreeAndNil(FHintWindow);
 end;
 
 // Result 0=left margin, 1=top margin, 2=right margin, 3=bottom margin, 4=header, 5=footer
@@ -411,12 +412,16 @@ end;
 
 procedure TGridPrintPreviewForm.PreviewImageMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
+const
+  MARGIN_NAMES: array[0..5] of string = (
+    'Left margin', 'Top margin', 'Right margin', 'Bottom margin',
+    'Header margin', 'Footer margin'
+  );
 var
   minWidth: Integer;
   minHeight: Integer;
   y0: Integer;
   one_mm: Integer;
-  marginName: String;
 begin
   if (FGridPrinter = nil) or not (acPageMargins.Checked) then
     exit;
@@ -425,9 +430,22 @@ begin
   begin
     FDraggedMargin := MouseOverMarginLine(X, Y);
     case FDraggedMargin of
-      -1: Screen.Cursor := crDefault;
-      0,2: Screen.Cursor := crHSplit;
-      1,3,4,5: Screen.Cursor := crVSplit;
+      -1:
+        begin
+          Screen.Cursor := crDefault;
+          HideDraggedMarginHint;
+          exit;
+        end;
+      0,2:
+        begin
+          Screen.Cursor := crHSplit;
+          FDraggedPos := X;
+        end;
+      1,3,4,5:
+        begin
+          Screen.Cursor := crVSplit;
+          FDraggedPos := Y;
+        end;
     end;
   end;
 
@@ -439,7 +457,6 @@ begin
     case FDraggedMargin of
       0: begin
            // Left margin
-           marginName := 'Left margin';
            FDraggedPos := X;
            if (FDraggedPos < 0) then
              FDraggedPos := 0;
@@ -448,7 +465,6 @@ begin
          end;
       1: begin
            // Top margin
-           marginName := 'Top margin';
            FDraggedPos := Y;
            if FGridPrinter.Header.IsShown then
            begin
@@ -463,7 +479,6 @@ begin
          end;
       2: begin
            // Right margin
-           marginName := 'Right margin';
            FDraggedPos := X;
            if FDraggedPos > FGridPrinter.PageWidth then
              FDraggedPos := FGridPrinter.PageWidth;
@@ -472,7 +487,6 @@ begin
          end;
       3: begin
            // Bottom margin
-           marginName := 'Bottom margin';
            FDraggedPos := Y;
            if FGridPrinter.Footer.IsShown then
            begin
@@ -487,7 +501,6 @@ begin
          end;
       4: begin
            // Header
-           marginName := 'Header margin';
            FDraggedPos := Y;
            if FDraggedPos < 0 then
              FDraggedPos := 0;
@@ -496,7 +509,6 @@ begin
          end;
       5: begin
            // Footer
-           marginName := 'Footer margin';
            FDraggedPos := Y;
            if FDraggedPos > FGridPrinter.PageHeight then
              FDraggedPos := FGridPrinter.PageHeight;
@@ -510,9 +522,9 @@ begin
 
     // Redraw the preview to update the dragged red margin line
     PreviewImage.Repaint;
-
-    ShowDraggedMarginHint(FDraggedMargin, FDraggedPos, marginName);
   end;
+
+  ShowDraggedMarginHint(FDraggedMargin, FDraggedPos, MARGIN_NAMES[FDraggedMargin]);
 end;
 
 procedure TGridPrintPreviewForm.PreviewImageMouseUp(Sender: TObject;
@@ -685,13 +697,22 @@ procedure TGridPrintPreviewForm.ShowDraggedMarginHint(
 var
   hintStr: String;
   P: TPoint;
+  R: TRect;
 begin
-  P := Mouse.CursorPos;
+  if FHintWindow = nil then
+    FHintWindow := THintWindow.Create(nil);
   hintStr := Format('%s: %.1f mm', [AMarginName, CalcDraggedMargin(AMarginIndex, ADraggedPos)]);
+  P := Mouse.CursorPos;
+  R := FHintWindow.CalcHintRect(Screen.Width, hintStr, nil);
+  OffsetRect(R, P.X, P.Y);
+  FHintWindow.ActivateHint(R, hintStr);
+
+  (*
   PreviewImage.Hint := hintStr;
   Application.HintPause := 0;
   Application.CancelHint;
   Application.ActivateHint(P, true);
+  *)
 end;
 
 procedure TGridPrintPreviewForm.ShowPage(APageNo: Integer; AZoom: Integer = 0;
