@@ -1,0 +1,97 @@
+object Form1: TForm1
+  Left = 331
+  Height = 494
+  Top = 127
+  Width = 653
+  Caption = 'StringGrid Demo for TGridPrinter'
+  ClientHeight = 494
+  ClientWidth = 653
+  LCLVersion = '2.3.0.0'
+  object StringGrid1: TStringGrid
+    Left = 8
+    Height = 443
+    Top = 8
+    Width = 639
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ColCount = 6
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goRowSizing, goColSizing, goEditing, goThumbTracking, goSmoothScroll, goCellEllipsis]
+    RowCount = 6
+    TabOrder = 0
+    Cells = (
+      16
+      0
+      1
+      'Row 1'
+      0
+      2
+      'Row 2'
+      0
+      3
+      'Row 3'
+      0
+      4
+      'Row 4'
+      0
+      5
+      'Row 5'
+      1
+      0
+      'Column A'
+      1
+      1
+      'Test'
+      1
+      2
+      'wer'
+      2
+      0
+      'Column B'
+      2
+      1
+      'abc'
+      2
+      3
+      'sdf'
+      3
+      0
+      'Column C'
+      3
+      2
+      'A text'
+      4
+      0
+      'Column D'
+      5
+      0
+      'Column E'
+      5
+      5
+      'Another test'
+    )
+  end
+  object btnPrint: TButton
+    Left = 11
+    Height = 25
+    Top = 459
+    Width = 75
+    Anchors = [akLeft, akBottom]
+    Caption = 'Print...'
+    OnClick = btnPrintClick
+    TabOrder = 1
+  end
+  object GridPrinter1: TGridPrinter
+    Grid = StringGrid1
+    Footer.Font.Height = -11
+    Footer.SectionSeparator = '|'
+    Footer.Text = '||'
+    Header.Font.Height = -11
+    Header.SectionSeparator = '|'
+    Header.Text = '||'
+    Left = 150
+    Top = 71
+  end
+  object PrintDialog1: TPrintDialog
+    Left = 150
+    Top = 133
+  end
+end
