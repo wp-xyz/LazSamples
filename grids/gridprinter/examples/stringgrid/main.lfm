@@ -79,6 +79,15 @@ object Form1: TForm1
     OnClick = btnPrintClick
     TabOrder = 1
   end
+  object Button1: TButton
+    Left = 184
+    Height = 25
+    Top = 459
+    Width = 75
+    Caption = 'Preview...'
+    OnClick = Button1Click
+    TabOrder = 2
+  end
   object GridPrinter1: TGridPrinter
     Grid = StringGrid1
     Footer.Font.Height = -11

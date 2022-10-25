@@ -23,6 +23,8 @@ type
     acLastPage: TAction;
     acPageMargins: TAction;
     acHeaderFooter: TAction;
+    acPortrait: TAction;
+    acLandscape: TAction;
     acZoom100: TAction;
     acZoomToFitWidth: TAction;
     acZoomToFitHeight: TAction;
@@ -62,12 +64,16 @@ type
     ToolButton1: TToolButton;
     ToolButton2: TToolButton;
     ToolButton3: TToolButton;
+    ToolButton4: TToolButton;
+    ToolButton5: TToolButton;
     procedure acCloseExecute(Sender: TObject);
     procedure acFirstPageExecute(Sender: TObject);
     procedure acHeaderFooterExecute(Sender: TObject);
+    procedure acLandscapeExecute(Sender: TObject);
     procedure acLastPageExecute(Sender: TObject);
     procedure acNextPageExecute(Sender: TObject);
     procedure acPageMarginsExecute(Sender: TObject);
+    procedure acPortraitExecute(Sender: TObject);
     procedure acPrevPageExecute(Sender: TObject);
     procedure acPrintExecute(Sender: TObject);
     procedure ActionListUpdate({%H-}AAction: TBasicAction; var {%H-}Handled: Boolean);
@@ -202,6 +208,15 @@ begin
   end;
 end;
 
+procedure TGridPrintPreviewForm.acLandscapeExecute(Sender: TObject);
+begin
+  if Assigned(FGridPrinter) then
+  begin
+    FGridPrinter.Orientation := poLandscape;
+    ShowPage(FPageNumber);
+  end;
+end;
+
 procedure TGridPrintPreviewForm.acLastPageExecute(Sender: TObject);
 begin
   ShowPage(FPageCount);
@@ -217,6 +232,15 @@ procedure TGridPrintPreviewForm.acPageMarginsExecute(Sender: TObject);
 begin
   acPageMargins.Checked := not acPageMargins.Checked;
   PreviewImage.Invalidate;
+end;
+
+procedure TGridPrintPreviewForm.acPortraitExecute(Sender: TObject);
+begin
+  if Assigned(FGridPrinter) then
+  begin
+    FGridPrinter.Orientation := poPortrait;
+    ShowPage(FPageNumber);
+  end;
 end;
 
 procedure TGridPrintPreviewForm.acPrevPageExecute(Sender: TObject);
