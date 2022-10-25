@@ -134,10 +134,10 @@ type
     FBottomMargin: Integer;
     FHeaderMargin: Integer;
     FFooterMargin: Integer;
-    FColWidths: array of Integer;      // Array of scaled grid column widts
-    FRowHeights: array of Integer;     // Array of scaled grid row heights
-    FFixedColPos: Integer;             // Scaled right end of the fixed cols
-    FFixedRowPos: Integer;             // Scaled bottom end of the fixed rows
+    FColWidths: array of Double;      // Array of scaled grid column widts
+    FRowHeights: array of Double;     // Array of scaled grid row heights
+    FFixedColPos: Double;             // Scaled right end of the fixed cols
+    FFixedRowPos: Double;             // Scaled bottom end of the fixed rows
     FOutputDevice: TGridPrnOutputDevice;
     FPageBreakRows: array of Integer;  // Indices of first row on new page
     FPageBreakCols: array of Integer;  // Indices of first columns on new page
@@ -170,11 +170,11 @@ type
     procedure PrintColHeaders(ACanvas: TCanvas; ACol1, ACol2: Integer);
     procedure PrintFooter(ACanvas: TCanvas);
     procedure PrintHeader(ACanvas: TCanvas);
-    procedure PrintGridLines(ACanvas: TCanvas; AFirstCol, AFirstRow, XEnd, YEnd: Integer);
+    procedure PrintGridLines(ACanvas: TCanvas; AFirstCol, AFirstRow: Integer; XEnd, YEnd: Double);
     procedure PrintPage(ACanvas: TCanvas; AStartCol, AStartRow, AEndCol, AEndRow: Integer);
-    procedure PrintRowHeader(ACanvas: TCanvas; ARow, Y: Integer);
-    procedure ScaleColWidths;
-    procedure ScaleRowHeights;
+    procedure PrintRowHeader(ACanvas: TCanvas; ARow: Integer; Y: Double);
+    procedure ScaleColWidths(AFactor: Double);
+    procedure ScaleRowHeights(AFactor: Double);
     procedure SelectFont(ACanvas: TCanvas; AFont: TFont);
     property OutputDevice: TGridPrnOutputDevice read FOutputDevice;
   public
@@ -682,7 +682,7 @@ procedure TGridPrinter.LayoutPageBreaks;
 var
   col, row: Integer;
   n: Integer;
-  totalWidth, totalHeight: Integer;
+  totalWidth, totalHeight: Double;
 begin
   // Scanning horizontally --> get page break column indices
   SetLength(FPageBreakCols, FColCount);
@@ -739,8 +739,8 @@ begin
   FPadding := ScaleX(varCellPadding);
 
   // Calculates column widths and row heights in the new pixel density units
-  ScaleColWidths;
-  ScaleRowHeights;
+  ScaleColWidths(FFactorX);
+  ScaleRowHeights(FFactorY);
 end;
 
 procedure TGridPrinter.NewPage;
@@ -996,7 +996,7 @@ procedure TGridPrinter.PrintColHeaders(ACanvas: TCanvas; ACol1, ACol2: Integer);
 var
   R: TRect;
   col, row: Integer;
-  x, y, x2, y2: Integer;
+  x, y, x2, y2: Double;
 begin
   x := FLeftMargin;
   y := FTopMargin;
@@ -1006,14 +1006,14 @@ begin
     for col := 0 to FFixedCols-1 do
     begin
       x2 := x + FColWidths[col];
-      R := Rect(x, y, x2, y2);
+      R := Rect(round(x), round(y), round(x2), round(y2));
       PrintCell(ACanvas, col, row, R);
       x := x2;
     end;
     for col := ACol1 to ACol2 do
     begin
       x2 := x + FColWidths[col];
-      R := Rect(x, y, x2, y2);
+      R := Rect(round(x), round(y), round(x2), round(y2));
       PrintCell(ACanvas, col, row, R);
       x := x2;
     end;
@@ -1088,12 +1088,9 @@ begin
 end;
 
 procedure TGridPrinter.PrintGridLines(ACanvas: TCanvas;
-  AFirstCol, AFirstRow, XEnd, YEnd: Integer);
-const
-  HEADERBORDER_LINEWIDTH = 1;
-  OUTERBORDER_LINEWIDTH = 2;
+  AFirstCol, AFirstRow: Integer; XEnd, YEnd: Double);
 var
-  x, y: Integer;
+  x, y: Double;
   col, row: Integer;
   lGrid: TGridAccess;
 begin
@@ -1112,7 +1109,7 @@ begin
     while col < lGrid.FixedCols do
     begin
       x := x + FColWidths[col-1];
-      ACanvas.Line(x, FTopMargin, x, YEnd);
+      ACanvas.Line(round(x), FTopMargin, round(x), round(YEnd));
       inc(col);
     end;
     col := AFirstCol;
@@ -1120,7 +1117,7 @@ begin
     while (x < XEnd) and (col < lGrid.ColCount) do
     begin
       x := x + FColWidths[col];
-      ACanvas.Line(x, FTopMargin, x, FFixedRowPos);
+      ACanvas.Line(round(x), FTopMargin, round(x), round(FFixedRowPos));
       inc(col);
     end;
   end;
@@ -1133,7 +1130,7 @@ begin
     while (x < XEnd) and (col < lGrid.ColCount) do
     begin
       x := x + FColWidths[col];
-      ACanvas.Line(x, FFixedRowPos, x, YEnd);
+      ACanvas.Line(round(x), round(FFixedRowPos), round(x), round(YEnd));
       inc(col);
     end;
   end;
@@ -1146,7 +1143,7 @@ begin
     while row < lGrid.FixedRows do
     begin
       y := y + FRowHeights[row];
-      ACanvas.Line(FLeftMargin, y, XEnd, y);
+      ACanvas.Line(FLeftMargin, round(y), round(XEnd), round(y));
       inc(row);
     end;
     row := AFirstRow;
@@ -1154,7 +1151,7 @@ begin
     while (y < YEnd) and (row < lGrid.RowCount) do
     begin
       y := y + FRowHeights[row];
-      ACanvas.Line(FLeftMargin, y, FFixedColPos, y);
+      ACanvas.Line(FLeftMargin, round(y), round(FFixedColPos), round(y));
       inc(row);
     end;
   end;
@@ -1167,7 +1164,7 @@ begin
     while (y < YEnd) and (row < lGrid.RowCount) do
     begin
       y := y + FRowHeights[row];
-      ACanvas.Line(FFixedColPos, y, XEnd, y);
+      ACanvas.Line(round(FFixedColPos), round(y), round(XEnd), round(y));
       inc(row);
     end;
   end;
@@ -1177,10 +1174,10 @@ begin
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := IfThen(FMonochrome or (FFixedLineColor = clDefault), clBlack, FFixedLineColor);
   ACanvas.Pen.Width := GetFixedLineWidthHor;
-  ACanvas.Line(FLeftMargin, FFixedRowPos, XEnd, FFixedRowPos);
+  ACanvas.Line(FLeftMargin, round(FFixedRowPos), round(XEnd), round(FFixedRowPos));
   // ... vertical
   ACanvas.Pen.Width := GetFixedLineWidthVert;
-  ACanvas.Line(FFixedColPos, FTopMargin, FFixedColPos, YEnd);
+  ACanvas.Line(round(FFixedColPos), round(FTopMargin), round(FFixedColPos), round(YEnd));
 
   // Print outer border lines
   ACanvas.Pen.Style := psSolid;
@@ -1188,12 +1185,12 @@ begin
     IfThen(FBorderLineColor = clDefault, clBlack, ColorToRGB(FBorderLineColor)));
   // ... horizontal
   ACanvas.Pen.Width := GetBorderLineWidthHor;
-  ACanvas.Line(FLeftMargin, FTopMargin, XEnd, FTopMargin);
-  ACanvas.Line(FLeftMargin, YEnd, XEnd, YEnd);
+  ACanvas.Line(FLeftMargin, round(FTopMargin), round(XEnd), FTopMargin);
+  ACanvas.Line(FLeftMargin, round(YEnd), round(XEnd), round(YEnd));
   // ... vertical
   ACanvas.Pen.Width := GetBorderLineWidthVert;
-  ACanvas.Line(FLeftMargin, FTopMargin, FLeftMargin, YEnd);
-  ACanvas.Line(XEnd, FTopMargin, XEnd, YEnd);
+  ACanvas.Line(FLeftMargin, FTopMargin, FLeftMargin, round(YEnd));
+  ACanvas.Line(round(XEnd), FTopMargin, round(XEnd), round(YEnd));
 end;
 
 procedure TGridPrinter.PrintHeader(ACanvas: TCanvas);
@@ -1265,10 +1262,11 @@ end;
 procedure TGridPrinter.PrintPage(ACanvas: TCanvas;
   AStartCol, AStartRow, AEndCol, AEndRow: Integer);
 var
-  x, y: Integer;
-  x2, y2: Integer;
+  x, y: Double;
+  x2, y2: Double;
   row, col: Integer;
   lastPagePrinted: Boolean;
+  R: TRect;
 begin
   // Print column headers
   PrintColHeaders(ACanvas, AStartCol, AEndCol);
@@ -1283,7 +1281,8 @@ begin
     for col := AStartCol to AEndCol do
     begin
       x2 := x + FColWidths[col];
-      PrintCell(ACanvas, col, row, Rect(x, y, x2, y2));
+      R := Rect(round(x), round(y), round(x2), round(y2));
+      PrintCell(ACanvas, col, row, R);
       x := x2;
     end;
     y := y2;
@@ -1305,47 +1304,50 @@ end;
 { Prints the row headers of the specified row. Row headers are the cells in the
   FixedCols of that row. The row is positioned at the given y coordinate on
   the canvas. }
-procedure TGridPrinter.PrintRowHeader(ACanvas: TCanvas; ARow, Y: Integer);
+procedure TGridPrinter.PrintRowHeader(ACanvas: TCanvas; ARow: Integer;
+  Y: Double);
 var
   R: TRect;
   col: Integer;
-  x, x2, y2: Integer;
+  x, x2, y2: Double;
 begin
   x := FLeftMargin;              // left side of the row
   y2 := Y + FRowHeights[ARow];   // lower end of the row
   for col := 0 to FFixedCols-1 do
   begin
     x2 := x + FColWidths[col];
-    R := Rect(x, Y, x2, y2);
+    R := Rect(round(x), round(Y), round(x2), round(y2));
     PrintCell(ACanvas, col, ARow, R);
     x := x2;
   end;
 end;
 
-procedure TGridPrinter.ScaleColWidths;
+procedure TGridPrinter.ScaleColWidths(AFactor: Double);
 var
-  i, w: Integer;
+  i: Integer;
+  w: Double;
 begin
   FFixedColPos := FLeftMargin;
   SetLength(FColWidths, FColCount);
   for i := 0 to FColCount-1 do
   begin
-    w := ScaleX(TGridAccess(FGrid).ColWidths[i]);
+    w := AFactor * TGridAccess(FGrid).ColWidths[i];
     FColWidths[i] := w;
     if i < FFixedCols then
       FFixedColPos := FFixedColPos + w;
   end;
 end;
 
-procedure TGridPrinter.ScaleRowHeights;
+procedure TGridPrinter.ScaleRowHeights(AFactor: Double);
 var
-  i, h: Integer;
+  i: Integer;
+  h: Double;
 begin
   FFixedRowPos := FTopMargin;
   SetLength(FRowHeights, FRowCount);
   for i := 0 to FRowCount-1 do
   begin
-    h := ScaleY(TGridAccess(FGrid).RowHeights[i]);
+    h := AFactor * TGridAccess(FGrid).RowHeights[i];
     FRowHeights[i] := h;
     if i < FFixedRows then
       FFixedRowPos := FFixedRowPos + h;
