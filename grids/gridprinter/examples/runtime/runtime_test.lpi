@@ -8,7 +8,7 @@
         <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="project1"/>
+      <Title Value="runtime_test"/>
       <Scaled Value="True"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
@@ -36,7 +36,7 @@
     </RequiredPackages>
     <Units Count="5">
       <Unit0>
-        <Filename Value="project1.lpr"/>
+        <Filename Value="runtime_test.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
@@ -48,25 +48,20 @@
         <UnitName Value="Unit1"/>
       </Unit1>
       <Unit2>
-        <Filename Value="gridprn.pas"/>
+        <Filename Value="..\..\source\gridprn.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="GridPrn"/>
       </Unit2>
       <Unit3>
-        <Filename Value="gridprnpreviewform.pas"/>
+        <Filename Value="..\..\source\gridprnpreviewform.lfm"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="GridPrintPreviewForm"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <UnitName Value="GridPrnPreviewForm"/>
       </Unit3>
       <Unit4>
-        <Filename Value="gridprnheaderfooterform.pas"/>
+        <Filename Value="..\..\source\gridprnpreviewform.pas"/>
         <IsPartOfProject Value="True"/>
-        <ComponentName Value="GridPrintHeaderFooterForm"/>
-        <HasResources Value="True"/>
+        <ComponentName Value="GridPrintPreviewForm"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="GridPrnHeaderFooterForm"/>
+        <UnitName Value="GridPrnPreviewForm"/>
       </Unit4>
     </Units>
   </ProjectOptions>
@@ -74,10 +69,11 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="project1"/>
+      <Filename Value="runtime_test"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
+      <OtherUnitFiles Value="..\..\source"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Linking>

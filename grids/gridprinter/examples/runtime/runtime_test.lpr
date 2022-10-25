@@ -1,4 +1,4 @@
-program project1;
+program runtime_test;
 
 {$mode objfpc}{$H+}
 
@@ -10,8 +10,7 @@ uses
   athreads,
   {$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Unit1, printer4lazarus, GridPrn, GridPrnPreviewForm, 
-GridPrnHeaderFooterForm;
+  Forms, Unit1, GridPrn, GridPrnPreviewForm, printer4lazarus;
 
 {$R *.res}
 
@@ -20,8 +19,6 @@ begin
   Application.Scaled:=True;
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
-  Application.CreateForm(TGridPrintPreviewForm, GridPrintPreviewForm);
-  Application.CreateForm(TGridPrintHeaderFooterForm, GridPrintHeaderFooterForm);
   Application.Run;
 end.
 
