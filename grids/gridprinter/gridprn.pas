@@ -158,6 +158,7 @@ type
     procedure DoUpdatePreview; virtual;
     procedure Execute(ACanvas: TCanvas);
     procedure LayoutPagebreaks;
+    procedure Measure(APageWidth, APageHeight, XDpi, YDpi: Integer);
     procedure NewPage;
     procedure Prepare;
     procedure PrepareCanvas(ACanvas: TCanvas; ACol, ARow: Integer); virtual;
@@ -720,6 +721,28 @@ begin
   FPageCount := Length(FPageBreakCols) * Length(FPageBreakRows);
 end;
 
+{ Converts length properties to the specified pixel density. }
+procedure TGridPrinter.Measure(APageWidth, APageHeight, XDpi, YDpi: Integer);
+begin
+  // Multiplication factor needed by ScaleX and ScaleY
+  FFactorX := XDpi / ScreenInfo.PixelsPerInchX;
+  FFactorY := YDpi / ScreenInfo.PixelsPerInchY;
+
+  // Margins in the new pixeld density units.
+  FLeftMargin := mm2px(FMargins.Left, XDpi);
+  FTopMargin := mm2px(FMargins.Top, YDpi);
+  FRightMargin := mm2px(FMargins.Right, XDpi);
+  FBottomMargin := mm2px(FMargins.Bottom, YDpi);
+  FHeaderMargin := mm2px(FMargins.Header, YDpi);
+  FFooterMargin := mm2px(FMargins.Footer, YDpi);
+  FPageRect := Rect(FLeftMargin, FTopMargin, APageWidth - FRightMargin, APageHeight - FBottomMargin);
+  FPadding := ScaleX(varCellPadding);
+
+  // Calculates column widths and row heights in the new pixel density units
+  ScaleColWidths;
+  ScaleRowHeights;
+end;
+
 procedure TGridPrinter.NewPage;
 begin
   if FOutputDevice = odPrinter then
@@ -729,6 +752,12 @@ end;
 procedure TGridPrinter.Prepare;
 begin
   Printer.Orientation := FOrientation;
+
+  // Calculate grid indices at which page breaks occur. Since the font size is
+  // an integer, the zoomed preview may have slightly different values - which
+  // is not desired. Therefore, we calculate this for the printer resolution.
+  Measure(Printer.PageWidth, Printer.PageHeight, Printer.XDPI, Printer.YDPI);
+  LayoutPagebreaks;
 
   case FOutputDevice of
     odPrinter:
@@ -746,24 +775,11 @@ begin
         FPixelsPerInchY := ScreenInfo.PixelsPerInchY * FPreviewPercent div 100;
         FPageWidth := round(Printer.PageWidth * FPixelsPerInchX / Printer.XDPI);
         FPageHeight := round(Printer.PageHeight * FPixelsPerInchY / Printer.YDPI);
+        // Recalculated page page dimensions and col/row sizes, now based on
+        // the "real" ppi of the preview.
+        Measure(FPageWidth, FPageHeight, FPixelsPerInchX, FPixelsPerInchY);
       end;
   end;
-
-  FFactorX := FPixelsPerInchX / ScreenInfo.PixelsPerInchX;
-  FFactorY := FPixelsPerInchY / ScreenInfo.PixelsPerInchY;
-
-  FLeftMargin := mm2px(FMargins.Left, FPixelsPerInchX);
-  FTopMargin := mm2px(FMargins.Top, FPixelsPerInchY);
-  FRightMargin := mm2px(FMargins.Right, FPixelsPerInchX);
-  FBottomMargin := mm2px(FMargins.Bottom, FPixelsPerInchY);
-  FHeaderMargin := mm2px(FMargins.Header, FPixelsPerInchY);
-  FFooterMargin := mm2px(FMargins.Footer, FPixelsPerInchY);
-  FPageRect := Rect(FLeftMargin, FTopMargin, FPageWidth - FRightMargin, FPageHeight - FBottomMargin);
-  FPadding := ScaleX(varCellPadding);
-
-  ScaleColWidths;
-  ScaleRowHeights;
-  LayoutPageBreaks;
 end;
 
 procedure TGridPrinter.PrepareCanvas(ACanvas: TCanvas; ACol, ARow: Integer);
