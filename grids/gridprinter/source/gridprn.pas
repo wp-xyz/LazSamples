@@ -5,7 +5,7 @@ unit GridPrn;
 interface
 
 uses
-  Classes, SysUtils, Types, Graphics, StdCtrls, Grids, Printers;
+  Classes, SysUtils, Types, Graphics, StdCtrls, Grids, Printers, PrintersDlgs;
 
 type
   TGridPrinter = class;  // forward declaration
@@ -81,6 +81,7 @@ type
 
   { TGridPrinter }
 
+  TGridPrnDialog = (gpdNone, gpdPageSetup, gpdPrintDialog);
   TGridPrnOutputDevice = (odPrinter, odPreview);
 
   TGridPrinter = class(TComponent)
@@ -97,9 +98,12 @@ type
     FFooter: TGridPrnHeaderFooter;
     FMargins: TGridPrnMargins;
     FMonochrome: Boolean;
+    FDialogs: TGridPrnDialog;
     FPadding: Integer;
     FPageHeight: Integer;
+    FPageSetupDialog: TPageSetupDialog;
     FPageWidth: Integer;
+    FPrintDialog: TPrintDialog;
     FPrintOrder: TGridPrnOrder;
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
@@ -201,6 +205,7 @@ type
     property Grid: TCustomGrid read FGrid write SetGrid;
     property BorderLineColor: TColor read FBorderLineColor write SetBorderLineColor default clDefault;
     property BorderLineWidth: Double read FBorderLineWidth write SetBorderLineWidth stored IsBorderLineWidthStored;
+    property Dialogs: TGridPrnDialog read FDialogs write FDialogs default gpdNone;
     property FileName: String read FFileName write SetFileName;
     property FixedLineColor: TColor read FFixedLineColor write SetFixedLineColor default clDefault;
     property FixedLineWidth: Double read FFixedLineWidth write SetFixedLineWidth stored IsFixedLineWidthStored;
@@ -211,6 +216,8 @@ type
     property Margins: TGridPrnMargins read FMargins write FMargins;
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
     property Orientation: TPrinterOrientation read GetOrientation write SetOrientation default poPortrait;
+    property PageSetupDialog: TPageSetupDialog read FPageSetupDialog write FPageSetupDialog;
+    property PrintDialog: TPrintDialog read FPrintDialog write FPrintDialog;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
@@ -825,9 +832,54 @@ begin
 end;
 
 procedure TGridPrinter.Print;
+var
+  pageDlg: TPageSetupDialog;
+  printDlg: TPrintDialog;
 begin
   if FGrid = nil then
     exit;
+
+  case FDialogs of
+    gpdNone:
+      ;
+    gpdPageSetup:
+      begin
+        if FPageSetupDialog = nil then
+          pageDlg := TPageSetupDialog.Create(nil)
+        else
+          pageDlg := FPageSetupDialog;
+        pageDlg.Units := pmMillimeters;
+        pageDlg.MarginLeft := round(FMargins.Left*100);
+        pageDlg.MarginTop := round(FMargins.Top*100);
+        pageDlg.MarginRight := round(FMargins.Right*100);
+        pageDlg.MarginBottom := round(FMargins.Bottom*100);
+        if not pageDlg.Execute then
+        begin
+          if FPageSetupDialog = nil then pageDlg.Free;
+          exit;
+        end;
+        FMargins.FMargins[0] := pageDlg.MarginLeft*0.01;
+        FMargins.FMargins[1] := pageDlg.MarginTop*0.01;
+        FMargins.FMargins[2] := pageDlg.MarginRight*0.01;
+        FMargins.FMargins[3] := pageDlg.MarginBottom*0.01;
+        if FPageSetupDialog = nil then
+          pageDlg.Free;
+      end;
+    gpdPrintDialog:
+      begin
+        if FPrintDialog = nil then
+          printDlg := TPrintDialog.Create(nil)
+        else
+          printDlg := FPrintDialog;
+        if not printDlg.Execute then
+        begin
+          if FPrintDialog = nil then printDlg.Free;
+          exit;
+        end;
+        if FPrintDialog = nil then
+          printDlg.Free;
+      end;
+  end;
 
   FOutputDevice := odPrinter;
   Prepare;

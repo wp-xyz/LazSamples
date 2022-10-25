@@ -80,7 +80,7 @@ object Form1: TForm1
     TabOrder = 1
   end
   object Button1: TButton
-    Left = 184
+    Left = 280
     Height = 25
     Top = 459
     Width = 75
@@ -100,7 +100,7 @@ object Form1: TForm1
     Top = 96
   end
   object PrintDialog1: TPrintDialog
-    Left = 168
-    Top = 168
+    Left = 169
+    Top = 180
   end
 end
