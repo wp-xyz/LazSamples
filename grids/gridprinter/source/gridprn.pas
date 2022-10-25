@@ -97,7 +97,6 @@ type
     FFooter: TGridPrnHeaderFooter;
     FMargins: TGridPrnMargins;
     FMonochrome: Boolean;
-    FOrientation: TPrinterOrientation;
     FPadding: Integer;
     FPageHeight: Integer;
     FPageWidth: Integer;
@@ -112,6 +111,7 @@ type
     function GetFixedLineWidthVert: Integer;
     function GetGridLineWidthHor: Integer;
     function GetGridLineWidthVert: Integer;
+    function GetOrientation: TPrinterOrientation;
     function GetPageCount: Integer;
     function GetPageNumber: Integer;
     function IsBorderLineWidthStored: Boolean;
@@ -125,6 +125,7 @@ type
     procedure SetGrid(AValue: TCustomGrid);
     procedure SetGridLineColor(AValue: TColor);
     procedure SetGridLineWidth(AValue: Double);
+    procedure SetOrientation(AValue: TPrinterOrientation);
   protected
     FFactorX: Double;              // Multiply to convert screen to printer/preview pixels
     FFactorY: Double;
@@ -209,7 +210,7 @@ type
     property Header: TGridPrnHeaderFooter read FHeader write FHeader;
     property Margins: TGridPrnMargins read FMargins write FMargins;
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
-    property Orientation: TPrinterOrientation read FOrientation write FOrientation default poPortrait;
+    property Orientation: TPrinterOrientation read GetOrientation write SetOrientation default poPortrait;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
@@ -646,6 +647,11 @@ begin
     Result := mm2px(FGridLineWidth, FPixelsPerInchX);
 end;
 
+function TGridPrinter.GetOrientation: TPrinterOrientation;
+begin
+  Result := Printer.Orientation;
+end;
+
 function TGridPrinter.GetPageCount: Integer;
 begin
   if FPageCount = 0 then
@@ -751,8 +757,6 @@ end;
 
 procedure TGridPrinter.Prepare;
 begin
-  Printer.Orientation := FOrientation;
-
   // Calculate grid indices at which page breaks occur. Since the font size is
   // an integer, the zoomed preview may have slightly different values - which
   // is not desired. Therefore, we calculate this for the printer resolution.
@@ -1465,6 +1469,15 @@ begin
   if FGridLineWidth <> AValue then
   begin
     FGridLineWidth := AValue;
+    UpdatePreview;
+  end;
+end;
+
+procedure TGridPrinter.SetOrientation(AValue: TPrinterOrientation);
+begin
+  if GetOrientation <> AValue then
+  begin
+    Printer.Orientation := AValue;
     UpdatePreview;
   end;
 end;

@@ -87,11 +87,11 @@ object Form1: TForm1
     Header.Font.Height = -11
     Header.SectionSeparator = '|'
     Header.Text = '||'
-    Left = 150
-    Top = 71
+    Left = 168
+    Top = 96
   end
   object PrintDialog1: TPrintDialog
-    Left = 150
-    Top = 133
+    Left = 168
+    Top = 168
   end
 end
