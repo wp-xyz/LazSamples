@@ -90,6 +90,7 @@ type
     FBorderLineWidth: Double;
     FFixedLineColor: TColor;
     FFixedLineWidth: Double;
+    FFromPage: Integer;
     FGrid: TCustomGrid;
     FGridLineColor: TColor;
     FGridLineWidth: Double;
@@ -98,11 +99,12 @@ type
     FFooter: TGridPrnHeaderFooter;
     FMargins: TGridPrnMargins;
     FMonochrome: Boolean;
-    FDialogs: TGridPrnDialog;
     FPadding: Integer;
     FPageHeight: Integer;
     FPageWidth: Integer;
+    FPrintDialogs: TGridPrnDialog;
     FPrintOrder: TGridPrnOrder;
+    FToPage: Integer;
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     FOnUpdatePreview: TNotifyEvent;
@@ -203,18 +205,20 @@ type
     property Grid: TCustomGrid read FGrid write SetGrid;
     property BorderLineColor: TColor read FBorderLineColor write SetBorderLineColor default clDefault;
     property BorderLineWidth: Double read FBorderLineWidth write SetBorderLineWidth stored IsBorderLineWidthStored;
-    property Dialogs: TGridPrnDialog read FDialogs write FDialogs default gpdNone;
     property FileName: String read FFileName write SetFileName;
     property FixedLineColor: TColor read FFixedLineColor write SetFixedLineColor default clDefault;
     property FixedLineWidth: Double read FFixedLineWidth write SetFixedLineWidth stored IsFixedLineWidthStored;
     property Footer: TGridPrnHeaderFooter read FFooter write FFooter;
+    property FromPage: Integer read FFromPage write FFromPage default 0;
     property GridLineColor: TColor read FGridLineColor write SetGridLineColor default clDefault;
     property GridLineWidth: Double read FGridLineWidth write SetGridLineWidth stored IsGridLineWidthStored;
     property Header: TGridPrnHeaderFooter read FHeader write FHeader;
     property Margins: TGridPrnMargins read FMargins write FMargins;
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
     property Orientation: TPrinterOrientation read GetOrientation write SetOrientation default poPortrait;
+    property PrintDialogs: TGridPrnDialog read FPrintDialogs write FPrintDialogs default gpdNone;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
+    property ToPage: Integer read FToPage write FToPage default 0;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
     property OnUpdatePreview: TNotifyEvent read FOnUpdatePreview write FOnUpdatePreview;
@@ -226,7 +230,7 @@ function px2mm(px: Integer; dpi: Integer): Double;
 implementation
 
 uses
-  LCLIntf, LCLType, OSPrinters, Themes;
+  LCLIntf, LCLType, Dialogs, OSPrinters, Themes;
 
 type
   TGridAccess = class(TCustomGrid);
@@ -533,6 +537,7 @@ begin
 
   FPreviewPercent := APercentage;
   FPreviewPage := APageNo;  // out-of-range values are handled by Prepare
+  SetGrid(FGrid);
   Prepare;
 
   FPreviewBitmap := TBitmap.Create;
@@ -834,8 +839,9 @@ var
 begin
   if FGrid = nil then
     exit;
+  SetGrid(FGrid);
 
-  case FDialogs of
+  case FPrintDialogs of
     gpdNone:
       ;
     gpdPageSetup:
@@ -853,7 +859,10 @@ begin
             FMargins.FMargins[1] := pageDlg.MarginTop*0.01;
             FMargins.FMargins[2] := pageDlg.MarginRight*0.01;
             FMargins.FMargins[3] := pageDlg.MarginBottom*0.01;
-          end;
+            FFromPage := 0;     // all pages
+            FToPage := 0;
+          end else
+            exit;
         finally
           pageDlg.Free;
         end;
@@ -862,7 +871,22 @@ begin
       begin
         printDlg := TPrintDialog.Create(nil);
         try
-          if not printDlg.Execute then
+          printDlg.MinPage := 1;
+          printDlg.MaxPage := PageCount;
+          printDlg.Options := printDlg.Options + [poPageNums];
+          if printDlg.Execute then
+          begin
+            Printer.Copies := printDlg.Copies;
+            if printDlg.PrintRange = prAllPages then
+            begin
+              FFromPage := 0;    // all pages
+              FToPage := 0;
+            end else
+            begin
+              FFromPage := printDlg.FromPage;
+              FToPage := printDlg.ToPage;
+            end;
+          end else
             exit;
         finally
           printDlg.Free;
@@ -886,7 +910,12 @@ var
   vertPage, horPage: Integer;
   col1, col2: Integer;
   row1, row2: Integer;
+  firstPrintPage, lastPrintPage: Integer;
+  printThisPage: Boolean;
 begin
+  firstPrintPage := IfThen((FFromPage < 1) or (FFromPage > FPageCount), 1, FFromPage);
+  lastPrintPage := IfThen((FToPage < 1) or (FToPage > FPageCount), FPageCount, FToPage);
+
   SelectFont(ACanvas, FGrid.Font);
   FPageNumber := 1;
 
@@ -906,9 +935,15 @@ begin
       else
         row2 := FRowCount-1;
       // Print page beginning at col1/row1
-      if (FOutputDevice = odPrinter) or  // Printer renders all pages
-         (FPageNumber = FPreviewPage)    // Preview can render only a single page
-      then
+      case FOutputDevice of
+        odPrinter:  // Render all requested pages
+          printThisPage := (FPageNumber >= firstPrintPage) and (FPageNumber <= lastPrintPage);
+        odPreview:  // Preview can render only a single page
+          printThisPage := (FPageNumber = FPreviewPage);
+        else
+          raise Exception.Create('[TGridPrinter.PrintByCols] Unknown output device.');
+      end;
+      if printThisPage then
         PrintPage(ACanvas, col1, row1, col2, row2);
       inc(FPageNumber);
     end;
@@ -921,7 +956,12 @@ var
   vertPage, horPage: Integer;
   col1, col2: Integer;
   row1, row2: Integer;
+  firstPrintPage, lastPrintPage: Integer;
+  printThisPage: Boolean;
 begin
+  firstPrintPage := IfThen((FFromPage < 1) or (FFromPage > FPageCount), 1, FFromPage);
+  lastPrintPage := IfThen((FToPage < 1) or (FToPage > FPageCount), FPageCount, FToPage);
+
   SelectFont(ACanvas, FGrid.Font);
   FPageNumber := 1;
 
@@ -941,9 +981,15 @@ begin
       else
         col2 := FColCount-1;
       // Print the page beginning at col1/row1
-      if (FOutputDevice = odPrinter) or  // Printer renders all pages
-         (FPageNumber = FPreviewPage)    // Preview can render only a single page
-      then
+      case FOutputDevice of
+        odPrinter:  // Render all requested pages
+          printThisPage := (FPageNumber >= firstPrintPage) and (FPageNumber <= lastPrintPage);
+        odPreview:  // Preview can render only a single page
+          printThisPage := (FPageNumber = FPreviewPage);
+        else
+          raise Exception.Create('[TGridPrinter.PrintByRows] Unknown output device.');
+      end;
+      if printThisPage then
         PrintPage(ACanvas, col1, row1, col2, row2);
       inc(FPageNumber);
     end;
