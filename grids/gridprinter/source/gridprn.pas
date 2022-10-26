@@ -101,9 +101,7 @@ type
     FDialogs: TGridPrnDialog;
     FPadding: Integer;
     FPageHeight: Integer;
-    FPageSetupDialog: TPageSetupDialog;
     FPageWidth: Integer;
-    FPrintDialog: TPrintDialog;
     FPrintOrder: TGridPrnOrder;
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
@@ -216,8 +214,6 @@ type
     property Margins: TGridPrnMargins read FMargins write FMargins;
     property Monochrome: Boolean read FMonochrome write FMonochrome default false;
     property Orientation: TPrinterOrientation read GetOrientation write SetOrientation default poPortrait;
-    property PageSetupDialog: TPageSetupDialog read FPageSetupDialog write FPageSetupDialog;
-    property PrintDialog: TPrintDialog read FPrintDialog write FPrintDialog;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
@@ -844,40 +840,33 @@ begin
       ;
     gpdPageSetup:
       begin
-        if FPageSetupDialog = nil then
-          pageDlg := TPageSetupDialog.Create(nil)
-        else
-          pageDlg := FPageSetupDialog;
-        pageDlg.Units := pmMillimeters;
-        pageDlg.MarginLeft := round(FMargins.Left*100);
-        pageDlg.MarginTop := round(FMargins.Top*100);
-        pageDlg.MarginRight := round(FMargins.Right*100);
-        pageDlg.MarginBottom := round(FMargins.Bottom*100);
-        if not pageDlg.Execute then
-        begin
-          if FPageSetupDialog = nil then pageDlg.Free;
-          exit;
-        end;
-        FMargins.FMargins[0] := pageDlg.MarginLeft*0.01;
-        FMargins.FMargins[1] := pageDlg.MarginTop*0.01;
-        FMargins.FMargins[2] := pageDlg.MarginRight*0.01;
-        FMargins.FMargins[3] := pageDlg.MarginBottom*0.01;
-        if FPageSetupDialog = nil then
+        pageDlg := TPageSetupDialog.Create(nil);
+        try
+          pageDlg.Units := pmMillimeters;
+          pageDlg.MarginLeft := round(FMargins.Left*100);
+          pageDlg.MarginTop := round(FMargins.Top*100);
+          pageDlg.MarginRight := round(FMargins.Right*100);
+          pageDlg.MarginBottom := round(FMargins.Bottom*100);
+          if pageDlg.Execute then
+          begin
+            FMargins.FMargins[0] := pageDlg.MarginLeft*0.01;
+            FMargins.FMargins[1] := pageDlg.MarginTop*0.01;
+            FMargins.FMargins[2] := pageDlg.MarginRight*0.01;
+            FMargins.FMargins[3] := pageDlg.MarginBottom*0.01;
+          end;
+        finally
           pageDlg.Free;
+        end;
       end;
     gpdPrintDialog:
       begin
-        if FPrintDialog = nil then
-          printDlg := TPrintDialog.Create(nil)
-        else
-          printDlg := FPrintDialog;
-        if not printDlg.Execute then
-        begin
-          if FPrintDialog = nil then printDlg.Free;
-          exit;
-        end;
-        if FPrintDialog = nil then
+        printDlg := TPrintDialog.Create(nil);
+        try
+          if not printDlg.Execute then
+            exit;
+        finally
           printDlg.Free;
+        end;
       end;
   end;
 
