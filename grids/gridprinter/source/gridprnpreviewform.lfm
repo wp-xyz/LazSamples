@@ -142,20 +142,20 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       ShowCaption = False
       Style = tbsCheck
     end
-    object ToolButton2: TToolButton
+    object tbHeaderFooter: TToolButton
       Left = 440
       Top = 0
       Action = acHeaderFooter
       ShowCaption = False
     end
-    object ToolButton3: TToolButton
+    object tvDivider4: TToolButton
       Left = 500
       Height = 24
       Top = 0
-      Caption = 'ToolButton3'
+      Caption = 'tvDivider4'
       Style = tbsDivider
     end
-    object ToolButton4: TToolButton
+    object tbPortraint: TToolButton
       Left = 380
       Top = 0
       Action = acPortrait
@@ -163,7 +163,7 @@ object GridPrintPreviewForm: TGridPrintPreviewForm
       ShowCaption = False
       Style = tbsCheck
     end
-    object ToolButton5: TToolButton
+    object tbLandscape: TToolButton
       Left = 410
       Top = 0
       Action = acLandscape

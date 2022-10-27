@@ -9,7 +9,7 @@ interface
 
 uses
   GridPrnHeaderFooterForm, GridPrn, GridPrnPreviewForm, GridPrnReg, 
-  LazarusPackageIntf;
+  GridPrnPreviewDlg, LazarusPackageIntf;
 
 implementation
 

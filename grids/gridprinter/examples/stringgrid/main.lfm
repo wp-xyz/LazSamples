@@ -29,14 +29,58 @@ object Form1: TForm1
     OnClick = btnPrintClick
     TabOrder = 1
   end
-  object Button1: TButton
-    Left = 280
+  object btnPreview: TButton
+    AnchorSideTop.Control = btnPrint
+    Left = 312
     Height = 25
     Top = 459
     Width = 75
     Caption = 'Preview...'
-    OnClick = Button1Click
+    OnClick = btnPreviewClick
     TabOrder = 2
+  end
+  object ComboBox1: TComboBox
+    AnchorSideLeft.Control = btnPrint
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btnPrint
+    AnchorSideTop.Side = asrCenter
+    Left = 92
+    Height = 23
+    Top = 460
+    Width = 140
+    BorderSpacing.Left = 6
+    ItemHeight = 15
+    ItemIndex = 1
+    Items.Strings = (
+      'no printer dialog'
+      'page-setup dialog'
+      'print dialog'
+    )
+    Style = csDropDownList
+    TabOrder = 3
+    Text = 'page-setup dialog'
+  end
+  object CheckComboBox1: TCheckComboBox
+    AnchorSideLeft.Control = btnPreview
+    AnchorSideLeft.Side = asrBottom
+    AnchorSideTop.Control = btnPreview
+    AnchorSideTop.Side = asrCenter
+    Left = 393
+    Height = 24
+    Top = 459
+    Width = 183
+    BorderSpacing.Left = 6
+    ItemHeight = 16
+    Items.Strings = (
+      'Navigation buttons'
+      'Navigation edit'
+      'Zoom buttons'
+      'Page orientation buttons'
+      'Page margins button'
+      'Header/footer button'
+    )
+    OnItemChange = CheckComboBox1ItemChange
+    TabOrder = 4
   end
   object GridPrinter1: TGridPrinter
     Grid = StringGrid1
@@ -49,8 +93,9 @@ object Form1: TForm1
     Left = 168
     Top = 96
   end
-  object PrintDialog1: TPrintDialog
-    Left = 169
-    Top = 180
+  object GridPrintPreviewDialog1: TGridPrintPreviewDialog
+    GridPrinter = GridPrinter1
+    Left = 288
+    Top = 96
   end
 end

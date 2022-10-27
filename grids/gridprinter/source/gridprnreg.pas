@@ -12,13 +12,13 @@ procedure Register;
 implementation
 
 uses
-  GridPrn;
+  GridPrn, GridPrnPreviewDlg;
 
 {$R gridprinter_icons.res}
 
 procedure Register;
 begin
-  RegisterComponents('Misc', [TGridPrinter]);
+  RegisterComponents('Misc', [TGridPrinter, TGridPrintPreviewDialog]);
 end;
 
 end.

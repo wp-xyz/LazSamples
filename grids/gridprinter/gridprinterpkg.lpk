@@ -28,7 +28,11 @@
       <Item>
         <Filename Value="source\gridprnreg.pas"/>
         <HasRegisterProc Value="True"/>
-        <UnitName Value="gridprnreg"/>
+        <UnitName Value="GridPrnReg"/>
+      </Item>
+      <Item>
+        <Filename Value="source\gridprnpreviewdlg.pas"/>
+        <UnitName Value="GridPrnPreviewDlg"/>
       </Item>
     </Files>
     <RequiredPkgs>

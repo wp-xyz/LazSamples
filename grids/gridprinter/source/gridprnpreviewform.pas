@@ -11,7 +11,17 @@ uses
 
 type
   TGridPrintPreviewZoomMode = (zmCustom, zmFitWidth, zmFitHeight);
+  TGridPrintPreviewToolBarButton = (tbNavigationBtns, tbNavigationEdit,
+    tbZoomBtns, tbPageOrientationBtns, tbMarginsBtn, tbHeaderFooterBtn);
+  TGridPrintPreviewToolBarButtons = set of TGridPrintPreviewToolBarButton;
 
+const
+  DEFAULT_GRIDPRN_TOOLBARBUTTONS = [
+    tbNavigationBtns, tbNavigationEdit,
+    tbZoomBtns, tbPageOrientationBtns, tbMarginsBtn, tbHeaderFooterBtn
+  ];
+
+type
   { TGridPrintPreviewForm }
 
   TGridPrintPreviewForm = class(TForm)
@@ -62,10 +72,10 @@ type
     tbZoomHeight: TToolButton;
     tbZoom100: TToolButton;
     ToolButton1: TToolButton;
-    ToolButton2: TToolButton;
-    ToolButton3: TToolButton;
-    ToolButton4: TToolButton;
-    ToolButton5: TToolButton;
+    tbHeaderFooter: TToolButton;
+    tvDivider4: TToolButton;
+    tbPortraint: TToolButton;
+    tbLandscape: TToolButton;
     procedure acCloseExecute(Sender: TObject);
     procedure acFirstPageExecute(Sender: TObject);
     procedure acHeaderFooterExecute(Sender: TObject);
@@ -106,12 +116,14 @@ type
     FHintWindow: THintWindow;
     FPageCount: Integer;
     FPageNumber: Integer;
+    FToolbarButtons: TGridPrintPreviewToolBarButtons;
     FUpdatePreviewHandler: TNotifyEvent;
     FZoom: Integer;
     FZoomMax: Integer;
     FZoomMin: Integer;
     FZoomMode: TGridPrintPreviewZoomMode;
     procedure SetPageNumber(AValue: Integer);
+    procedure SetToolbarButtons(AValue: TGridPrintPreviewToolBarButtons);
   protected
     function CalcDraggedMargin(AMargin: Integer; APosition: Integer): Double;
     procedure DoOnResize; override;
@@ -133,6 +145,8 @@ type
 
   published
     property GridPrinter: TGridPrinter read FGridPrinter write FGridPrinter;
+    property ToolBarButtons: TGridPrintPreviewToolBarButtons
+      read FToolBarButtons write SetToolBarButtons default DEFAULT_GRIDPRN_TOOLBARBUTTONS;
 
   end;
 
@@ -180,6 +194,7 @@ begin
   FZoomMax := 1000;  // To avoid too-large bitmaps
   FZoomMin := 10;
   FDraggedMargin := -1;
+  FToolbarButtons := DEFAULT_GRIDPRN_TOOLBARBUTTONS;
   VerifyZoomMin;
   ActiveControl := Scrollbox;
 end;
@@ -714,6 +729,34 @@ procedure TGridPrintPreviewForm.SetPageNumber(AValue: Integer);
 begin
   if AValue <> FPageNumber then
     ShowPage(AValue);
+end;
+
+procedure TGridPrintPreviewForm.SetToolbarButtons(AValue: TGridPrintPreviewToolBarButtons);
+begin
+  if FToolbarButtons <> AValue then
+  begin
+    FToolbarButtons := AValue;
+
+    acFirstPage.Visible := tbNavigationBtns in FToolbarButtons;
+    acPrevpage.Visible := acFirstpage.Visible;
+    acNextPage.Visible := acFirstPage.Visible;
+    acLastPage.Visible := acFirstPage.Visible;
+    edPageNumber.Visible := tbNavigationEdit in FToolbarButtons;
+    tbDivider1.Visible := acFirstPage.Visible or edPageNumber.Visible;
+
+    acZoomIn.Visible := tbZoomBtns in FToolbarButtons;
+    acZoomOut.Visible := acZoomIn.Visible;
+    acZoom100.Visible := acZoomIn.Visible;
+    acZoomToFitWidth.Visible := acZoomIn.Visible;
+    acZoomtoFitHeight.Visible := acZoomIn.Visible;
+    tbDivider2.Visible := acZoomIn.Visible;
+
+    acPortrait.Visible := tbPageOrientationBtns in FToolbarButtons;
+    acLandscape.Visible := acPortrait.Visible;
+    acHeaderFooter.Visible := tbHeaderFooterBtn in FToolbarButtons;
+    acPageMargins.Visible := tbMarginsBtn in FToolbarButtons;
+    tbDivider3.Visible := acPortrait.Visible or acHeaderFooter.Visible or acpageMargins.Visible;
+  end;
 end;
 
 procedure TGridPrintPreviewForm.ShowDraggedMarginHint(
