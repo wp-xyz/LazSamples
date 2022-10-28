@@ -31,10 +31,11 @@ object Form1: TForm1
   end
   object btnPreview: TButton
     AnchorSideTop.Control = btnPrint
-    Left = 312
+    Left = 272
     Height = 25
     Top = 459
-    Width = 75
+    Width = 76
+    AutoSize = True
     Caption = 'Preview...'
     OnClick = btnPreviewClick
     TabOrder = 2
@@ -65,10 +66,11 @@ object Form1: TForm1
     AnchorSideLeft.Side = asrBottom
     AnchorSideTop.Control = btnPreview
     AnchorSideTop.Side = asrCenter
-    Left = 393
+    Left = 354
     Height = 22
     Top = 460
-    Width = 254
+    Width = 293
+    Anchors = [akTop, akLeft, akRight]
     BorderSpacing.Left = 6
     ItemHeight = 16
     Items.Strings = (

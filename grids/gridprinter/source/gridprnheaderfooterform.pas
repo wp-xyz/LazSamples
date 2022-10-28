@@ -58,6 +58,7 @@ type
     procedure ParamsToPrinter(AIndex: Integer);
     procedure PrinterToParams(AIndex: Integer);
   public
+    procedure UpdateStrings;
     property GridPrinter: TGridPrinter read FGridPrinter write SetGridPrinter;
   end;
 
@@ -67,6 +68,9 @@ var
 implementation
 
 {$R *.lfm}
+
+uses
+  GridPrnStrings;
 
 { TGridPrintHeaderFooterForm }
 
@@ -99,6 +103,7 @@ end;
 
 procedure TGridPrintHeaderFooterForm.FormCreate(Sender: TObject);
 begin
+  UpdateStrings;
   FParams[0].Font := TFont.Create;
   FParams[1].Font := TFont.Create;
 end;
@@ -200,6 +205,21 @@ begin
     PrinterToParams(1);
     ParamsToControls(TabControl.TabIndex);
   end;
+end;
+
+procedure TGridPrintHeaderFooterForm.UpdateStrings;
+begin
+  TabControl.Tabs[0] := RSHeader;
+  TabControl.Tabs[1] := RSFooter;
+  cbShow.Caption := RSShow;
+  btnFont.Caption := RSFont;
+  lblTextInfo.Caption := RSHeaderFooterSectionParameterInfo;
+  cbShowLine.Caption := RSShowDividingLine;
+  lblLineWidth.Caption := RSLineWidthMM;
+  clbLineColor.Caption := RSLineColor;
+  edTextLeft.TextHint := RSTextInLeftAlignedSection;
+  edTextCenter.TextHint := RSTextInCenteredSection;
+  edTextRight.TextHint := RSTextInRightAlignedSection;
 end;
 
 end.

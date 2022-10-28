@@ -141,6 +141,7 @@ type
 
   public
     constructor Create(AOwner: TComponent); override;
+    procedure UpdateStrings;
     procedure ZoomToFitHeight;
     procedure ZoomToFitWidth;
     property PageNumber: Integer read FPageNumber write SetPageNumber;
@@ -160,7 +161,7 @@ implementation
 {$R *.lfm}
 
 uses
-  LCLIntf, LCLType, Printers, GridPrnHeaderFooterForm;
+  LCLIntf, LCLType, Printers, GridPrnStrings, GridPrnHeaderFooterForm;
 
 const
   ZOOM_MULTIPLIER = 1.05;
@@ -199,6 +200,7 @@ begin
   FOptions := DEFAULT_GRIDPRN_OPTIONS;
   VerifyZoomMin;
   ActiveControl := Scrollbox;
+  UpdateStrings;
 end;
 
 procedure TGridPrintPreviewForm.acCloseExecute(Sender: TObject);
@@ -488,16 +490,12 @@ end;
 
 procedure TGridPrintPreviewForm.PreviewImageMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
-const
-  MARGIN_NAMES: array[0..5] of string = (
-    'Left margin', 'Top margin', 'Right margin', 'Bottom margin',
-    'Header margin', 'Footer margin'
-  );
 var
   minWidth: Integer;
   minHeight: Integer;
   y0: Integer;
   one_mm: Integer;
+  marginName: String;
 begin
   if (FGridPrinter = nil) or not (acPageMargins.Checked) then
     exit;
@@ -600,7 +598,17 @@ begin
     PreviewImage.Repaint;
   end;
 
-  ShowDraggedMarginHint(FDraggedMargin, FDraggedPos, MARGIN_NAMES[FDraggedMargin]);
+  case FDraggedMargin of
+    0: marginName := RSLeftMargin;
+    1: marginName := RSTopMargin;
+    2: marginName := RSRightMargin;
+    3: marginName := RSBottomMargin;
+    4: marginName := RSHeaderMargin;
+    5: marginName := RSFooterMargin;
+    else
+      raise Exception.Create('[PreviewImageMouseMove] Unexpected value of FDraggedMargin');
+  end;
+  ShowDraggedMarginHint(FDraggedMargin, FDraggedPos, marginName);
 end;
 
 procedure TGridPrintPreviewForm.PreviewImageMouseUp(Sender: TObject;
@@ -757,11 +765,6 @@ begin
   Scrollbox.SetFocus;
 end;
 
-procedure TGridPrintPreviewForm.ToolBarResize(Sender: TObject);
-begin
-  UpdateInfoPanel;
-end;
-
 procedure TGridPrintPreviewForm.SetGridPrinter(AValue: TGridPrinter);
 begin
   if FGridPrinter <> AValue then
@@ -776,12 +779,6 @@ begin
       poColsFirst: acPrintColsFirst.Checked := true;
     end;
   end;
-end;
-
-procedure TGridPrintPreviewForm.SetPageNumber(AValue: Integer);
-begin
-  if AValue <> FPageNumber then
-    ShowPage(AValue);
 end;
 
 procedure TGridPrintPreviewForm.SetOptions(AValue: TGridPrintPreviewOptions);
@@ -814,6 +811,12 @@ begin
     acPrintRowsFirst.Visible := acPrintColsFirst.Visible;
     tbDivider4.Visible := acPrintColsFirst.Visible;
   end;
+end;
+
+procedure TGridPrintPreviewForm.SetPageNumber(AValue: Integer);
+begin
+  if AValue <> FPageNumber then
+    ShowPage(AValue);
 end;
 
 procedure TGridPrintPreviewForm.ShowDraggedMarginHint(
@@ -866,13 +869,47 @@ begin
   end;
 end;
 
+procedure TGridPrintPreviewForm.ToolBarResize(Sender: TObject);
+begin
+  UpdateInfoPanel;
+end;
+
 procedure TGridPrintPreviewForm.UpdateInfoPanel;
 begin
-  InfoPanel.Caption := Format('Page %d of %d, Zoom %d %%', [FPageNumber, FPageCount, FZoom]);
+  InfoPanel.Caption := Format(RSPageAndZoomInfo, [FPageNumber, FPageCount, FZoom]);
   InfoPanel.Width := InfoPanel.Canvas.TextWidth(InfoPanel.Caption);
   InfoPanel.Left := Toolbar.ClientWidth - InfoPanel.Width - 8;
   edPageNumber.Text := IntToStr(FPageNumber);
 end;
+
+procedure TGridPrintPreviewForm.UpdateStrings;
+begin
+  Caption := RSPrintPreview;
+
+  // Toolbar captions
+  acPrint.Caption := RSPrint;
+  acClose.Caption := RSClose;
+
+  // Toolbar hints
+  acPrint.Hint := RSPrint;
+  acClose.Hint := RSClose;
+  acFirstPage.Hint := RSShowFirstPage;
+  acPrevPage.Hint := RSShowPrevPage;
+  acNextPage.Hint := RSShowNextPage;
+  acLastPage.Hint := RSShowLastPage;
+  acZoomIn.Hint := RSZoomIn;
+  acZoomOut.Hint := RSZoomOut;
+  acZoomToFitWidth.Hint := RSZoomToFitPageWidth;
+  acZoomToFitHeight.Hint := RSZoomToFitPageHeight;
+  acZoom100.Hint := RSOriginalSize;
+  acPageMargins.Hint := RSPageMarginsConfig;
+  acHeaderFooter.Hint := RSHeaderFooterConfig;
+  acPortrait.Hint := RSPortraitPageOrientation;
+  acLandscape.Hint := RSLandscapePageOrientation;
+  acPrintColsFirst.Hint := RSPrintColsFirst;
+  acPrintRowsFirst.Hint := RSPrintRowsFirst;
+end;
+
 
 { Adjusts FZoomMin to avoid the situation that, due to integer rounding,
   the zoom factor cannot be changed any more by clicking a zoom button or

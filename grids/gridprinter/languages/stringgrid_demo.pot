@@ -1,0 +1,19 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+#: tform1.btnpreview.caption
+msgid "Preview..."
+msgstr ""
+
+#: tform1.btnprint.caption
+msgid "Print..."
+msgstr ""
+
+#: tform1.caption
+msgid "StringGrid Demo for TGridPrinter"
+msgstr ""
+
+#: tform1.combobox1.text
+msgid "page-setup dialog"
+msgstr ""
+

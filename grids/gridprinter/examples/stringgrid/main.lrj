@@ -1,0 +1,6 @@
+{"version":1,"strings":[
+{"hash":57804306,"name":"tform1.caption","sourcebytes":[83,116,114,105,110,103,71,114,105,100,32,68,101,109,111,32,102,111,114,32,84,71,114,105,100,80,114,105,110,116,101,114],"value":"StringGrid Demo for TGridPrinter"},
+{"hash":151352958,"name":"tform1.btnprint.caption","sourcebytes":[80,114,105,110,116,46,46,46],"value":"Print..."},
+{"hash":217709006,"name":"tform1.btnpreview.caption","sourcebytes":[80,114,101,118,105,101,119,46,46,46],"value":"Preview..."},
+{"hash":38126839,"name":"tform1.combobox1.text","sourcebytes":[112,97,103,101,45,115,101,116,117,112,32,100,105,97,108,111,103],"value":"page-setup dialog"}
+]}

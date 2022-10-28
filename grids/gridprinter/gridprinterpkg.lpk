@@ -34,7 +34,16 @@
         <Filename Value="source\gridprnpreviewdlg.pas"/>
         <UnitName Value="GridPrnPreviewDlg"/>
       </Item>
+      <Item>
+        <Filename Value="source\gridprnstrings.pas"/>
+        <UnitName Value="GridPrnStrings"/>
+      </Item>
     </Files>
+    <i18n>
+      <EnableI18N Value="True"/>
+      <OutDir Value="languages"/>
+      <EnableI18NForLFM Value="True"/>
+    </i18n>
     <RequiredPkgs>
       <Item>
         <PackageName Value="Printer4Lazarus"/>
