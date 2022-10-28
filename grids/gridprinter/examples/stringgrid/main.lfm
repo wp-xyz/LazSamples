@@ -66,9 +66,9 @@ object Form1: TForm1
     AnchorSideTop.Control = btnPreview
     AnchorSideTop.Side = asrCenter
     Left = 393
-    Height = 24
-    Top = 459
-    Width = 183
+    Height = 22
+    Top = 460
+    Width = 254
     BorderSpacing.Left = 6
     ItemHeight = 16
     Items.Strings = (
@@ -78,6 +78,7 @@ object Form1: TForm1
       'Page orientation buttons'
       'Page margins button'
       'Header/footer button'
+      'Print order: colums first or rows first'
     )
     OnItemChange = CheckComboBox1ItemChange
     TabOrder = 4
@@ -90,6 +91,7 @@ object Form1: TForm1
     Header.Font.Height = -11
     Header.SectionSeparator = '|'
     Header.Text = '||'
+    Orientation = poLandscape
     Left = 168
     Top = 96
   end

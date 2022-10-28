@@ -11,7 +11,7 @@ type
   TGridPrintPreviewDialog = class(TComponent)
   private
     FGridPrinter: TGridPrinter;
-    FToolBarButtons: TGridPrintPreviewToolBarButtons;
+    FOptions: TGridPrintPreviewOptions;
   protected
     procedure Notification(AComponent: TComponent; Operation: TOperation); override;
   public
@@ -19,8 +19,8 @@ type
     procedure Execute;
   published
     property GridPrinter: TGridPrinter read FGridPrinter write FGridPrinter;
-    property ToolBarButtons: TGridPrintPreviewToolBarButtons
-      read FToolBarButtons write FToolBarButtons default DEFAULT_GRIDPRN_TOOLBARBUTTONS;
+    property Options: TGridPrintPreviewOptions
+      read FOptions write FOptions default DEFAULT_GRIDPRN_OPTIONS;
   end;
 
 implementation
@@ -43,7 +43,7 @@ begin
   F := TGridPrintPreviewForm.Create(nil);
   try
     F.GridPrinter := FGridPrinter;
-    F.ToolBarButtons := FToolBarButtons;
+    F.Options := FOptions;
     if (F.ShowModal = mrOK) then
       FGridPrinter.Print;
   finally
