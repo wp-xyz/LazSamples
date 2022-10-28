@@ -51,6 +51,8 @@ type
     function GetSectionText(AIndex: TGridPrnHeaderFooterSection): String;
     function GetText: String;
     function IsLineWidthStored: Boolean;
+    function IsSectionSepStored: Boolean;
+    function IsTextStored: Boolean;
     procedure SetFont(AValue: TFont);
     procedure SetLineColor(AValue: TColor);
     procedure SetLineWidth(AValue: Double);
@@ -64,6 +66,7 @@ type
     constructor Create(AOwner: TGridPrinter);
     destructor Destroy; override;
     function IsShown: Boolean;
+    function IsTextEmpty: Boolean;
     function RealLineColor: TColor;
     function RealLineWidth: Integer;
     property ProcessedText[AIndex: TGridPrnHeaderFooterSection]: String read GetProcessedText;
@@ -72,9 +75,9 @@ type
     property Font: TFont read FFont write SetFont;
     property LineColor: TColor read FLineColor write SetLineColor default clDefault;
     property LineWidth: Double read FLineWidth write SetLineWidth stored IsLineWidthStored;
-    property SectionSeparator: String read FSectionSeparator write FSectionSeparator;
+    property SectionSeparator: String read FSectionSeparator write FSectionSeparator stored IsSectionSepStored;
     property ShowLine: Boolean read FShowLine write SetShowLine default true;
-    property Text: String read GetText write SetText;
+    property Text: String read GetText write SetText stored IsTextStored;
     property Visible: Boolean read FVisible write SetVisible default true;
   end;
 
@@ -410,13 +413,27 @@ begin
   Result := FLineWidth > 0;
 end;
 
+function TGridPrnHeaderFooter.IsSectionSepStored: Boolean;
+begin
+  Result := FSectionSeparator <> '|';
+end;
+
 function TGridPrnHeaderFooter.IsShown: Boolean;
 begin
-  Result := FVisible and (
-    (FSectionText[hfsLeft] <> '') or
-    (FSectionText[hfsCenter] <> '') or
-    (FSectionText[hfsRight] <> '')
-  );
+  Result := FVisible and not IsTextEmpty;
+end;
+
+function TGridPrnHeaderFooter.IsTextEmpty: Boolean;
+begin
+  Result :=
+    (FSectionText[hfsLeft] = '') and
+    (FSectionText[hfsCenter] = '') and
+    (FSectionText[hfsRight] = '');
+end;
+
+function TGridPrnHeaderFooter.IsTextStored: Boolean;
+begin
+  Result := not IsTextEmpty;
 end;
 
 function TGridPrnHeaderFooter.RealLineColor: TColor;
@@ -515,6 +532,9 @@ begin
   FBorderLineColor := clDefault;
   FFixedLineColor := clDefault;
   FGridLineColor := clDefault;
+  FBorderLineWidth := -1;
+  FFixedLineWidth := -1;
+  FGridLineWidth := -1;
 end;
 
 destructor TGridPrinter.Destroy;
@@ -574,7 +594,7 @@ end;
 
 function TGridPrinter.GetBorderLineWidthHor: Integer;
 begin
-  if FBorderLineWidth = 0 then
+  if FBorderLineWidth < 0.0 then
     Result := ScaleY(2)
   else
     Result := mm2px(FBorderLineWidth, FPixelsPerInchY);
@@ -582,7 +602,7 @@ end;
 
 function TGridPrinter.GetBorderLineWidthVert: Integer;
 begin
-  if FBorderLineWidth = 0 then
+  if FBorderLineWidth < 0.0 then
     Result := ScaleX(2)
   else
     Result := mm2px(FBorderLineWidth, FPixelsPerInchX);
@@ -625,7 +645,7 @@ end;
 
 function TGridPrinter.GetFixedLineWidthHor: Integer;
 begin
-  if FFixedLineWidth = 0 then
+  if FFixedLineWidth < 0.0 then
     Result := ScaleY(TGridAccess(FGrid).GridLineWidth)
   else
     Result := mm2px(FFixedLineWidth, FPixelsPerInchY);
@@ -633,7 +653,7 @@ end;
 
 function TGridPrinter.GetFixedLineWidthVert: Integer;
 begin
-  if FFixedLineWidth = 0 then
+  if FFixedLineWidth < 0.0 then
     Result := ScaleX(TGridAccess(FGrid).GridLineWidth)
   else
     Result := mm2px(FFixedLineWidth, FPixelsPerInchX);
@@ -641,7 +661,7 @@ end;
 
 function TGridPrinter.GetGridLineWidthHor: Integer;
 begin
-  if FGridLineWidth = 0 then
+  if FGridLineWidth < 0.0 then
     Result := ScaleY(TGridAccess(FGrid).GridLineWidth)
   else
     Result := mm2px(FGridLineWidth, FPixelsPerInchY);
@@ -649,7 +669,7 @@ end;
 
 function TGridPrinter.GetGridLineWidthVert: Integer;
 begin
-  if FGridLineWidth = 0 then
+  if FGridLineWidth < 0.0 then
     Result := ScaleX(TGridAccess(FGrid).GridLineWidth)
   else
     Result := mm2px(FGridLineWidth, FPixelsPerInchX);
@@ -676,17 +696,17 @@ end;
 
 function TGridPrinter.IsBorderLineWidthStored: Boolean;
 begin
-  Result := FBorderLineWidth <> 0;
+  Result := FBorderLineWidth >= 0.0;
 end;
 
 function TGridPrinter.IsFixedLineWidthStored: Boolean;
 begin
-  Result := FFixedLineWidth <> 0.0;
+  Result := FFixedLineWidth >= 0.0;
 end;
 
 function TGridPrinter.IsGridLineWidthStored: Boolean;
 begin
-  Result := FGridLineWidth <> 0.0;
+  Result := FGridLineWidth >= 0.0;
 end;
 
 { Find the column and row indices before which page breaks are occuring.
@@ -1189,6 +1209,7 @@ begin
   lGrid := TGridAccess(FGrid);
 
   // Print inner grid lines
+  ACanvas.Pen.EndCap := pecFlat;
   ACanvas.Pen.Style := lGrid.GridLineStyle;
   ACanvas.Pen.Color := IfThen(FMonoChrome, clBlack,
     IfThen(FGridLineColor = clDefault, lGrid.GridLineColor, FGridLineColor));
@@ -1283,6 +1304,7 @@ begin
   ACanvas.Line(FFixedColPos, FTopMargin, FFixedColPos, YEnd);
 
   // Print outer border lines
+  ACanvas.Pen.EndCap := pecRound;
   ACanvas.Pen.Style := psSolid;
   ACanvas.Pen.Color := IfThen(FMonochrome, clBlack,
     IfThen(FBorderLineColor = clDefault, clBlack, ColorToRGB(FBorderLineColor)));
