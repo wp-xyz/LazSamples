@@ -108,6 +108,10 @@ type
     FPrintDialogs: TGridPrnDialog;
     FPrintOrder: TGridPrnOrder;
     FToPage: Integer;
+    FOnAfterBeginDoc: TNotifyEvent;
+    FOnAfterPrint: TNotifyEvent;
+    FOnBeforeEndDoc: TNotifyEvent;
+    FOnBeforePrint: TNotifyEvent;
     FOnGetCellText: TGridPrnGetCellTextEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     FOnUpdatePreview: TNotifyEvent;
@@ -222,6 +226,10 @@ type
     property PrintDialogs: TGridPrnDialog read FPrintDialogs write FPrintDialogs default gpdNone;
     property PrintOrder: TGridPrnOrder read FPrintOrder write FPrintOrder default poRowsFirst;
     property ToPage: Integer read FToPage write FToPage default 0;
+    property OnAfterBeginDoc: TNotifyEvent read FOnAfterBeginDoc write FOnAfterBeginDoc;
+    property OnAfterPrint: TNotifyEvent read FOnAfterPrint write FOnAfterPrint;
+    property OnBeforeEndDoc: TNotifyEvent read FOnBeforeEndDoc write FOnBeforeEndDoc;
+    property OnBeforePrint: TNotifyEvent read FOnBeforePrint write FOnBeforePrint;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
     property OnUpdatePreview: TNotifyEvent read FOnUpdatePreview write FOnUpdatePreview;
@@ -914,14 +922,24 @@ begin
       end;
   end;
 
+  if Assigned(FOnBeforePrint) then
+    FOnBeforePrint(Self);
+
   FOutputDevice := odPrinter;
   Prepare;
   Printer.BeginDoc;
   try
+    if Assigned(FOnAfterBeginDoc) then
+      FOnAfterBeginDoc(Self);;
     Execute(Printer.Canvas);
+    if Assigned(FOnBeforeEndDoc) then
+      FOnBeforeEndDoc(Self);
   finally
     Printer.EndDoc;
   end;
+
+  if Assigned(FOnAfterPrint) then
+    FOnAfterPrint(Self);
 end;
 
 { Advances first along rows when handling page-breaks. }
