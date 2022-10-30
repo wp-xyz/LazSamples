@@ -35,7 +35,7 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure TabControlChange(Sender: TObject);
-    procedure TabControlChanging(Sender: TObject; var AllowChange: Boolean);
+    procedure TabControlChanging(Sender: TObject; var {%H-}AllowChange: Boolean);
   private
     type
       THFParams = record

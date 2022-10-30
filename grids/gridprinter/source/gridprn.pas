@@ -177,7 +177,7 @@ type
     procedure PrintByCols(ACanvas: TCanvas);
     procedure PrintByRows(ACanvas: TCanvas);
     procedure PrintCell(ACanvas: TCanvas; ACol, ARow: Integer; ARect: TRect); virtual;
-    procedure PrintCheckbox(ACanvas: TCanvas; ACol, ARow: Integer; ARect: TRect;
+    procedure PrintCheckbox(ACanvas: TCanvas; {%H-}ACol, {%H-}ARow: Integer; ARect: TRect;
       ACheckState: TCheckboxstate); virtual;
     procedure PrintColHeaders(ACanvas: TCanvas; ACol1, ACol2: Integer);
     procedure PrintFooter(ACanvas: TCanvas);
