@@ -65,7 +65,6 @@ object Form1: TForm1
   end
   object GridPrintPreviewDialog1: TGridPrintPreviewDialog
     GridPrinter = GridPrinter1
-    Options = []
     Left = 167
     Top = 208
   end

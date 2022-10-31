@@ -46,7 +46,7 @@ var
   i: Integer;
 begin
   MemDataset1.FieldDefs.Add('Text', ftString, 20);
-  MemDataset1.fieldDefs.Add('Value', ftInteger);
+  MemDataset1.FieldDefs.Add('Value', ftInteger);
   MemDataset1.FieldDefs.Add('Date', ftDate);
   MemDataset1.CreateTable;
   MemDataset1.Open;

@@ -1280,7 +1280,7 @@ begin
     col := AFirstCol;
     x := FFixedColPos;
     xr := round(x);
-    while (xr < XEnd) and (col < lGrid.ColCount) do
+    while (xr < XEnd) and (col < FColCount) do
     begin
       x := x + FColWidths[col];
       xr := round(x);
@@ -1305,7 +1305,7 @@ begin
     row := AFirstRow;
     y := FFixedRowPos;
     yr := round(y);
-    while (yr < YEnd) and (row < lGrid.RowCount) do
+    while (yr < YEnd) and (row < FRowCount) do
     begin
       y := y + FRowHeights[row];
       yr := round(y);
@@ -1320,7 +1320,7 @@ begin
     row := AFirstRow;
     y := FFixedRowPos;
     yr := round(y);
-    while (yr < YEnd) and (row < lGrid.RowCount) do
+    while (yr < YEnd) and (row < FRowCount) do
     begin
       y := y + FRowHeights[row];
       yr := round(y);
