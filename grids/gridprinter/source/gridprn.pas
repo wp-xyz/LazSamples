@@ -16,10 +16,10 @@ type
     ACol, ARow: Integer; var AText: String) of object;
 
   TGridPrnGetColCountEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
-    var AColCount, AFixedCols: Integer) of object;
+    var AColCount: Integer) of object;
 
   TGridPrnGetRowCountEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
-    var ARowCount, AFixedRows: Integer) of object;
+    var ARowCount: Integer) of object;
 
   TGridPrnHeaderFooterSection = (hfsLeft, hfsCenter, hfsRight);
 
@@ -1602,9 +1602,9 @@ begin
   FFixedCols := TGridAccess(FGrid).FixedCols;
   FFixedRows := TGridAccess(FGrid).FixedRows;
   if Assigned(FOnGetColCount) then
-    FOnGetColCount(Self, FGrid, FColCount, FFixedCols);
+    FOnGetColCount(Self, FGrid, FColCount);
   if Assigned(FOnGetRowCount) then
-    FOnGetRowCount(self, FGrid, FRowCount, FFixedRows);
+    FOnGetRowCount(self, FGrid, FRowCount);
   FPageNumber := 0;
   FPageCount := 0;
 end;

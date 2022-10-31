@@ -45,27 +45,27 @@ object Form1: TForm1
       TabOrder = 0
     end
   end
-  object MemDataset1: TMemDataset
-    FieldDefs = <>
-    Left = 167
-    Top = 58
-  end
   object DataSource1: TDataSource
-    DataSet = MemDataset1
+    DataSet = BufDataset1
     Left = 256
-    Top = 58
+    Top = 64
   end
   object GridPrinter1: TGridPrinter
     Footer.Font.Height = -11
     Header.Font.Height = -11
     OnGetCellText = GridPrinter1GetCellText
     OnGetRowCount = GridPrinter1GetRowCount
-    Left = 168
+    Left = 167
     Top = 136
   end
   object GridPrintPreviewDialog1: TGridPrintPreviewDialog
     GridPrinter = GridPrinter1
     Left = 167
     Top = 208
+  end
+  object BufDataset1: TBufDataset
+    FieldDefs = <>
+    Left = 167
+    Top = 64
   end
 end
