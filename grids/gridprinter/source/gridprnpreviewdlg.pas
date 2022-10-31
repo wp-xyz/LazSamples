@@ -31,6 +31,7 @@ uses
 constructor TGridPrintPreviewDialog.Create(AOwner: TComponent);
 begin
   inherited;
+  FOptions := DEFAULT_GRIDPRN_OPTIONS;
 end;
 
 procedure TGridPrintPreviewDialog.Execute;
