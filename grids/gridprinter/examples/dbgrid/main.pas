@@ -81,7 +81,7 @@ begin
 end;
 
 procedure TForm1.GridPrinter1GetRowCount(Sender: TObject; AGrid: TCustomGrid;
-  var ARowCount: Integer);
+  var ARowCount, AFixedRows: Integer);
 begin
   ARowCount := MemDataset1.RecordCount;
 end;

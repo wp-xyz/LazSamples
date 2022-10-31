@@ -15,8 +15,11 @@ type
   TGridPrnGetCellTextEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
     ACol, ARow: Integer; var AText: String) of object;
 
+  TGridPrnGetColCountEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
+    var AColCount, AFixedCols: Integer) of object;
+
   TGridPrnGetRowCountEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
-    var ARowCount: Integer) of object;
+    var ARowCount, AFixedRows: Integer) of object;
 
   TGridPrnHeaderFooterSection = (hfsLeft, hfsCenter, hfsRight);
 
@@ -117,6 +120,7 @@ type
     FOnBeforeEndDoc: TNotifyEvent;
     FOnBeforePrint: TNotifyEvent;
     FOnGetCellText: TGridPrnGetCellTextEvent;
+    FOnGetColCount: TGridPrnGetColCountEvent;
     FOnGetRowCount: TGridPrnGetRowCountEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     FOnUpdatePreview: TNotifyEvent;
@@ -238,6 +242,7 @@ type
     property OnBeforePrint: TNotifyEvent read FOnBeforePrint write FOnBeforePrint;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
     property OnGetRowCount: TGridPrnGetRowCountEvent read FOnGetRowCount write FOnGetRowCount;
+    property OnGetColCount: TGridPrnGetColCountEvent read FOnGetColCount write FOnGetColCount;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
     property OnUpdatePreview: TNotifyEvent read FOnUpdatePreview write FOnUpdatePreview;
   end;
@@ -1594,10 +1599,12 @@ begin
   FGrid := AValue;
   FColCount := TGridAccess(FGrid).ColCount;
   FRowCount := TGridAccess(FGrid).RowCount;
-  if Assigned(FOnGetRowCount) then
-    FOnGetRowCount(self, FGrid, FRowCount);
   FFixedCols := TGridAccess(FGrid).FixedCols;
-  FFixedRows := TGridAccess(Fgrid).FixedRows;
+  FFixedRows := TGridAccess(FGrid).FixedRows;
+  if Assigned(FOnGetColCount) then
+    FOnGetColCount(Self, FGrid, FColCount, FFixedCols);
+  if Assigned(FOnGetRowCount) then
+    FOnGetRowCount(self, FGrid, FRowCount, FFixedRows);
   FPageNumber := 0;
   FPageCount := 0;
 end;
