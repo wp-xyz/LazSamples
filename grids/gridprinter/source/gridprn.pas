@@ -10,10 +10,19 @@ uses
 type
   TGridPrinter = class;  // forward declaration
 
+  TGridPrnDialog = (gpdNone, gpdPageSetup, gpdPrintDialog);
+
   TGridPrnGetCellTextEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
     ACol, ARow: Integer; var AText: String) of object;
 
+  TGridPrnGetRowCountEvent = procedure (Sender: TObject; AGrid: TCustomGrid;
+    var ARowCount: Integer) of object;
+
+  TGridPrnHeaderFooterSection = (hfsLeft, hfsCenter, hfsRight);
+
   TGridPrnOrder = (poRowsFirst, poColsFirst);
+
+  TGridPrnOutputDevice = (odPrinter, odPreview);
 
   TGridPrnMargins = class(TPersistent)
   private
@@ -34,8 +43,6 @@ type
     property Header: Double index 4 read GetMargin write SetMargin stored IsStoredMargin;
     property Footer: Double index 5 read GetMargin write SetMargin stored IsStoredMargin;
   end;
-
-  TGridPrnHeaderFooterSection = (hfsLeft, hfsCenter, hfsRight);
 
   TGridPrnHeaderFooter = class(TPersistent)
   private
@@ -84,9 +91,6 @@ type
 
   { TGridPrinter }
 
-  TGridPrnDialog = (gpdNone, gpdPageSetup, gpdPrintDialog);
-  TGridPrnOutputDevice = (odPrinter, odPreview);
-
   TGridPrinter = class(TComponent)
   private
     FBorderLineColor: Integer;
@@ -113,6 +117,7 @@ type
     FOnBeforeEndDoc: TNotifyEvent;
     FOnBeforePrint: TNotifyEvent;
     FOnGetCellText: TGridPrnGetCellTextEvent;
+    FOnGetRowCount: TGridPrnGetRowCountEvent;
     FOnPrepareCanvas: TOnPrepareCanvasEvent;
     FOnUpdatePreview: TNotifyEvent;
     function GetBorderLineWidthHor: Integer;
@@ -172,6 +177,7 @@ type
     procedure LayoutPagebreaks;
     procedure Measure(APageWidth, APageHeight, XDpi, YDpi: Integer);
     procedure NewPage;
+    procedure Notification(AComponent: TComponent; Operation: TOperation); override;
     procedure Prepare;
     procedure PrepareCanvas(ACanvas: TCanvas; ACol, ARow: Integer); virtual;
     procedure PrintByCols(ACanvas: TCanvas);
@@ -231,6 +237,7 @@ type
     property OnBeforeEndDoc: TNotifyEvent read FOnBeforeEndDoc write FOnBeforeEndDoc;
     property OnBeforePrint: TNotifyEvent read FOnBeforePrint write FOnBeforePrint;
     property OnGetCellText: TGridPrnGetCellTextEvent read FOnGetCellText write FOnGetCellText;
+    property OnGetRowCount: TGridPrnGetRowCountEvent read FOnGetRowCount write FOnGetRowCount;
     property OnPrepareCanvas: TOnPrepareCanvasEvent read FOnPrepareCanvas write FOnPrepareCanvas;
     property OnUpdatePreview: TNotifyEvent read FOnUpdatePreview write FOnUpdatePreview;
   end;
@@ -789,6 +796,17 @@ procedure TGridPrinter.NewPage;
 begin
   if FOutputDevice = odPrinter then
     Printer.NewPage;
+end;
+
+procedure TGridPrinter.Notification(AComponent: TComponent;
+  Operation: TOperation);
+begin
+  inherited;
+  if Operation = opRemove then
+  begin
+    if AComponent = FGrid then
+      FGrid := nil;
+  end;
 end;
 
 procedure TGridPrinter.Prepare;
@@ -1576,6 +1594,8 @@ begin
   FGrid := AValue;
   FColCount := TGridAccess(FGrid).ColCount;
   FRowCount := TGridAccess(FGrid).RowCount;
+  if Assigned(FOnGetRowCount) then
+    FOnGetRowCount(self, FGrid, FRowCount);
   FFixedCols := TGridAccess(FGrid).FixedCols;
   FFixedRows := TGridAccess(Fgrid).FixedRows;
   FPageNumber := 0;
