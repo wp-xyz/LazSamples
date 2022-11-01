@@ -53,6 +53,7 @@ begin
   BufDataset1.Open;
   for i := 1 to 100 do
     BufDataset1.AppendRecord(['Record ' + IntToStr(i), 100*i, Date()-i]);
+  BufDataset1.First;
 
   // Since the GridPrinter accesses the DBGrid assign it to the Grid property
   // only after the Dataset is ready and the DBGrid can display valid data.
