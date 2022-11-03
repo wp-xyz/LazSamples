@@ -66,6 +66,7 @@ procedure TForm1.ShellListView1Click(Sender: TObject);
 var
   filename: String;
   ext: String;
+  t: TDateTime;
 begin
   if ShellListView1.Selected = nil then
     exit;
@@ -75,7 +76,10 @@ begin
     exit;
   Image1.Picture.LoadFromFile(filename);
   Image2.Picture.Assign(Image1.Picture);
+  t := Now();
   BitmapGrayscale(Image2.Picture.Bitmap, seRed.Value, seGreen.Value, seBlue.Value);
+  t := Now() - t;
+  Caption := 'Grayscale conversion (' + FormatDateTime('s.zzz', t) + ' sec)';
 end;
 
 end.
