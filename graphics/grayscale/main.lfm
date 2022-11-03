@@ -1,0 +1,185 @@
+object Form1: TForm1
+  Left = 331
+  Height = 507
+  Top = 132
+  Width = 673
+  Caption = 'Grayscale conversion'
+  ClientHeight = 507
+  ClientWidth = 673
+  OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
+  object ShellListView1: TShellListView
+    Left = 315
+    Height = 507
+    Top = 0
+    Width = 358
+    Align = alClient
+    Color = clDefault
+    TabOrder = 0
+    OnClick = ShellListView1Click
+    ObjectTypes = [otNonFolders]
+    ShellTreeView = ShellTreeView1
+  end
+  object Splitter1: TSplitter
+    Left = 310
+    Height = 507
+    Top = 0
+    Width = 5
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 507
+    Top = 0
+    Width = 310
+    Align = alLeft
+    BevelOuter = bvNone
+    ClientHeight = 507
+    ClientWidth = 310
+    TabOrder = 2
+    object ShellTreeView1: TShellTreeView
+      Left = 0
+      Height = 275
+      Top = 0
+      Width = 310
+      Align = alClient
+      FileSortType = fstNone
+      TabOrder = 0
+      ObjectTypes = [otFolders]
+      ShellListView = ShellListView1
+    end
+    object Splitter2: TSplitter
+      Cursor = crVSplit
+      Left = 0
+      Height = 5
+      Top = 275
+      Width = 310
+      Align = alBottom
+      ResizeAnchor = akBottom
+    end
+    object Panel2: TPanel
+      Left = 0
+      Height = 141
+      Top = 280
+      Width = 310
+      Align = alBottom
+      BevelOuter = bvNone
+      ClientHeight = 141
+      ClientWidth = 310
+      TabOrder = 2
+      object Bevel1: TBevel
+        AnchorSideLeft.Control = Panel2
+        AnchorSideLeft.Side = asrCenter
+        Left = 153
+        Height = 50
+        Top = 8
+        Width = 4
+        Shape = bsSpacer
+      end
+      object Image1: TImage
+        AnchorSideLeft.Control = Panel2
+        AnchorSideTop.Control = Panel2
+        AnchorSideRight.Control = Bevel1
+        AnchorSideBottom.Control = Panel2
+        AnchorSideBottom.Side = asrBottom
+        Left = 0
+        Height = 141
+        Top = 0
+        Width = 153
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        Center = True
+        Proportional = True
+        StretchOutEnabled = False
+      end
+      object Image2: TImage
+        AnchorSideLeft.Control = Bevel1
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = Panel2
+        AnchorSideRight.Control = Panel2
+        AnchorSideRight.Side = asrBottom
+        AnchorSideBottom.Control = Panel2
+        AnchorSideBottom.Side = asrBottom
+        Left = 157
+        Height = 141
+        Top = 0
+        Width = 153
+        Anchors = [akTop, akLeft, akRight, akBottom]
+        Center = True
+        Proportional = True
+        StretchOutEnabled = False
+      end
+    end
+    object GroupBox1: TGroupBox
+      Left = 4
+      Height = 70
+      Top = 433
+      Width = 302
+      Align = alBottom
+      AutoSize = True
+      BorderSpacing.Top = 8
+      BorderSpacing.Around = 4
+      Caption = 'Filter factors'
+      ChildSizing.LeftRightSpacing = 6
+      ChildSizing.HorizontalSpacing = 12
+      ChildSizing.EnlargeHorizontal = crsHomogenousChildResize
+      ChildSizing.Layout = cclLeftToRightThenTopToBottom
+      ChildSizing.ControlsPerLine = 3
+      ClientHeight = 50
+      ClientWidth = 298
+      TabOrder = 3
+      object Label1: TLabel
+        Left = 8
+        Height = 15
+        Top = 4
+        Width = 87
+        BorderSpacing.Left = 8
+        BorderSpacing.Top = 4
+        Caption = 'Red'
+      end
+      object Label2: TLabel
+        Left = 107
+        Height = 15
+        Top = 4
+        Width = 87
+        Caption = 'Green'
+      end
+      object Label3: TLabel
+        Left = 206
+        Height = 15
+        Top = 4
+        Width = 86
+        Caption = 'Blue'
+      end
+      object seRed: TFloatSpinEdit
+        Left = 8
+        Height = 23
+        Top = 19
+        Width = 87
+        BorderSpacing.Bottom = 8
+        Increment = 0.01
+        OnChange = FilterChange
+        TabOrder = 0
+        Value = 0.3
+      end
+      object seGreen: TFloatSpinEdit
+        Left = 107
+        Height = 23
+        Top = 19
+        Width = 87
+        Increment = 0.01
+        OnChange = FilterChange
+        TabOrder = 1
+        Value = 0.59
+      end
+      object seBlue: TFloatSpinEdit
+        Left = 206
+        Height = 23
+        Top = 19
+        Width = 86
+        Increment = 0.01
+        OnChange = FilterChange
+        TabOrder = 2
+        Value = 0.11
+      end
+    end
+  end
+end
