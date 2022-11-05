@@ -1,0 +1,146 @@
+object MainForm: TMainForm
+  Left = 429
+  Height = 668
+  Top = 281
+  Width = 972
+  Caption = 'Famous People Database'
+  ClientHeight = 668
+  ClientWidth = 972
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '2.3.0.0'
+  object DBNavigator: TDBNavigator
+    Left = 8
+    Height = 25
+    Top = 8
+    Width = 241
+    BevelOuter = bvNone
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    ChildSizing.EnlargeHorizontal = crsScaleChilds
+    ChildSizing.EnlargeVertical = crsScaleChilds
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 100
+    ClientHeight = 25
+    ClientWidth = 241
+    Options = []
+    TabOrder = 0
+  end
+  object Grid: TDBGrid
+    Left = 0
+    Height = 629
+    Top = 39
+    Width = 972
+    Align = alClient
+    Color = clWindow
+    Columns = <>
+    DataSource = DataSource1
+    Options = [dgEditing, dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
+    TabOrder = 1
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 39
+    Top = 0
+    Width = 972
+    Align = alTop
+    AutoSize = True
+    BevelOuter = bvNone
+    ClientHeight = 39
+    ClientWidth = 972
+    TabOrder = 2
+    object ComboBox1: TComboBox
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = Panel1
+      AnchorSideRight.Control = Button1
+      Left = 8
+      Height = 23
+      Top = 8
+      Width = 848
+      Anchors = [akTop, akLeft, akRight]
+      BorderSpacing.Around = 8
+      DropDownCount = 32
+      ItemHeight = 15
+      Items.Strings = (
+        'SELECT * FROM Bestellungen'
+        'SELECT * FROM Bestellungen ORDER BY [Kunden-Code]'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] = ''ANTON'')'
+        'SELECT [Kunden-Code] FROM Bestellungen'
+        'SELECT [Kunden-Code], Lieferdatum FROM Bestellungen'
+        'SELECT [Kunden-Code], [Personal-Nr], Lieferdatum FROM Bestellungen ORDER BY [Personal-Nr]'
+        'SELECT [Kunden-Code], [Personal-Nr], Lieferdatum FROM Bestellungen ORDER BY [Personal-Nr] DESC'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] = ''VINET'')'
+        'SELECT * FROM Bestellungen WHERE ([Personal-Nr] >8)'
+        'SELECT * FROM Bestellungen WHERE ([Personal-Nr] >=8)'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] LIKE ''V%'')'
+        'SELECT * FROM Bestellungen WHERE ([Lieferdatum] =#1994-09-29#)'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] = ''VINET'') OR ([Kunden-Code] = ''VICTE'')'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] LIKE ''VI___'')'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] LIKE ''E[R,A]%[H,C]'')'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] LIKE ''[A-E]%[H,C]'')'
+        'SELECT * FROM Bestellungen WHERE ([Kunden-Code] LIKE ''![A-E]%[H,C]'')'
+      )
+      OnSelect = ComboBox1Select
+      TabOrder = 0
+    end
+    object Button1: TButton
+      AnchorSideTop.Control = Panel1
+      AnchorSideTop.Side = asrCenter
+      AnchorSideRight.Control = Panel1
+      AnchorSideRight.Side = asrBottom
+      Left = 864
+      Height = 25
+      Top = 7
+      Width = 100
+      Anchors = [akTop, akRight]
+      AutoSize = True
+      BorderSpacing.Left = 8
+      BorderSpacing.Right = 8
+      Caption = 'Execute query'
+      OnClick = Button1Click
+      TabOrder = 1
+    end
+  end
+  object ODBCConnection1: TODBCConnection
+    Connected = False
+    LoginPrompt = False
+    KeepConnection = True
+    Params.Strings = (
+      ''
+    )
+    Transaction = SQLTransaction1
+    Driver = 'Microsoft Access Driver (*.mdb)'
+    Left = 136
+    Top = 171
+  end
+  object SQLTransaction1: TSQLTransaction
+    Active = False
+    Action = caCommitRetaining
+    Database = ODBCConnection1
+    Left = 136
+    Top = 232
+  end
+  object SQLQuery1: TSQLQuery
+    PacketRecords = -1
+    FieldDefs = <>
+    Database = ODBCConnection1
+    Transaction = SQLTransaction1
+    SQL.Strings = (
+      'SELECT * FROM Resources'
+    )
+    Options = [sqoKeepOpenOnCommit, sqoAutoCommit]
+    Params = <>
+    Macros = <>
+    UpdateMode = upWhereAll
+    UsePrimaryKeyAsKey = False
+    Left = 304
+    Top = 171
+  end
+  object DataSource1: TDataSource
+    DataSet = SQLQuery1
+    Left = 400
+    Top = 171
+  end
+end
