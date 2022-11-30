@@ -9,6 +9,7 @@ object MainForm: TMainForm
   ClientHeight = 354
   ClientWidth = 274
   OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
   object btnWriteWAV: TButton
     AnchorSideTop.Control = btnClose
     AnchorSideRight.Control = btnClose
@@ -59,7 +60,6 @@ object MainForm: TMainForm
       Top = 0
       Width = 55
       Caption = 'Frequency'
-      Color = clDefault
       ParentColor = False
     end
     object lblFrequencyValue: TLabel
@@ -75,7 +75,6 @@ object MainForm: TMainForm
       Anchors = [akTop, akRight]
       BorderSpacing.Left = 8
       Caption = '1000 Hz'
-      Color = clDefault
       ParentColor = False
     end
     object rgChannels: TRadioGroup
@@ -152,7 +151,6 @@ object MainForm: TMainForm
       Width = 56
       BorderSpacing.Top = 16
       Caption = 'Amplitude'
-      Color = clDefault
       ParentColor = False
     end
     object tbAmplitude: TTrackBar
@@ -184,7 +182,6 @@ object MainForm: TMainForm
       Anchors = [akTop, akRight]
       BorderSpacing.Left = 8
       Caption = '100 %'
-      Color = clDefault
       ParentColor = False
     end
     object lblDuration: TLabel

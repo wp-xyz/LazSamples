@@ -133,10 +133,12 @@ var
     case AWaveForm of
       wfSine : y := Ampl*sin(phi);
       wfTri  : if phi <= phiDC then
-                 y := 2*Ampl*phi/phiDC - Ampl else
+                 y := 2*Ampl*phi/phiDC - Ampl
+               else
                  y := Ampl*(two_pi+phiDC-phi*2)/(two_pi-phiDC);
       wfRect : if phi <= phiDC then
-                 y := Ampl else
+                 y := Ampl
+               else
                  y := -Ampl;
     end;
     value := round(y*MAX_WAV);
@@ -163,7 +165,7 @@ begin
 
   omega := two_pi * Frequency;
   phiDC := ADutyCycle * two_pi;
-  n := round(ADuration * ASampleRate);
+  n := round(ADuration * ASampleRate);           // Number of samples
 
   for i:=0 to n-1 do begin
     t := ADuration * i / n;                      // time in s
@@ -188,7 +190,7 @@ begin
 
   // Complete missing header data
   AStream.Position := p - 4;
-  AStream.WriteDWord(n * numch * BITS_PER_SAMPLE); // Size of data part
+  AStream.WriteDWord(n * numch * BITS_PER_SAMPLE div 8); // Size of data part
   AStream.Position := 4;
   AStream.WriteDWord(AStream.Size - 8);  // File size - RIFF chunk size
 end;
