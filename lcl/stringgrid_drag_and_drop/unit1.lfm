@@ -1,0 +1,84 @@
+object Form1: TForm1
+  Left = 711
+  Height = 518
+  Top = 254
+  Width = 696
+  Caption = 'Form1'
+  ClientHeight = 518
+  ClientWidth = 696
+  OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
+  object StringGrid1: TStringGrid
+    Left = 6
+    Height = 485
+    Top = 27
+    Width = 684
+    Align = alClient
+    BorderSpacing.Around = 6
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing, goSmoothScroll]
+    TabOrder = 0
+    OnDragDrop = StringGrid1DragDrop
+    OnDragOver = StringGrid1DragOver
+    OnMouseDown = StringGrid1MouseDown
+    Cells = (
+      16
+      1
+      1
+      'wer'
+      1
+      2
+      'xvx'
+      1
+      3
+      '43'
+      1
+      4
+      'er676'
+      2
+      1
+      'as'
+      2
+      2
+      'yxcvd'
+      2
+      3
+      'xxcv'
+      2
+      4
+      '545'
+      3
+      1
+      '45906'
+      3
+      2
+      '4564'
+      3
+      3
+      'rtz'
+      3
+      4
+      'fgh'
+      4
+      1
+      '90ß'
+      4
+      2
+      'zizjh'
+      4
+      3
+      '5'
+      4
+      4
+      'bvnvn'
+    )
+  end
+  object Label1: TLabel
+    Left = 6
+    Height = 15
+    Top = 6
+    Width = 684
+    Align = alTop
+    BorderSpacing.Around = 6
+    Caption = 'ALT + Left mouse --> drag and drop of cells. CTRL --> copy, no CTRL --> move'
+  end
+end
