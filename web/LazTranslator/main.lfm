@@ -1,0 +1,133 @@
+object MainForm: TMainForm
+  Left = 256
+  Height = 512
+  Top = 130
+  Width = 692
+  Caption = 'Lazarus Translator'
+  ClientHeight = 512
+  ClientWidth = 692
+  OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
+  object SrcMemo: TMemo
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = cbSrc
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = btnTranslate
+    Left = 8
+    Height = 180
+    Top = 56
+    Width = 676
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 8
+    ScrollBars = ssAutoBoth
+    TabOrder = 0
+  end
+  object DestMemo: TMemo
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = cbDest
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    AnchorSideBottom.Control = Owner
+    AnchorSideBottom.Side = asrBottom
+    Left = 8
+    Height = 179
+    Top = 325
+    Width = 676
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 8
+    ScrollBars = ssAutoBoth
+    TabOrder = 1
+  end
+  object cbSrc: TComboBox
+    AnchorSideLeft.Control = lblSrc
+    AnchorSideTop.Control = lblSrc
+    AnchorSideTop.Side = asrBottom
+    Left = 8
+    Height = 23
+    Top = 25
+    Width = 260
+    BorderSpacing.Top = 2
+    DropDownCount = 32
+    ItemHeight = 15
+    TabOrder = 2
+    Text = 'cbSrc'
+  end
+  object lblSrc: TLabel
+    AnchorSideLeft.Control = Owner
+    AnchorSideTop.Control = Owner
+    Left = 8
+    Height = 15
+    Top = 8
+    Width = 88
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    Caption = 'Source language'
+  end
+  object lblDest: TLabel
+    AnchorSideLeft.Control = lblSrc
+    AnchorSideTop.Control = btnTranslate
+    AnchorSideTop.Side = asrBottom
+    Left = 8
+    Height = 15
+    Top = 277
+    Width = 112
+    BorderSpacing.Top = 8
+    Caption = 'Destination language'
+  end
+  object cbDest: TComboBox
+    AnchorSideLeft.Control = lblSrc
+    AnchorSideTop.Control = lblDest
+    AnchorSideTop.Side = asrBottom
+    AnchorSideRight.Control = cbSrc
+    AnchorSideRight.Side = asrBottom
+    Left = 8
+    Height = 23
+    Top = 294
+    Width = 260
+    Anchors = [akTop, akLeft, akRight]
+    BorderSpacing.Top = 2
+    DropDownCount = 32
+    ItemHeight = 15
+    TabOrder = 3
+    Text = 'cbDest'
+  end
+  object btnTranslate: TButton
+    AnchorSideLeft.Control = Owner
+    AnchorSideLeft.Side = asrCenter
+    AnchorSideTop.Control = Owner
+    AnchorSideTop.Side = asrCenter
+    Left = 310
+    Height = 25
+    Top = 244
+    Width = 73
+    AutoSize = True
+    Caption = 'Translate'
+    OnClick = btnTranslateClick
+    TabOrder = 4
+  end
+  object Button1: TButton
+    AnchorSideTop.Control = cbSrc
+    AnchorSideTop.Side = asrCenter
+    AnchorSideRight.Control = Owner
+    AnchorSideRight.Side = asrBottom
+    Left = 616
+    Height = 25
+    Top = 24
+    Width = 68
+    Anchors = [akTop, akRight]
+    AutoSize = True
+    BorderSpacing.Right = 8
+    Caption = 'About...'
+    OnClick = Button1Click
+    TabOrder = 5
+  end
+end
