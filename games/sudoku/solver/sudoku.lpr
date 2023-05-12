@@ -38,26 +38,68 @@ const
   Board2Str = '003070061,000000080,000000023,000700004,000200000,506000009,900040005,080300000,200008000';
 }
 
+procedure WriteHelp;
+begin
+  WriteLn('Syntax: sudoku SUDOKU-STRING [-all]');
+  WriteLn('  SUDOKU-STRING: String of 0..9 where 0 is an empty cell.');
+  WriteLn('                 Rows can be separated by comma.');
+  WriteLn('                 If SUDOKU-STRING begins with "@" is will be interpreted');
+  WriteLn('                 as the name of a file with the SODUKU-STRING to be used.');
+  WriteLn('  -all           Get all solutions');
+  Halt;
+end;
+
+function ReadSudokuFile(AFileName: String): String;
+var
+  F: TextFile;
+  s: String;
+begin
+  Result := '';
+  if not FileExists(AFileName) then
+  begin
+    WriteLn('File ' + AFileName + ' not found.');
+    Halt;
+  end;
+
+  AssignFile(F, AFileName);
+  try
+    Reset(F);
+    while not EoF(F) do
+    begin
+      ReadLn(F, s);
+      if (s = '') or (s[1] = '#') then
+        Continue;
+      Result := Result + s;
+    end;
+  finally
+    CloseFile(F);
+  end;
+end;
+
 var
   s: TSudoku = nil;
   solved: Boolean = false;
+  board: TBoard;
+  sudokuStr: String;
   all: Boolean;
   i: Integer;
 begin
   if ParamCount = 0 then
-  begin
-    WriteLn('Syntax: sudoku SUDOKU-STRING [-all]');
-    WriteLn('  SUDOKU-STRING: String of 0..9 where 0 is an empty cell.');
-    WriteLn('                 Rows can be separated by comma.');
-    WriteLn('  -all           Get all solutions');
-    Halt;
-  end;
+    WriteHelp;
 
   // Find all solutions
   all := (ParamCount > 1) and (Lowercase(ParamStr(2)) = '-all');
 
   try
-    s := TSudoku.Create(BoardFromStr(ParamStr(1)));
+    sudokuStr := ParamStr(1);
+    if sudokuStr = '' then
+      WriteHelp;
+    if sudokuStr[1] = '@' then
+      sudokuStr := ReadSudokuFile(Copy(sudokuStr, 2));
+
+    board := BoardFromStr(sudokuStr);
+
+    s := TSudoku.Create(board);
     try
       WriteLn('Sudoku to be solved');
       WriteLn(s.Board.ToNiceString);

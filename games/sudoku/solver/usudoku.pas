@@ -62,7 +62,7 @@ var
 var
   i, i1, i2: Integer;
 begin
-  Result.Clear;
+  Result{%H-}.Clear;
 
   if ABoardStr = '' then
     exit;
@@ -97,6 +97,8 @@ begin
           Result[r, c] := ord(ABoardStr[i]) - ord('0');
           inc(c);
         end;
+      #13, #10:
+        ; // Skip
       else
         InvalidSudokuError('Invalid character "' + ABoardStr[i] + '" at position ' + IntToStr(i) + ' of the Sudoku input string.');
     end;
