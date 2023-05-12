@@ -80,9 +80,9 @@ begin
   for i := i1 to i2 do
   begin
     case ABoardStr[i] of
-      ',':
+      ',', ';':
         NewRow;
-      '0':
+      '0', '.':
         begin
           if c = 9 then
             NewRow;
@@ -97,7 +97,7 @@ begin
           Result[r, c] := ord(ABoardStr[i]) - ord('0');
           inc(c);
         end;
-      #13, #10:
+      #13, #10, '|', '-', '+', '*':
         ; // Skip
       else
         InvalidSudokuError('Invalid character "' + ABoardStr[i] + '" at position ' + IntToStr(i) + ' of the Sudoku input string.');

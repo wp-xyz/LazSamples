@@ -69,6 +69,9 @@ begin
       ReadLn(F, s);
       if (s = '') or (s[1] = '#') then
         Continue;
+      if s[1] = ' ' then Delete(s, 1, 1);  // This is typical of "simple sudoku" .ss files
+      if (s = '') then
+        Continue;
       Result := Result + s;
     end;
   finally
