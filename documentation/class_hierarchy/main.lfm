@@ -1,0 +1,98 @@
+object MainForm: TMainForm
+  Left = 353
+  Height = 542
+  Top = 132
+  Width = 1199
+  Caption = 'Class Inheritance'
+  ClientHeight = 542
+  ClientWidth = 1199
+  OnCreate = FormCreate
+  LCLVersion = '2.3.0.0'
+  object LvlGraphControl1: TLvlGraphControl
+    Left = 8
+    Height = 486
+    Top = 8
+    Width = 1183
+    Align = alClient
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    BorderSpacing.Right = 8
+    BorderSpacing.Bottom = 8
+    Color = clWhite
+    NodeStyle.DefaultImageIndex = -1
+    NodeStyle.Coloring = lgncRGB
+    ParentShowHint = False
+    TabOrder = 0
+    TabStop = False
+  end
+  object Panel1: TPanel
+    Left = 6
+    Height = 25
+    Top = 511
+    Width = 1187
+    Align = alBottom
+    AutoSize = True
+    BorderSpacing.Around = 6
+    BevelOuter = bvNone
+    ClientHeight = 25
+    ClientWidth = 1187
+    ParentBackground = False
+    TabOrder = 1
+    object Label1: TLabel
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = Button1
+      AnchorSideTop.Side = asrCenter
+      Left = 0
+      Height = 15
+      Top = 5
+      Width = 567
+      Caption = 'If you do not see any component icons navigate to your Lazarus installation folder and restart the appliation'
+    end
+    object Button1: TButton
+      AnchorSideLeft.Control = Label1
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = Panel1
+      Left = 575
+      Height = 25
+      Top = 0
+      Width = 35
+      AutoSize = True
+      BorderSpacing.Left = 8
+      Caption = '...'
+      OnClick = Button1Click
+      TabOrder = 0
+    end
+  end
+  object Bevel1: TBevel
+    Left = 0
+    Height = 3
+    Top = 502
+    Width = 1199
+    Align = alBottom
+    Shape = bsBottomLine
+  end
+  object ImageList1: TImageList
+    Left = 260
+    Top = 100
+    Bitmap = {
+      4C7A0100000010000000100000001A0200000000000078DA6360185C4048C859
+      4244C4D9D1C1E14C5B70F0B55B6161D76F39399D69078AB902E5E418182C70EA
+      959088F4B2B03875282AEAE69BEEEE8F7FE6CEFDF97FFEFC5FFF7B7B3FFE018A
+      BDB7B43C7942426292172EFDAAAAADA1A1A1F7FE8786DEFF1F1C7CF35F7EFE93
+      7FB9B94FFEBBB9DDFA676A7AFF9F91D1BDFF2035D8F472CB327019FAA5D56764
+      BCFDDFD0F0FF7F49C937A01977FF1B193DFEAFA3F3EDBF96D6FFFF7A7A6FB1EA
+      570E67EAB46AE3FEEC5393F43B2EEEC9FFCACA5F603362621E83F580F46A6BFF
+      FC6F68F0E49FBA6A7330BA7EA5308655E9BB82FF074E77FC679F54F2DF277CEF
+      FFA8E8BBFF03036FFD37347CF4DFC4F8E17F5FD773FF9B93E6FF9A161DB2A5DD
+      572D34DA548C0DAE3F946155FBBDF6FF20DC78BDF6BFC70CA5FF6B3323FFD745
+      F4FE6F4C98F9FFECFCB9FFFF1C5BFCFFCBAEC9FF1FCFC9FD7FB1DAE97F9B8FEA
+      4A64FD0DD7AAFFC3CCF09FAFFBFF7AB3D7FF8F8B72FF3F9D12FFFF4677D8FF9B
+      3D91FF6FB7FAFE7BDDEDFDFFF304FFFFADDE2AABE0F166C564A59DCEB6C86D9A
+      FCC9B49D813F81F4BFDBEDFEFFFF6F6E80E3DB758EFFFFCF0C856364FD20C0CA
+      C7C02AA8CDA022E7C91C69DCC8B8FC62ADCBCF77F332FFFEDB5887A2FFD7D4A0
+      FF2F3B3D7F01DDBF145F3A6CF554956AF3514B3F536AB3E14E47E0AD8BE5D63F
+      AED7D89FDB926A34BBCD5B3528D240828D98F4ECA422C4EBAC266CE2AC26E4EB
+      AC2AA4A923C1C33C98F21B00643A1D14
+    }
+  end
+end
