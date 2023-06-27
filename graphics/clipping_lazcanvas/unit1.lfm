@@ -1,0 +1,197 @@
+object Form1: TForm1
+  Left = 261
+  Height = 526
+  Top = 130
+  Width = 517
+  Caption = 'This code works correctly on with FPC 3.2.3+ and Laz 2.2.6+'
+  ClientHeight = 526
+  ClientWidth = 517
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  LCLVersion = '3.99.0.0'
+  object PaintBox1: TPaintBox
+    Left = 0
+    Height = 359
+    Top = 0
+    Width = 517
+    Align = alClient
+    OnPaint = PaintBox1Paint
+  end
+  object Panel1: TPanel
+    Left = 0
+    Height = 167
+    Top = 359
+    Width = 517
+    Align = alBottom
+    AutoSize = True
+    BevelOuter = bvNone
+    ClientHeight = 167
+    ClientWidth = 517
+    TabOrder = 0
+    object GroupBox1: TGroupBox
+      AnchorSideLeft.Control = Panel1
+      AnchorSideTop.Control = Panel1
+      AnchorSideBottom.Control = GroupBox2
+      AnchorSideBottom.Side = asrBottom
+      Left = 8
+      Height = 151
+      Top = 8
+      Width = 150
+      Anchors = [akTop, akLeft, akBottom]
+      AutoSize = True
+      BorderSpacing.Left = 8
+      BorderSpacing.Top = 8
+      BorderSpacing.Right = 8
+      Caption = 'Clipping region'
+      ClientHeight = 131
+      ClientWidth = 146
+      TabOrder = 0
+      object ComboBox1: TComboBox
+        AnchorSideLeft.Control = GroupBox1
+        AnchorSideTop.Control = GroupBox1
+        AnchorSideRight.Control = GroupBox1
+        AnchorSideRight.Side = asrBottom
+        Left = 8
+        Height = 23
+        Top = 4
+        Width = 130
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 8
+        BorderSpacing.Top = 4
+        BorderSpacing.Right = 8
+        ItemHeight = 15
+        ItemIndex = 2
+        Items.Strings = (
+          'no clipping'
+          'rectangular region'
+          'elliptic region'
+          'polygon region'
+        )
+        OnChange = RedrawHandler
+        Style = csDropDownList
+        TabOrder = 0
+        Text = 'elliptic region'
+      end
+      object CheckBox1: TCheckBox
+        AnchorSideLeft.Control = GroupBox1
+        AnchorSideTop.Control = ComboBox1
+        AnchorSideTop.Side = asrBottom
+        Left = 8
+        Height = 19
+        Top = 35
+        Width = 130
+        BorderSpacing.Around = 8
+        Caption = 'Show clipping region'
+        Checked = True
+        OnChange = RedrawHandler
+        State = cbChecked
+        TabOrder = 1
+      end
+    end
+    object GroupBox2: TGroupBox
+      AnchorSideLeft.Control = GroupBox1
+      AnchorSideLeft.Side = asrBottom
+      AnchorSideTop.Control = Panel1
+      Left = 174
+      Height = 151
+      Top = 8
+      Width = 210
+      AutoSize = True
+      BorderSpacing.Left = 8
+      BorderSpacing.Around = 8
+      Caption = 'Polygon to be clipped'
+      ClientHeight = 131
+      ClientWidth = 206
+      TabOrder = 1
+      object CheckBox2: TCheckBox
+        AnchorSideLeft.Control = GroupBox2
+        AnchorSideTop.Control = ComboBox2
+        AnchorSideTop.Side = asrBottom
+        Left = 8
+        Height = 19
+        Top = 35
+        Width = 190
+        BorderSpacing.Around = 8
+        Caption = 'Show unclipped polygon outline'
+        Checked = True
+        OnChange = RedrawHandler
+        State = cbChecked
+        TabOrder = 0
+      end
+      object Label1: TLabel
+        AnchorSideLeft.Control = CheckBox2
+        AnchorSideTop.Control = CheckBox2
+        AnchorSideTop.Side = asrBottom
+        Left = 8
+        Height = 15
+        Top = 66
+        Width = 94
+        BorderSpacing.Top = 12
+        Caption = 'Polygon fill mode'
+        ParentColor = False
+      end
+      object RadioButton1: TRadioButton
+        AnchorSideLeft.Control = Label1
+        AnchorSideTop.Control = Label1
+        AnchorSideTop.Side = asrBottom
+        Left = 24
+        Height = 19
+        Top = 85
+        Width = 92
+        BorderSpacing.Left = 16
+        BorderSpacing.Top = 4
+        Caption = 'even-odd rule'
+        Checked = True
+        OnChange = RedrawHandler
+        TabOrder = 1
+        TabStop = True
+      end
+      object RadioButton2: TRadioButton
+        AnchorSideLeft.Control = RadioButton1
+        AnchorSideTop.Control = RadioButton1
+        AnchorSideTop.Side = asrBottom
+        Left = 24
+        Height = 19
+        Top = 104
+        Width = 135
+        BorderSpacing.Bottom = 8
+        Caption = 'non-zero winding rule'
+        OnChange = RedrawHandler
+        TabOrder = 2
+      end
+      object ComboBox2: TComboBox
+        AnchorSideLeft.Control = GroupBox2
+        AnchorSideTop.Control = GroupBox2
+        AnchorSideRight.Control = GroupBox2
+        AnchorSideRight.Side = asrBottom
+        Left = 8
+        Height = 23
+        Top = 4
+        Width = 190
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 8
+        BorderSpacing.Top = 4
+        BorderSpacing.Right = 8
+        DropDownCount = 24
+        ItemHeight = 15
+        ItemIndex = 0
+        Items.Strings = (
+          'Solid'
+          'Clear'
+          'Horizontal'
+          'Vertical'
+          'FDiagonal'
+          'BDiagonal'
+          'Cross'
+          'DiagCross'
+          'Image'
+          'Pattern'
+        )
+        OnChange = RedrawHandler
+        Style = csDropDownList
+        TabOrder = 3
+        Text = 'Solid'
+      end
+    end
+  end
+end
