@@ -1,0 +1,79 @@
+object Form1: TForm1
+  Left = 451
+  Height = 430
+  Top = 176
+  Width = 720
+  Caption = 'Form1'
+  ClientHeight = 430
+  ClientWidth = 720
+  OnCreate = FormCreate
+  LCLVersion = '3.99.0.0'
+  object Chart1: TChart
+    Left = 0
+    Height = 430
+    Top = 0
+    Width = 720
+    AxisList = <    
+      item
+        Grid.Color = clSilver
+        Grid.Style = psSolid
+        Marks.Format = '%0:.0n'
+        Marks.LabelBrush.Style = bsClear
+        Marks.Style = smsCustom
+        Minors = <>
+        Title.LabelFont.Orientation = 900
+        Title.LabelBrush.Style = bsClear
+        Transformations = LeftAxisTransformations
+      end    
+      item
+        Grid.Color = clSilver
+        Grid.Style = psSolid
+        Alignment = calBottom
+        Marks.Distance = 10
+        Marks.Format = '%.0n'
+        Marks.LabelBrush.Style = bsClear
+        Marks.Style = smsCustom
+        Minors = <>
+        Range.Max = 10000
+        Range.Min = 100
+        Range.UseMax = True
+        Range.UseMin = True
+        Title.LabelBrush.Style = bsClear
+        Transformations = LeftAxisTransformations
+      end>
+    Title.Text.Strings = (
+      'TAChart'
+    )
+    Align = alClient
+    object Chart1LineSeries1: TLineSeries
+      Pointer.Visible = True
+      ShowPoints = True
+    end
+  end
+  object LeftAxisTransformations: TChartAxisTransformations
+    Left = 120
+    Top = 120
+    object LeftAxisLogTransform: TLogarithmAxisTransform
+      Base = 10
+    end
+  end
+  object BottomAxisTransformations: TChartAxisTransformations
+    Left = 368
+    Top = 336
+    object BottomAxisLogTransform: TLogarithmAxisTransform
+      Base = 10
+    end
+  end
+  object MajorMarksChartSource: TListChartSource
+    Left = 368
+    Top = 56
+  end
+  object xMinorMarksSource: TListChartSource
+    Left = 368
+    Top = 120
+  end
+  object yMinorMarksSource: TListChartSource
+    Left = 368
+    Top = 192
+  end
+end
