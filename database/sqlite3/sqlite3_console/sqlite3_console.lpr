@@ -10,6 +10,7 @@ var
   SQLiteConn: TSQLite3Connection;
   Transaction: TSQLTransaction;
   SQLQuery: TSQLQuery;
+  fields: TStrings;
 
   function RandomString(ALen: Integer): String;
   var
@@ -26,7 +27,7 @@ begin
   fn := GetCurrentDir + '/test.db';
   DeleteFile(fn);  // uncomment to begin with new empty db
 
-  { Set up databse components }
+  { Setup database components }
   SQLiteConn := TSQLite3Connection.Create(nil);
   SQLiteConn.DatabaseName := fn;
   Transaction := TSQLTransaction.Create(SQLiteConn);
@@ -45,6 +46,16 @@ begin
   ')';
   SQLQuery.ExecSQL;
   Transaction.Commit;
+
+  { List available fields }
+  fields := TStringList.Create;
+  try
+    SQLiteConn.GetFieldNames('tbl_data', fields);
+    WriteLn('Fields: ', fields.CommaText);
+    WriteLn;
+  finally
+    fields.Free;
+  end;
 
   { Add three records }
   SQLQuery.SQL.Text := 'INSERT INTO tbl_data (StringData, IntegerData) VALUES (:StringData, :IntegerData);';
