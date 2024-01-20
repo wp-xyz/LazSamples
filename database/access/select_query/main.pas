@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls, ComCtrls, DBGrids, DbCtrls, db, sqldb, odbcconn;
+  StdCtrls, ComCtrls, DBGrids, DbCtrls, db, sqldb, odbcconn, odbcsqldyn;
 type
 
   { TMainForm }
@@ -41,67 +41,73 @@ implementation
 uses
   LCLType, LazFileUtils;
 
-
 const
-//  DB_NAME = '.\northwind.mdb';            // Access 97 file format
   DB_NAME = '.\test_data.mdb';
 
 
-{ Code to create a new, empty Access database file }
+{-------------------------------------------------------------------------------
+  Code to create a new, empty Access database file
+-------------------------------------------------------------------------------}
 
 const
    ODBC_ADD_DSN=1;
+   { just for reference...
    ODBC_CONFIG_DSN=2;
    ODBC_REMOVE_DSN=3;
    ODBC_ADD_SYS_DSN=4;
    ODBC_CONFIG_SYS_DSN=5;
    ODBC_REMOVE_SYS_DSN=6;
-   ODBC_REMOVE_DEFAULT_DSN=7;
+   ODBC_REMOVE_DEFAULT_DSN=7; }
 
 function SQLConfigDataSource(hwndParent: Integer; fRequest: Integer;
   lpszDriverString: PChar; lpszAttributes: PChar): Integer; stdcall;
   external 'odbccp32.dll';
 
 function SQLInstallerError(iError: integer; pfErrorCode: PInteger;
-  lpszErrorMsg: string; cbErrorMsgMax: integer; pcbErrorMsg: PInteger): integer; stdcall;
+  lpszErrorMsg: String; cbErrorMsgMax: integer; pcbErrorMsg: PInteger): integer; stdcall;
   external 'odbccp32.dll';
 
-function CreateAccessDatabase(DatabaseFile: string): boolean;
+procedure CreateAccessDatabase(DatabaseFile: string);
 var
-  DBPChar: PChar;
-  Driver: PChar;
-  ErrorCode, ResizeErrorMessage: integer;
-  ErrorMessage: PChar;
+  cmd: String;
+  driver: String;
+  errCode, errMsgLength: DWord;
+  errMsg: String;
   retCode: integer;
+  ext: String;
 begin
-//  driver := 'Microsoft Access Driver (*.mdb)';
+  ext := Lowercase(ExtractFileExt(DatabaseFile));
+
   driver := 'Microsoft Access Driver (*.mdb, *.accdb)';
-  DBPChar:=PChar('CREATE_DBV4="'+DatabaseFile+'"');
-  retCode := SQLConfigDataSource(Hwnd(nil), ODBC_ADD_DSN, Driver, DBPChar);
-  if retCode<>0 then
+  { With this driver,
+    CREATE_DB/CREATE_DBV12 will create an .accdb format database;
+    CREATE_DBV4 will create an .mdb format database
+    http://stackoverflow.com/questions/9205633/how-do-i-specify-the-odbc-access-driver-format-when-creating-the-database
+  }
+  if ext = '.mdb' then
+    cmd := 'CREATE_DBV4="' + DatabaseFile + '"'
+  else if ext = '.accdb' then
+    cmd := 'CREATE_DBV12="' + DatabaseFile + '"'
+  else
+    raise Exception.Create('Invalid database file extension.');
+
+  retCode := SQLConfigDataSource(0, ODBC_ADD_DSN, PChar(driver), PChar(cmd));
+  if not (retCode in [SQL_SUCCESS, SQL_SUCCESS_WITH_INFO]) then
   begin
     //try alternate driver
-    Driver := 'Microsoft Access Driver (*.md, *.accdb)';
-    DBPChar:=PChar('CREATE_DB="'+DatabaseFile+'"');
-    retCode := SQLConfigDataSource(Hwnd(nil), ODBC_ADD_DSN, Driver, DBPChar);
+    driver := 'Microsoft Access Driver (*.mdb)';
+    cmd := 'CREATE_DB="' + DatabaseFile + '"';
+    retCode := SQLConfigDataSource(0, ODBC_ADD_DSN, PChar(driver), PChar(cmd));
   end;
-  if retCode=0 then
+
+  if not (retCode in [SQL_SUCCESS, SQL_SUCCESS_WITH_INFO]) then
   begin
-    result:=true;
-  end
-  else
-  begin
-    result:=false;
-    ErrorCode:=0;
-    ResizeErrorMessage:=0;
-    // todo: verify how the DLL is called - use pointers?; has not been tested.
-    GetMem(ErrorMessage,512);
-    try
-      SQLInstallerError(1, @ErrorCode, ErrorMessage, SizeOf(ErrorMessage), @ResizeErrorMessage);
-    finally
-      FreeMem(ErrorMessage);
-    end;
-    raise Exception.CreateFmt('Error creating Access database: %s', [ErrorMessage]);
+    errCode := 0;
+    errMsgLength := 0;
+    SetLength(errMsg, SQL_MAX_MESSAGE_LENGTH);
+    SQLInstallerError(1, @errCode, PChar(errMsg), Length(errMsg), @errMsgLength);
+    SetLength(errMsg, errMsgLength);
+    raise Exception.CreateFmt('Error creating Access database: %s', [errMsg]);
   end;
 end;
 
@@ -122,7 +128,7 @@ begin
     end;
 
     // Connection
-    ODBCConnection1.Driver := 'Microsoft Access Driver (*.mdb)';
+    ODBCConnection1.Driver := 'Microsoft Access Driver (*.mdb, *.accdb)';
     ODBCConnection1.Params.Clear;
     ODBCConnection1.Params.Add('DBQ=' + Application.Location + DB_NAME);
     ODBCConnection1.Connected := true;

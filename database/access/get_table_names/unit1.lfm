@@ -6,8 +6,8 @@ object Form1: TForm1
   Caption = 'Form1'
   ClientHeight = 401
   ClientWidth = 899
+  LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
-  LCLVersion = '2.1.0.0'
   object DBGrid2: TDBGrid
     AnchorSideLeft.Control = Splitter2
     AnchorSideTop.Control = DBNavigator2
@@ -62,8 +62,8 @@ object Form1: TForm1
     BorderSpacing.Top = 6
     BorderSpacing.Bottom = 6
     ItemHeight = 0
-    OnClick = ListBox1Click
     TabOrder = 2
+    OnClick = ListBox1Click
   end
   object Splitter2: TSplitter
     Left = 195
@@ -94,6 +94,7 @@ object Form1: TForm1
       ''
     )
     Params = <>
+    Macros = <>
     Left = 312
     Top = 160
   end

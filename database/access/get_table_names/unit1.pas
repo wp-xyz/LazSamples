@@ -60,7 +60,7 @@ begin
   dbName := Application.Location + 'data.mdb';
 
   // connection
-  ODBCConnection1.Driver:= 'Microsoft Access Driver (*.mdb)';
+  ODBCConnection1.Driver:= 'Microsoft Access Driver (*.mdb, *.accdb)';
   ODBCConnection1.Params.Text := 'DBQ=' + dbName;
   ODBCConnection1.Connected:= True;
   ODBCConnection1.KeepConnection := True;

@@ -2,10 +2,10 @@ object MainForm: TMainForm
   Left = 429
   Height = 536
   Top = 164
-  Width = 957
+  Width = 1083
   Caption = 'Famous People Database'
   ClientHeight = 536
-  ClientWidth = 957
+  ClientWidth = 1083
   LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
@@ -32,7 +32,7 @@ object MainForm: TMainForm
     Left = 303
     Height = 536
     Top = 0
-    Width = 654
+    Width = 780
     Align = alClient
     Color = clWindow
     Columns = <>
