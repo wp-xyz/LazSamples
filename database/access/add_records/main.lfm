@@ -1,0 +1,240 @@
+object MainForm: TMainForm
+  Left = 429
+  Height = 536
+  Top = 164
+  Width = 957
+  Caption = 'Famous People Database'
+  ClientHeight = 536
+  ClientWidth = 957
+  LCLVersion = '3.99.0.0'
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  object DBNavigator: TDBNavigator
+    Left = 8
+    Height = 25
+    Top = 8
+    Width = 241
+    BevelOuter = bvNone
+    BorderSpacing.Left = 8
+    BorderSpacing.Top = 8
+    ChildSizing.EnlargeHorizontal = crsScaleChilds
+    ChildSizing.EnlargeVertical = crsScaleChilds
+    ChildSizing.ShrinkHorizontal = crsScaleChilds
+    ChildSizing.ShrinkVertical = crsScaleChilds
+    ChildSizing.Layout = cclLeftToRightThenTopToBottom
+    ChildSizing.ControlsPerLine = 100
+    ClientHeight = 25
+    ClientWidth = 241
+    Options = []
+    TabOrder = 0
+  end
+  object Grid: TDBGrid
+    Left = 303
+    Height = 536
+    Top = 0
+    Width = 654
+    Align = alClient
+    Color = clWindow
+    Columns = <>
+    DataSource = DataSource1
+    Options = [dgTitles, dgIndicator, dgColumnResize, dgColumnMove, dgColLines, dgRowLines, dgTabs, dgAlwaysShowSelection, dgConfirmDelete, dgCancelOnExit, dgThumbTracking]
+    TabOrder = 1
+  end
+  object Panel2: TPanel
+    Left = 8
+    Height = 520
+    Top = 8
+    Width = 287
+    Align = alLeft
+    AutoSize = True
+    BorderSpacing.Around = 8
+    BevelOuter = bvNone
+    ClientHeight = 520
+    ClientWidth = 287
+    TabOrder = 2
+    object GroupBox1: TGroupBox
+      AnchorSideLeft.Control = Panel2
+      AnchorSideTop.Control = Panel2
+      AnchorSideRight.Control = Panel2
+      AnchorSideRight.Side = asrBottom
+      Left = 0
+      Height = 163
+      Top = 0
+      Width = 287
+      Anchors = [akTop, akLeft, akRight]
+      AutoSize = True
+      Caption = 'Database Record Editor'
+      ClientHeight = 143
+      ClientWidth = 283
+      TabOrder = 0
+      object Label1: TLabel
+        AnchorSideLeft.Control = GroupBox1
+        AnchorSideTop.Control = edFirstName
+        AnchorSideTop.Side = asrCenter
+        Left = 6
+        Height = 15
+        Top = 35
+        Width = 55
+        BorderSpacing.Left = 6
+        Caption = 'First name'
+      end
+      object edFirstName: TDBEdit
+        AnchorSideLeft.Control = Label1
+        AnchorSideLeft.Side = asrBottom
+        AnchorSideTop.Control = DBNavigator1
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = DBNavigator1
+        AnchorSideRight.Side = asrBottom
+        Left = 89
+        Height = 23
+        Top = 31
+        Width = 185
+        DataSource = DataSource1
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Left = 28
+        BorderSpacing.Top = 6
+        MaxLength = 0
+        TabOrder = 0
+      end
+      object Label2: TLabel
+        AnchorSideLeft.Control = Label1
+        AnchorSideTop.Control = edLastName
+        AnchorSideTop.Side = asrCenter
+        Left = 6
+        Height = 15
+        Top = 62
+        Width = 54
+        Caption = 'Last name'
+      end
+      object edLastName: TDBEdit
+        AnchorSideLeft.Control = edFirstName
+        AnchorSideTop.Control = edFirstName
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = edFirstName
+        AnchorSideRight.Side = asrBottom
+        Left = 89
+        Height = 23
+        Top = 58
+        Width = 185
+        DataSource = DataSource1
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 4
+        MaxLength = 0
+        TabOrder = 1
+      end
+      object Label4: TLabel
+        AnchorSideLeft.Control = Label1
+        AnchorSideTop.Control = edProfession
+        AnchorSideTop.Side = asrCenter
+        Left = 6
+        Height = 15
+        Top = 89
+        Width = 55
+        Caption = 'Profession'
+      end
+      object edProfession: TDBEdit
+        AnchorSideLeft.Control = edFirstName
+        AnchorSideTop.Control = edLastName
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = edFirstName
+        AnchorSideRight.Side = asrBottom
+        Left = 89
+        Height = 23
+        Top = 85
+        Width = 185
+        DataSource = DataSource1
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 4
+        MaxLength = 0
+        TabOrder = 2
+      end
+      object Label5: TLabel
+        AnchorSideLeft.Control = Label1
+        AnchorSideTop.Control = edNationality
+        AnchorSideTop.Side = asrCenter
+        Left = 6
+        Height = 15
+        Top = 116
+        Width = 58
+        Caption = 'Nationality'
+      end
+      object edNationality: TDBEdit
+        AnchorSideLeft.Control = edFirstName
+        AnchorSideTop.Control = edProfession
+        AnchorSideTop.Side = asrBottom
+        AnchorSideRight.Control = edFirstName
+        AnchorSideRight.Side = asrBottom
+        Left = 89
+        Height = 23
+        Top = 112
+        Width = 185
+        DataSource = DataSource1
+        Anchors = [akTop, akLeft, akRight]
+        BorderSpacing.Top = 4
+        BorderSpacing.Bottom = 8
+        MaxLength = 0
+        TabOrder = 3
+      end
+      object DBNavigator1: TDBNavigator
+        Left = 9
+        Height = 25
+        Top = 0
+        Width = 265
+        BevelOuter = bvNone
+        BorderSpacing.Left = 9
+        BorderSpacing.Right = 9
+        ChildSizing.EnlargeHorizontal = crsScaleChilds
+        ChildSizing.EnlargeVertical = crsScaleChilds
+        ChildSizing.ShrinkHorizontal = crsScaleChilds
+        ChildSizing.ShrinkVertical = crsScaleChilds
+        ChildSizing.Layout = cclLeftToRightThenTopToBottom
+        ChildSizing.ControlsPerLine = 100
+        ClientHeight = 25
+        ClientWidth = 265
+        DataSource = DataSource1
+        Options = []
+        TabOrder = 4
+      end
+    end
+  end
+  object ODBCConnection1: TODBCConnection
+    Connected = False
+    LoginPrompt = False
+    KeepConnection = True
+    Params.Strings = (
+      ''
+    )
+    Transaction = SQLTransaction1
+    Driver = 'Microsoft Access Driver (*.mdb)'
+    Left = 136
+    Top = 208
+  end
+  object SQLTransaction1: TSQLTransaction
+    Active = False
+    Action = caCommitRetaining
+    Database = ODBCConnection1
+    Left = 136
+    Top = 272
+  end
+  object SQLQuery1: TSQLQuery
+    PacketRecords = -1
+    FieldDefs = <>
+    Database = ODBCConnection1
+    Transaction = SQLTransaction1
+    SQL.Strings = (
+      ''
+    )
+    Options = [sqoKeepOpenOnCommit, sqoAutoApplyUpdates, sqoAutoCommit]
+    Params = <>
+    Macros = <>
+    UpdateMode = upWhereAll
+    UsePrimaryKeyAsKey = False
+    Left = 376
+    Top = 208
+  end
+  object DataSource1: TDataSource
+    DataSet = SQLQuery1
+    Left = 376
+    Top = 272
+  end
+end

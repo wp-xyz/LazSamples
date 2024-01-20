@@ -6,9 +6,9 @@ object MainForm: TMainForm
   Caption = 'Famous People Database'
   ClientHeight = 668
   ClientWidth = 972
+  LCLVersion = '3.99.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  LCLVersion = '2.3.0.0'
   object DBNavigator: TDBNavigator
     Left = 8
     Height = 25
@@ -82,8 +82,8 @@ object MainForm: TMainForm
         'SELECT * FROM Bestellungen WHERE ([Kunden-Code] LIKE ''[A-E]%[H,C]'')'
         'SELECT * FROM Bestellungen WHERE ([Kunden-Code] LIKE ''![A-E]%[H,C]'')'
       )
-      OnSelect = ComboBox1Select
       TabOrder = 0
+      OnSelect = ComboBox1Select
     end
     object Button1: TButton
       AnchorSideTop.Control = Panel1
@@ -99,8 +99,8 @@ object MainForm: TMainForm
       BorderSpacing.Left = 8
       BorderSpacing.Right = 8
       Caption = 'Execute query'
-      OnClick = Button1Click
       TabOrder = 1
+      OnClick = Button1Click
     end
   end
   object ODBCConnection1: TODBCConnection
@@ -130,7 +130,7 @@ object MainForm: TMainForm
     SQL.Strings = (
       'SELECT * FROM Resources'
     )
-    Options = [sqoKeepOpenOnCommit, sqoAutoCommit]
+    Options = [sqoKeepOpenOnCommit, sqoAutoApplyUpdates, sqoAutoCommit]
     Params = <>
     Macros = <>
     UpdateMode = upWhereAll

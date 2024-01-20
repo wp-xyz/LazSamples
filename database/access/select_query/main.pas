@@ -124,7 +124,7 @@ begin
     // Connection
     ODBCConnection1.Driver := 'Microsoft Access Driver (*.mdb)';
     ODBCConnection1.Params.Clear;
-    ODBCConnection1.Params.Add('DBQ=' + DB_NAME);
+    ODBCConnection1.Params.Add('DBQ=' + Application.Location + DB_NAME);
     ODBCConnection1.Connected := true;
     ODBCConnection1.KeepConnection := true;
 
