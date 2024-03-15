@@ -85,7 +85,7 @@ begin
     // The ID for the "orientation" tag is $0112; the tag value is an integer
     // and must be 1 for "normal (=horizontal)" orientation.
     // See https://exiftool.org/TagNames/EXIF.html
-    imgInfo.ExifData.AddOrReplaceTagByName('Orientation').AsInteger := 1;
+    imgInfo.ExifData.ImgOrientation := eoNormal;
 
     // Update thumbnail image
     if imgInfo.HasThumbnail then
