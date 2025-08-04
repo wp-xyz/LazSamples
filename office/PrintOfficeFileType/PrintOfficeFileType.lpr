@@ -2,8 +2,11 @@ program PrintOfficeFileType;
 uses
   SysUtils, classes, uVirtualLayer_OLE;
 
-function IsOLEStream(AStream: TStream;
-  const AStreamName: String = 'Book'): Boolean;
+// AStreamName = 'Book' --> Excel BIFF 5 file .xls
+//               'Workbook' --> Excel BIFF 8 file (Excel 97) .xls
+//               'WordDocument' --> Word file .doc
+//               'PowerPoint Document' --> Powerpoint file .ppt
+function IsOLEStream(AStream: TStream; const AStreamName: String): Boolean;
 var
   fsOLE: TVirtualLayer_OLE;
   VLAbsolutePath: UTF8String;
@@ -11,7 +14,7 @@ begin
   VLAbsolutePath := '/' + AStreamName;
   fsOLE := TVirtualLayer_OLE.Create(AStream);
   try
-    fsOLE.Initialize(); //Initialize the OLE container.
+    fsOLE.Initialize();
     Result := fsOLE.FileExists(VLAbsolutePath);
   finally
     fsOLE.Free;
