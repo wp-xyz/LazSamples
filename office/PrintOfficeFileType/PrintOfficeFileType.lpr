@@ -52,7 +52,7 @@ begin
     if IsOLEStream(stream, 'PowerPoint Document') then
       WriteLn('File "', fn, '" is a PowerPoint file in .ppt format.')
     else
-      WriteLn('Formaat for file "', fn, '" could not be detected.');
+      WriteLn('Format of file "', fn, '" could not be detected.');
   finally
     stream.Free;
   end;
