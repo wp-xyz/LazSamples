@@ -1,13 +1,13 @@
-object Form1: TForm1
+object MainForm: TMainForm
   Left = 413
   Height = 825
   Top = 139
   Width = 1410
-  Caption = 'Form1'
+  Caption = 'TAChart Class Hierarchies'
   ClientHeight = 825
   ClientWidth = 1410
+  LCLVersion = '4.99.0.0'
   OnCreate = FormCreate
-  LCLVersion = '2.1.0.0'
   object LvlGraphControl1: TLvlGraphControl
     Left = 159
     Height = 825
@@ -42,12 +42,12 @@ object Form1: TForm1
       Left = 8
       Height = 19
       Top = 8
-      Width = 108
+      Width = 106
       BorderSpacing.Left = 8
       BorderSpacing.Top = 8
       Caption = 'Straighten graph'
-      OnChange = cbStraightenGraphChange
       TabOrder = 0
+      OnChange = cbStraightenGraphChange
     end
     object cbReduceBackEdges: TCheckBox
       AnchorSideLeft.Control = cbStraightenGraph
@@ -56,11 +56,11 @@ object Form1: TForm1
       Left = 8
       Height = 19
       Top = 62
-      Width = 121
+      Width = 119
       BorderSpacing.Top = 8
       Caption = 'Reduce back edges'
-      OnChange = cbReduceBackEdgesChange
       TabOrder = 1
+      OnChange = cbReduceBackEdgesChange
     end
     object cbHighLevels: TCheckBox
       AnchorSideLeft.Control = cbStraightenGraph
@@ -69,11 +69,11 @@ object Form1: TForm1
       Left = 8
       Height = 19
       Top = 35
-      Width = 78
+      Width = 76
       BorderSpacing.Top = 8
       Caption = 'High levels'
-      OnChange = cbHighLevelsChange
       TabOrder = 2
+      OnChange = cbHighLevelsChange
     end
     object btnSeriesHierarchy: TButton
       AnchorSideLeft.Control = btnSourceHierarchy
@@ -89,8 +89,8 @@ object Form1: TForm1
       AutoSize = True
       BorderSpacing.Top = 8
       Caption = 'Series hierarchy'
-      OnClick = btnSeriesHierarchyClick
       TabOrder = 3
+      OnClick = btnSeriesHierarchyClick
     end
     object btnSourceHierarchy: TButton
       AnchorSideLeft.Control = Panel1
@@ -105,8 +105,8 @@ object Form1: TForm1
       BorderSpacing.Top = 16
       BorderSpacing.Right = 8
       Caption = 'ChartSource hierarchy'
-      OnClick = btnSourceHierarchyClick
       TabOrder = 4
+      OnClick = btnSourceHierarchyClick
     end
     object GroupBox1: TGroupBox
       AnchorSideLeft.Control = Panel1
@@ -152,9 +152,9 @@ object Form1: TForm1
         Increment = 0.1
         MaxValue = 2
         MinValue = 0.1
-        OnChange = seCaptionScaleChange
         TabOrder = 0
         Value = 1
+        OnChange = seCaptionScaleChange
       end
       object Label2: TLabel
         AnchorSideLeft.Control = GroupBox1
@@ -181,8 +181,8 @@ object Form1: TForm1
         BorderSpacing.Left = 16
         BorderSpacing.Top = 2
         MaxValue = 50
-        OnChange = seGapChange
         TabOrder = 1
+        OnChange = seGapChange
       end
       object Label3: TLabel
         AnchorSideLeft.Control = GroupBox1
@@ -209,9 +209,9 @@ object Form1: TForm1
         BorderSpacing.Left = 16
         BorderSpacing.Top = 2
         MaxValue = 50
-        OnChange = seGapChange
         TabOrder = 2
         Value = 12
+        OnChange = seGapChange
       end
     end
   end

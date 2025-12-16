@@ -14,9 +14,9 @@ type
 
   TClassDisplay = (cdNone, cdSeries, cdSource);
 
-  { TForm1 }
+  { TMainForm }
 
-  TForm1 = class(TForm)
+  TMainForm = class(TForm)
     btnSeriesHierarchy: TButton;
     btnSourceHierarchy: TButton;
     cbStraightenGraph: TCheckBox;
@@ -53,7 +53,7 @@ type
   end;
 
 var
-  Form1: TForm1;
+  MainForm: TMainForm;
 
 implementation
 
@@ -87,9 +87,9 @@ const
   IDX_USERDEFINED_CHARTSOURCE = 21;
 
 
-{ TForm1 }
+{ TMainForm }
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TMainForm.FormCreate(Sender: TObject);
 begin
   LvlGraphControl1.Images := ImageList1;
   LvlGraphControl1.NodeStyle.CaptionScale := seCaptionScale.Value;
@@ -97,7 +97,7 @@ begin
   LvlGraphControl1.NodeStyle.GapBottom := seGapBottom.Value;
 end;
 
-procedure TForm1.cbReduceBackEdgesChange(Sender: TObject);
+procedure TMainForm.cbReduceBackEdgesChange(Sender: TObject);
 var
   i: Integer;
 begin
@@ -111,7 +111,7 @@ begin
   RecreateGraph;
 end;
 
-procedure TForm1.cbHighLevelsChange(Sender: TObject);
+procedure TMainForm.cbHighLevelsChange(Sender: TObject);
 var
   i: Integer;
 begin
@@ -125,7 +125,7 @@ begin
   RecreateGraph;
 end;
 
-procedure TForm1.cbStraightenGraphChange(Sender: TObject);
+procedure TMainForm.cbStraightenGraphChange(Sender: TObject);
 var
   i: Integer;
 begin
@@ -139,7 +139,7 @@ begin
   RecreateGraph;
 end;
 
-function TForm1.GetClassImageIndex(AClassName: String): Integer;
+function TMainForm.GetClassImageIndex(AClassName: String): Integer;
 begin
   case AClassName of
     'TAreaSeries':
@@ -201,7 +201,7 @@ begin
   end;
 end;
 
-function TForm1.AddClassNode(AClass: TClass; ARootClassName: String = ''): TLvlGraphNode;
+function TMainForm.AddClassNode(AClass: TClass; ARootClassName: String = ''): TLvlGraphNode;
 var
   parentclass: TClass;
 begin
@@ -212,11 +212,13 @@ begin
   if AClass.ClassName = FRootClassName then
     exit;
   parentclass := AClass.ClassParent;
+  if parentclass = nil then
+    exit;
   AddClassNode(parentclass);
   LvlGraphControl1.Graph.GetEdge(parentclass.ClassName, AClass.ClassName, true);
 end;
 
-procedure TForm1.btnSeriesHierarchyClick(Sender: TObject);
+procedure TMainForm.btnSeriesHierarchyClick(Sender: TObject);
 begin
   FDisplay := cdSeries;
 
@@ -246,7 +248,7 @@ begin
   DefaultLvlGraphSettings;
 end;
 
-procedure TForm1.btnSourceHierarchyClick(Sender: TObject);
+procedure TMainForm.btnSourceHierarchyClick(Sender: TObject);
 begin
   FDisplay := cdSource;
 
@@ -264,7 +266,7 @@ begin
   DefaultLvlGraphSettings;
 end;
 
-procedure TForm1.DefaultLvlGraphSettings;
+procedure TMainForm.DefaultLvlGraphSettings;
 begin
   with LvlGraphControl1 do begin
     NodeStyle.Shape := lgnsNone;
@@ -282,7 +284,7 @@ begin
   end;
 end;
 
-procedure TForm1.RecreateGraph;
+procedure TMainForm.RecreateGraph;
 begin
   case FDisplay of
     cdNone: ;
@@ -291,12 +293,12 @@ begin
   end;
 end;
 
-procedure TForm1.seCaptionScaleChange(Sender: TObject);
+procedure TMainForm.seCaptionScaleChange(Sender: TObject);
 begin
   LvlGraphControl1.NodeStyle.CaptionScale := seCaptionScale.Value;
 end;
 
-procedure TForm1.seGapChange(Sender: TObject);
+procedure TMainForm.seGapChange(Sender: TObject);
 begin
   LvlGraphControl1.Clear;
 
