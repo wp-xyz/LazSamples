@@ -1,0 +1,99 @@
+object Form1: TForm1
+  Left = 325
+  Height = 149
+  Top = 233
+  Width = 493
+  Caption = 'Form1'
+  ClientHeight = 149
+  ClientWidth = 493
+  LCLVersion = '3.99.0.0'
+  object Button1: TButton
+    Left = 31
+    Height = 25
+    Top = 15
+    Width = 75
+    Caption = 'Test-Button'
+    TabOrder = 0
+    OnClick = Button1Click
+  end
+  object ButtonPanel1: TButtonPanel
+    Left = 6
+    Height = 34
+    Top = 109
+    Width = 481
+    OKButton.Name = 'OKButton'
+    OKButton.DefaultCaption = True
+    HelpButton.Name = 'HelpButton'
+    HelpButton.DefaultCaption = True
+    CloseButton.Name = 'CloseButton'
+    CloseButton.DefaultCaption = True
+    CancelButton.Name = 'CancelButton'
+    CancelButton.DefaultCaption = True
+    TabOrder = 1
+  end
+  object Button2: TButton
+    Left = 154
+    Height = 25
+    Top = 15
+    Width = 92
+    AutoSize = True
+    Caption = 'Datei-Dialog'
+    TabOrder = 2
+    OnClick = Button2Click
+  end
+  object Button3: TButton
+    Left = 256
+    Height = 25
+    Top = 15
+    Width = 88
+    AutoSize = True
+    Caption = 'Farb-Dialog'
+    TabOrder = 3
+    OnClick = Button3Click
+  end
+  object Button4: TButton
+    Left = 352
+    Height = 25
+    Top = 15
+    Width = 106
+    AutoSize = True
+    Caption = 'Drucker-Dialog'
+    TabOrder = 4
+    OnClick = Button4Click
+  end
+  object OpenDialog1: TOpenDialog
+    Left = 173
+    Top = 45
+  end
+  object ColorDialog1: TColorDialog
+    Color = clBlack
+    CustomColors.Strings = (
+      'ColorA=000000'
+      'ColorB=000080'
+      'ColorC=008000'
+      'ColorD=008080'
+      'ColorE=800000'
+      'ColorF=800080'
+      'ColorG=808000'
+      'ColorH=808080'
+      'ColorI=C0C0C0'
+      'ColorJ=0000FF'
+      'ColorK=00FF00'
+      'ColorL=00FFFF'
+      'ColorM=FF0000'
+      'ColorN=FF00FF'
+      'ColorO=FFFF00'
+      'ColorP=FFFFFF'
+      'ColorQ=C0DCC0'
+      'ColorR=F0CAA6'
+      'ColorS=F0FBFF'
+      'ColorT=A4A0A0'
+    )
+    Left = 272
+    Top = 45
+  end
+  object PrintDialog1: TPrintDialog
+    Left = 368
+    Top = 45
+  end
+end
