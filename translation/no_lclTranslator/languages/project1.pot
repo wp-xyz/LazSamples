@@ -1,0 +1,28 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+#: strconsts.rs_automatic
+msgid "automatic"
+msgstr ""
+
+#: strconsts.rs_caption
+msgid "Translation test"
+msgstr ""
+
+#: strconsts.rs_clickhere
+msgid "Click here"
+msgstr ""
+
+#: strconsts.rs_language
+msgctxt "strconsts.rs_language"
+msgid "Language"
+msgstr ""
+
+#: strconsts.rs_test
+msgid "Test"
+msgstr ""
+
+#: strconsts.rs_thanksforclicking
+msgid "Thanks for clicking!"
+msgstr ""
+
