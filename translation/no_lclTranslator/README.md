@@ -1,7 +1,7 @@
 # no_lclTranslator
 Demonstration of how to translate an appliation without using LCLTranslator
 
-_ Is there an elegant way of dealing with UI strings that are used repeatedly? 
+_Is there an elegant way of dealing with UI strings that are used repeatedly? 
 Or can the inspector refer to (resource) strings defined elsewhere?_
 
 - Don't use Default/LCLTranslator
